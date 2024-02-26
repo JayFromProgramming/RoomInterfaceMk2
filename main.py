@@ -1,3 +1,5 @@
+import os
+
 from PyQt6.QtWidgets import QMainWindow, QApplication, QPushButton
 from PyQt6.QtGui import QFont, QFontDatabase
 
@@ -52,7 +54,9 @@ class MainWindow(QMainWindow):
         #                         round((self.height() - self.system_status.height()) / 2))
 
         self.show()
-        # self.showFullScreen()
+        # If running on a linux system, use this to make the window full screen
+        if os.name == "posix":
+            self.showFullScreen()
 
     def focus_room_control(self):
         if not self.room_control.focused:
