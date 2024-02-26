@@ -37,6 +37,8 @@ class DeviceGroupHost(QLabel):
         self.name_manager = QNetworkAccessManager()
         self.name_manager.finished.connect(self.handle_name_response)
 
+        self.font = self.parent.font
+
     def make_name_request(self, device):
         request = QNetworkRequest(QUrl(f"http://{self.host}/name/{device}"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))

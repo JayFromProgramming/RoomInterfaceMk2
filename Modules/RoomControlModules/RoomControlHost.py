@@ -18,6 +18,7 @@ class RoomControlHost(QLabel):
         self.setFixedSize(parent.width(), parent.height() - self.y())
         self.dragging = False
         self.focused = False
+        self.font = self.parent.get_font("JetBrainsMono-Bold")
         self.scroll_offset = 0
         self.scroll_start = 0
         self.last_scroll = 0

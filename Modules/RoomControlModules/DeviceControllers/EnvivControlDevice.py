@@ -11,6 +11,7 @@ class EnvivControlDevice(RoomDevice):
         super().__init__(parent.auth, parent, device, True)
 
         self.device_label = QLabel(self)
+        self.device_label.setFont(parent.font)
         self.device_label.setFixedSize(200, 20)
         self.device_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
@@ -24,6 +25,7 @@ class EnvivControlDevice(RoomDevice):
         self.info_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none; background-color: transparent")
         self.info_text.setText("<pre>Target: N/A\nCurrent: N/A\nState: UNKNOWN</pre>")
         self.info_text.move(10, 20)
+        self.info_text.setFont(parent.font)
 
         self.toggle_button = QPushButton(self)
         self.toggle_button.setFixedSize(90, 30)
@@ -31,6 +33,7 @@ class EnvivControlDevice(RoomDevice):
         self.toggle_button.setText("?????")
         self.toggle_button.move(self.width() - self.toggle_button.width() - 10, 5)
         self.toggle_button.clicked.connect(self.toggle_device)
+        self.toggle_button.setFont(parent.font)
 
         self.target_selector_button = QPushButton(self)
         self.target_selector_button.setFixedSize(90, 30)
@@ -38,6 +41,7 @@ class EnvivControlDevice(RoomDevice):
         self.target_selector_button.setText("Set Target")
         self.target_selector_button.move(self.width() - self.target_selector_button.width() - 10, 40)
         self.target_selector_button.clicked.connect(self.open_target_selector)
+        self.target_selector_button.setFont(parent.font)
 
         self.spin_box = QDoubleSpinBox(self)
         self.spin_box.setFixedSize(90, 40)

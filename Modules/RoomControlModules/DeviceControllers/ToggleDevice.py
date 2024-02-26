@@ -17,12 +17,14 @@ class ToggleDevice(RoomDevice):
         super().__init__(parent.auth, parent, device, False)
 
         self.device_label = QLabel(self)
+        self.device_label.setFont(parent.font)
         self.device_label.setFixedSize(135, 20)
         self.device_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
         self.device_label.setText(f"{device}")
 
         self.toggle_button = QPushButton(self)
+        self.toggle_button.setFont(parent.font)
         self.toggle_button.setFixedSize(135, 30)
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
         self.toggle_button.setText("Turn ???")
@@ -31,6 +33,7 @@ class ToggleDevice(RoomDevice):
         self.toggle_button.move(5, 40)
 
         self.device_text = QLabel(self)
+        self.device_text.setFont(parent.font)
         self.device_text.setFixedSize(135, 20)
         self.device_text.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom)
         self.device_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")

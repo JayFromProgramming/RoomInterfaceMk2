@@ -19,6 +19,7 @@ class LightController(RoomDevice):
 
         # This is one of many widgets that will be placed on the RoomControlHost so they shouldn't use too much space
         self.name_label = QLabel(self)
+        self.name_label.setFont(parent.font)
         self.name_label.setFixedSize(300, 20)
         self.name_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.name_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none; background-color: transparent")
@@ -27,6 +28,7 @@ class LightController(RoomDevice):
 
         self.info_text = QLabel(self)
         self.info_text.setFixedSize(200, 75)
+        self.info_text.setFont(parent.font)
         self.info_text.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.info_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none; background-color: transparent")
         self.info_text.setText("<pre>Color: N/A\nBrightness: N/A\nMode: N/A</pre>")
@@ -40,6 +42,7 @@ class LightController(RoomDevice):
         self.toggle_button.move(self.width() - self.toggle_button.width() - 10, 5)
         self.toggle_button.setCheckable(True)
         self.toggle_button.clicked.connect(self.toggle_light)
+        self.toggle_button.setFont(parent.font)
 
         self.color_picker_button = QPushButton(self)
         self.color_picker_button.setFixedSize(90, 30)
@@ -48,6 +51,7 @@ class LightController(RoomDevice):
         self.color_picker_button.setText("Set Color")
         self.color_picker_button.move(self.width() - self.color_picker_button.width() - 10, 40)
         self.color_picker_button.clicked.connect(self.open_color_picker)
+        self.color_picker_button.setFont(parent.font)
 
     def update_human_name(self, name):
         self.name_label.setText(f"Light: {name}")
