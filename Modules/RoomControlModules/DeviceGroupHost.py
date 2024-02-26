@@ -1,0 +1,108 @@
+from PyQt6.QtCore import QUrl
+from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager
+from PyQt6.QtWidgets import QLabel
+
+from loguru import logger as logging
+from Utils.RoomDevice import RoomDevice
+
+import os
+
+for file in os.listdir("Modules/RoomControlModules/DeviceControllers"):
+    if file.endswith(".py") and not file.startswith("__"):
+        print(f"Importing {file}")
+        __import__(f"Modules.RoomControlModules.DeviceControllers.{file[:-3]}")
+
+
+class DeviceGroupHost(QLabel):
+
+    def __init__(self, auth, parent=None, group_name=None):
+        super().__init__(parent)
+        self.setStyleSheet("border: 2px solid #ffcd00; border-radius: 10px")
+        self.auth = auth
+        self.group_name = group_name
+        self.parent = parent
+        self.setFixedSize(parent.width(), 275)
+        self.dragging = False
+        self.scroll_offset = 0
+        self.scroll_start = 0
+        self.last_scroll = 0
+        self.device_widgets = []
+        self.lines = []
+        self.layout_widgets()
+
+        self.type_manager = QNetworkAccessManager()
+        self.type_manager.finished.connect(self.create_widget)
+
+        self.name_manager = QNetworkAccessManager()
+        self.name_manager.finished.connect(self.handle_name_response)
+
+    def make_name_request(self, device):
+        request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/name/{device}"))
+        request.setRawHeader(b"Cookie", b"auth=" + self.auth)
+        self.name_manager.get(request)
+
+    def handle_name_response(self, reply):
+        try:
+            # Get the original query
+            original_query = reply.request().url().toString()
+            # Get the device name from the query
+            device = original_query.split("/")[-1]
+            # Get the data from the reply
+            data = reply.readAll()
+            for widget in self.device_widgets:
+                if widget.device == device:
+                    widget.update_human_name(str(data, 'utf-8'))
+        except Exception as e:
+            logging.error(f"Error handling network response: {e}")
+            logging.exception(e)
+
+    def create_widget(self, response):
+        try:
+            original_query = response.request().url().toString()
+            # Get the device name from the query
+            device = original_query.split("/")[-1]
+            data = response.readAll()
+            device_type = data.data().decode("utf-8")
+            found = False
+            for widget_class in RoomDevice.__subclasses__():
+                # Find a widget class that supports the device type
+                if widget_class.supports_type(device_type):
+                    widget = widget_class(self, device)
+                    self.device_widgets.append(widget)
+                    found = True
+                    break
+            if not found:
+                logging.warning(f"Device type {device_type} not supported")
+            self.layout_widgets()
+        except Exception as e:
+            logging.error(f"Error handling network response: {e}")
+            logging.exception(e)
+
+    def add_device(self, device: dict):
+        request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/get_type/{device}"))
+        request.setRawHeader(b"Cookie", b"auth=" + self.auth)
+        self.type_manager.get(request)
+
+    def sort_widgets(self):
+        # Sort devices first by size, then type, then name (so the order is consistent independent of the load order)
+        self.device_widgets.sort(key=lambda x: (x.width(), x.__class__.__name__, x.device), reverse=True)
+
+    def layout_widgets(self):
+        # Lay widgets out left to right wrapping around when they reach the right edge
+        y_offset = 10
+        x_offset = 10
+        # Sort the device widgets dict by size (largest to smallest)
+        self.sort_widgets()
+        for widget in self.device_widgets:
+            widget.move(x_offset, y_offset)
+            widget.show()
+            x_offset += widget.width() + 10
+            # If this is the last widget don't make a new row
+            if x_offset + widget.width() > self.width() and widget != self.device_widgets[-1]:
+                x_offset = 10
+                y_offset += widget.height() + 10
+        if len(self.device_widgets) > 0:
+            self.setFixedSize(self.width(),
+                              y_offset + self.device_widgets[0].height() + 5)
+            # self.parent.layout_widgets()
+            self.parent.update()
