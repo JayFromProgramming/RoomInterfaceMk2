@@ -15,10 +15,11 @@ for file in os.listdir("Modules/RoomControlModules/DeviceControllers"):
 
 class DeviceGroupHost(QLabel):
 
-    def __init__(self, auth, parent=None, group_name=None):
+    def __init__(self, parent=None, group_name=None):
         super().__init__(parent)
         self.setStyleSheet("border: 2px solid #ffcd00; border-radius: 10px")
-        self.auth = auth
+        self.auth = parent.auth
+        self.host = parent.host
         self.group_name = group_name
         self.parent = parent
         self.setFixedSize(parent.width(), 275)
@@ -37,7 +38,7 @@ class DeviceGroupHost(QLabel):
         self.name_manager.finished.connect(self.handle_name_response)
 
     def make_name_request(self, device):
-        request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/name/{device}"))
+        request = QNetworkRequest(QUrl(f"http://{self.host}/name/{device}"))
         request.setRawHeader(b"Cookie", b"auth=" + self.auth)
         self.name_manager.get(request)
 
