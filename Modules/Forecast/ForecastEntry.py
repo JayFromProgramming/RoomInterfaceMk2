@@ -95,14 +95,14 @@ class ForecastEntry(QLabel):
         self.temperature_label.move(0, self.weather_icon.height() + self.weather_icon.y())
         self.temperature_label.setText("N/A" if not placeholder else f"{reference_time}")
 
-        self.feels_like_label = ForecastValue(self, "N/A", "Feels", font)
-        self.feels_like_label.move(0, self.temperature_label.y() + self.temperature_label.height())
+        self.humidity_label = ForecastValue(self, "N/A", "Humid.", font)
+        self.humidity_label.move(0, self.temperature_label.y() + self.temperature_label.height())
 
         self.wind_speed_label = ForecastValue(self, "N/A", "Wind", font)
-        self.wind_speed_label.move(0, self.feels_like_label.y() + self.feels_like_label.height())
+        self.wind_speed_label.move(0, self.humidity_label.y() + self.humidity_label.height())
 
-        self.visibility_label = ForecastValue(self, "N/A", "Vis", font)
-        self.visibility_label.move(0, self.wind_speed_label.y() + self.wind_speed_label.height())
+        self.feels_like_label = ForecastValue(self, "N/A", "Feels", font)
+        self.feels_like_label.move(0, self.wind_speed_label.y() + self.wind_speed_label.height())
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_forecast_response)
@@ -170,8 +170,7 @@ class ForecastEntry(QLabel):
             wind_direction = wind_direction_arrow(data["wind"]["deg"])
             self.wind_speed_label.lower_label.setText(f"{wind_direction}{round(wind_speed)}mph")
 
-            visibility = visibility_to_text(data["visibility_distance"])
-            self.visibility_label.lower_label.setText(visibility)
+            self.humidity_label.lower_label.setText(f"{data['humidity']:0.0f}%")
 
             self.icon_manager.get(QNetworkRequest(QUrl(f"http://openweathermap.org/img/wn/{data['weather_icon_name']}.png")))
             self.repaint()
