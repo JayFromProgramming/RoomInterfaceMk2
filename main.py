@@ -57,6 +57,7 @@ class MainWindow(QMainWindow):
         if not self.room_control.focused:
             self.room_control.move(0, 90)
             self.room_control.set_focus(True)
+
             self.forecast.hide()
         else:
             self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
@@ -79,6 +80,8 @@ class MainWindow(QMainWindow):
 
     def resizeEvent(self, event):
         try:
+            self.menu_bar.setFixedSize(self.width(), self.menu_bar.height())
+            self.menu_bar.move(0, self.height() - self.menu_bar.height())
             self.clock.move(self.width() - self.clock.width(), 0)
             self.forecast.setFixedSize(self.width(), self.forecast.height())
             self.forecast.layout_widgets()

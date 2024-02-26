@@ -141,6 +141,7 @@ class RoomControlHost(QLabel):
     def layout_widgets(self):
         # If we are not focused only show the starred device host
         if not self.focused:
+            self.starred_device_host.center = True
             self.starred_device_host.show()
             self.starred_device_host.move(20, 0)
             # self.starred_device_host.setFixedSize(self.width(), self.height() - self.y())
@@ -151,6 +152,7 @@ class RoomControlHost(QLabel):
         else:
             # Layout each device group host out in a vertical line
             y = 0
+            self.starred_device_host.center = False
             self.starred_device_host.show()
             self.starred_device_host.move(20, y)
             y += self.starred_device_host.height() + 10

@@ -9,7 +9,7 @@ class MenuBar(QLabel):
         self.setFixedSize(parent.width(), 50)
         self.setStyleSheet("background-color: black;")
         self.move(0, 0)
-        self.font = parent.get_font("JetBrainsMono-Bold")
+        self.font = parent.get_font("JetBrainsMono-Regular")
         self.font.setPointSize(14)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -40,3 +40,8 @@ class MenuBar(QLabel):
         self.settings_expand.move(round(self.width() / 5 * 4 - self.settings_expand.width() / 2), 5)
         self.settings_expand.setFont(self.font)
 
+    def resizeEvent(self, a0):
+        self.room_control_expand.move(round((self.width() - self.room_control_expand.width()) / 2), 5)
+        self.system_control_expand.move(round(self.width() / 5 - self.system_control_expand.width() / 2), 5)
+        self.settings_expand.move(round(self.width() / 5 * 4 - self.settings_expand.width() / 2), 5)
+        super().resizeEvent(a0)

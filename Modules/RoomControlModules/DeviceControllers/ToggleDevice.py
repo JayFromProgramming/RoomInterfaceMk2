@@ -20,7 +20,7 @@ class ToggleDevice(RoomDevice):
         self.device_label.setFont(parent.font)
         self.device_label.setFixedSize(135, 20)
         self.device_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
-        self.device_label.setStyleSheet("color: black; font-size: 15px; font-weight: bold; border: none;")
+        self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
         self.device_label.setText(f"{device}")
 
         self.toggle_button = QPushButton(self)
