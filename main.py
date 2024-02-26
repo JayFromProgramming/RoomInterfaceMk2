@@ -7,6 +7,7 @@ from PyQt6.QtGui import QFont, QFontDatabase
 from Modules.DisplayClock import DisplayClock
 from Modules.CurrentWeather import CurrentWeather
 from Modules.Forecast.ForecastHost import ForecastHost
+from Modules.MenuBar import MenuBar
 
 from Modules.RoomControlModules.RoomControlHost import RoomControlHost
 
@@ -38,20 +39,14 @@ class MainWindow(QMainWindow):
         self.room_control = RoomControlHost(self)
         self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
 
-        self.room_control_focus = QPushButton(self)
-        self.room_control_focus.setFixedSize(120, 30)
-        # Move the button to the bottom middle of the screen
-        self.room_control_focus.move(round((self.width() - self.room_control_focus.width()) / 2),
-                                     self.height() - self.room_control_focus.height())
-        self.room_control_focus.clicked.connect(self.focus_room_control)
-        self.room_control_focus.setStyleSheet("background-color: #ffcd00; border: none;")
-        self.room_control_focus.setText("Expand Room Control")
-        self.room_control_focus.setEnabled(True)
-
         # self.system_status = SystemStatus(self)
         # # Put the system status dead center (it gets to choose if it's shown or not)
         # self.system_status.move(round((self.width() - self.system_status.width()) / 2),
         #                         round((self.height() - self.system_status.height()) / 2))
+
+        self.menu_bar = MenuBar(self)
+        # Move the menu bar to the very bottom of the window
+        self.menu_bar.move(0, self.height() - self.menu_bar.height())
 
         self.show()
         # If running on a linux system, use this to make the window full screen

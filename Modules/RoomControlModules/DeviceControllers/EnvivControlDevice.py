@@ -14,7 +14,7 @@ class EnvivControlDevice(RoomDevice):
         self.device_label.setFont(parent.font)
         self.device_label.setFixedSize(200, 20)
         self.device_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
+        self.device_label.setStyleSheet("color: black; font-size: 15px; font-weight: bold; border: none")
         self.device_label.setText(f"{device}")
         self.device_label.move(10, 0)
         self.unit = "°?"

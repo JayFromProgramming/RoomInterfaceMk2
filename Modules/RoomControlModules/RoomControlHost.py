@@ -38,7 +38,7 @@ class RoomControlHost(QLabel):
                 json.dump(data, f)
                 raise Exception("Please fill out the auth.json file with the proper information")
 
-        self.starred_device_host = DeviceGroupHost(self, "Starred Devices")
+        self.starred_device_host = DeviceGroupHost(self, "Starred Devices", center=True)
         self.device_group_hosts = []
         self.ungrouped_device_host = DeviceGroupHost(self, "Ungrouped Devices")
 

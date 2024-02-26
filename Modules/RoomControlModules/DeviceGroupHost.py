@@ -15,13 +15,14 @@ for file in os.listdir("Modules/RoomControlModules/DeviceControllers"):
 
 class DeviceGroupHost(QLabel):
 
-    def __init__(self, parent=None, group_name=None):
+    def __init__(self, parent=None, group_name=None, center=False):
         super().__init__(parent)
         self.setStyleSheet("border: 2px solid #ffcd00; border-radius: 10px")
         self.auth = parent.auth
         self.host = parent.host
         self.group_name = group_name
         self.parent = parent
+        self.center = center
         self.setFixedSize(parent.width(), 275)
         self.dragging = False
         self.scroll_offset = 0
@@ -94,6 +95,7 @@ class DeviceGroupHost(QLabel):
         # Lay widgets out left to right wrapping around when they reach the right edge
         y_offset = 10
         x_offset = 10
+        first_row_x_offset = 0
         # Sort the device widgets dict by size (largest to smallest)
         self.sort_widgets()
         for widget in self.device_widgets:
@@ -102,8 +104,17 @@ class DeviceGroupHost(QLabel):
             x_offset += widget.width() + 10
             # If this is the last widget don't make a new row
             if x_offset + widget.width() > self.width() and widget != self.device_widgets[-1]:
+                if self.center and first_row_x_offset == 0:
+                    # If centering is enabled, calculate the remaining space of the first row from the boarder
+                    first_row_x_offset = round((self.width() - x_offset - 10) / 2)
                 x_offset = 10
                 y_offset += widget.height() + 10
+
+        # If centering is enabled, move all widgets to the right by the remaining space of the first row
+        if self.center:
+            for widget in self.device_widgets:
+                widget.move(widget.x() + first_row_x_offset, widget.y())
+
         if len(self.device_widgets) > 0:
             self.setFixedSize(self.width(),
                               y_offset + self.device_widgets[0].height() + 5)
