@@ -57,11 +57,12 @@ class MainWindow(QMainWindow):
         if not self.room_control.focused:
             self.room_control.move(0, 90)
             self.room_control.set_focus(True)
-
+            self.menu_bar.room_control_expand.setText("↓Room Control↓")
             self.forecast.hide()
         else:
             self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
             self.room_control.set_focus(False)
+            self.menu_bar.room_control_expand.setText("↑Room Control↑")
             self.forecast.show()
 
     def get_font(self, name: str):
