@@ -39,7 +39,7 @@ class DeviceGroupHost(QLabel):
 
     def make_name_request(self, device):
         request = QNetworkRequest(QUrl(f"http://{self.host}/name/{device}"))
-        request.setRawHeader(b"Cookie", b"auth=" + self.auth)
+        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.name_manager.get(request)
 
     def handle_name_response(self, reply):
@@ -81,7 +81,7 @@ class DeviceGroupHost(QLabel):
 
     def add_device(self, device: dict):
         request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/get_type/{device}"))
-        request.setRawHeader(b"Cookie", b"auth=" + self.auth)
+        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.type_manager.get(request)
 
     def sort_widgets(self):

@@ -48,14 +48,14 @@ class RoomDevice(QLabel):
 
     def get_data(self):
         request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/get/{self.device}"))
-        request.setRawHeader(b"Cookie", b"auth=" + self.auth)
+        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.network_manager.get(request)
 
     def send_command(self, command):
         request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/set/{self.device}"))
         # Add a json payload to the post request
         request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
-        request.setRawHeader(b"Cookie", b"auth=" + self.auth)
+        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         payload = json.dumps(command)
         self.command_manager.post(request, payload.encode("utf-8"))
 
