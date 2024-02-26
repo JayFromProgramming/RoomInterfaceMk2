@@ -2,7 +2,7 @@ import json
 import os
 import time
 
-from PyQt6.QtCore import QUrl
+from PyQt6.QtCore import QUrl, QTimer
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel
 
@@ -22,6 +22,7 @@ class RoomControlHost(QLabel):
         self.scroll_offset = 0
         self.scroll_start = 0
         self.last_scroll = 0
+        self.has_schema = False
         self.setStyleSheet("boarder: 2px solid #ffcd00; border-radius: 10px")
         if os.path.exists("Config/auth.json"):
             with open("Config/auth.json", "r") as f:
@@ -44,6 +45,11 @@ class RoomControlHost(QLabel):
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_network_response)
+
+        self.retry_timer = QTimer(self)
+        self.retry_timer.timeout.connect(self.make_request)
+        self.retry_timer.start(5000)
+
         self.make_request()
 
     def make_request(self):
@@ -54,7 +60,12 @@ class RoomControlHost(QLabel):
     def handle_network_response(self, reply):
         try:
             data = reply.readAll()
-            data = json.loads(str(data, 'utf-8'))
+            try:
+                data = json.loads(str(data, 'utf-8'))
+            except Exception as e:
+                logging.error(f"Error parsing network response: {e}")
+                logging.error(f"Data: {data}")
+                return
             for device_name, values in data.items():
                 # Check if the device is in a group
                 if values["starred"] is True:
@@ -72,7 +83,7 @@ class RoomControlHost(QLabel):
                 else:
                     self.ungrouped_device_host.add_device(device_name)
             self.layout_widgets()
-
+            self.retry_timer.stop() # Stop retrying if we got a response
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)

@@ -6,7 +6,7 @@ class MenuBar(QLabel):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedSize(parent.width(), 50)
+        self.setFixedSize(parent.width(), 40)
         self.setStyleSheet("background-color: black;")
         self.move(0, 0)
         self.font = parent.get_font("JetBrainsMono-Regular")
@@ -14,7 +14,7 @@ class MenuBar(QLabel):
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.room_control_expand = QPushButton(self)
-        self.room_control_expand.setFixedSize(140, 40)
+        self.room_control_expand.setFixedSize(140, 30)
         self.room_control_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
                                                "border: none; border-radius: 10px")
         self.room_control_expand.setText("↑Room Control↑")
@@ -24,7 +24,7 @@ class MenuBar(QLabel):
         self.room_control_expand.setFont(self.font)
 
         self.system_control_expand = QPushButton(self)
-        self.system_control_expand.setFixedSize(140, 40)
+        self.system_control_expand.setFixedSize(140, 30)
         self.system_control_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
                                                  "border: none; border-radius: 10px")
         self.system_control_expand.setText("↑System Control↑")
@@ -32,7 +32,7 @@ class MenuBar(QLabel):
         self.system_control_expand.setFont(self.font)
 
         self.settings_expand = QPushButton(self)
-        self.settings_expand.setFixedSize(140, 40)
+        self.settings_expand.setFixedSize(140, 30)
         self.settings_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
                                            "border: none; border-radius: 10px")
         self.settings_expand.setText("↑Device Control↑")

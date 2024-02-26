@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QUrl
+from PyQt6.QtCore import QUrl, Qt
 from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager
 from PyQt6.QtWidgets import QLabel
 
@@ -23,7 +23,7 @@ class DeviceGroupHost(QLabel):
         self.group_name = group_name
         self.parent = parent
         self.center = center
-        self.setFixedSize(parent.width(), 275)
+        self.setFixedSize(parent.width(), 300)
         self.dragging = False
         self.scroll_offset = 0
         self.scroll_start = 0
@@ -31,14 +31,22 @@ class DeviceGroupHost(QLabel):
         self.device_widgets = []
         self.lines = []
         self.layout_widgets()
+        self.font = self.parent.font
+
+        self.group_label = QLabel(self)
+        self.group_label.setFont(self.font)
+        self.group_label.setFixedSize(300, 20)
+        self.group_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+        self.group_label.setStyleSheet("color: white; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
+        self.group_label.setText(f"{group_name}")
+        # Move the group label to the middle of the top
+        self.group_label.move(round((self.width() - self.group_label.width()) / 2), 0)
 
         self.type_manager = QNetworkAccessManager()
         self.type_manager.finished.connect(self.create_widget)
 
         self.name_manager = QNetworkAccessManager()
         self.name_manager.finished.connect(self.handle_name_response)
-
-        self.font = self.parent.font
 
     def make_name_request(self, device):
         request = QNetworkRequest(QUrl(f"http://{self.host}/name/{device}"))
@@ -93,7 +101,7 @@ class DeviceGroupHost(QLabel):
 
     def layout_widgets(self):
         # Lay widgets out left to right wrapping around when they reach the right edge
-        y_offset = 10
+        y_offset = 20
         x_offset = 10
         first_row_x_offset = 0
         # Sort the device widgets dict by size (largest to smallest)
@@ -101,7 +109,7 @@ class DeviceGroupHost(QLabel):
         for widget in self.device_widgets:
             widget.move(x_offset, y_offset)
             widget.show()
-            x_offset += widget.width() + 10
+            x_offset += widget.width() + 7
             # If this is the last widget don't make a new row
             if x_offset + widget.width() > self.width() and widget != self.device_widgets[-1]:
                 if self.center and first_row_x_offset == 0:
