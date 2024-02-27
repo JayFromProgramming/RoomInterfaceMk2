@@ -17,7 +17,7 @@ class MenuBar(QLabel):
         self.room_control_expand.setFixedSize(140, 30)
         self.room_control_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
                                                "border: none; border-radius: 10px")
-        self.room_control_expand.setText("↑Room Control↑")
+        self.room_control_expand.setText("↑Device Control↑")
         # Move the button to the exact center of the menu bar
         self.room_control_expand.move(round((self.width() - self.room_control_expand.width()) / 2), 5)
         self.room_control_expand.clicked.connect(parent.focus_room_control)
@@ -35,7 +35,7 @@ class MenuBar(QLabel):
         self.settings_expand.setFixedSize(140, 30)
         self.settings_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
                                            "border: none; border-radius: 10px")
-        self.settings_expand.setText("↑Device Control↑")
+        self.settings_expand.setText("↑Scene Control↑")
         # Have this buttons position mirror the system control button
         self.settings_expand.move(round(self.width() / 5 * 4 - self.settings_expand.width() / 2), 5)
         self.settings_expand.setFont(self.font)

@@ -86,11 +86,6 @@ class EnvivControlDevice(RoomDevice):
                                    f"State: {self.update_state()}</pre>")
         self.toggle_button.setText(f"{['Enable', 'Disable'][self.state['on']]}")
 
-    def toggle_device(self):
-        command = {"on": not self.state["on"]}
-        self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: blue")
-        self.send_command(command)
-
     def open_target_selector(self):
         try:
             if self.spin_box.isHidden():

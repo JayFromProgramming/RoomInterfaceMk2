@@ -25,6 +25,8 @@ class RoomDevice(QLabel):
             self.setFixedSize(145, 75)
         self.setStyleSheet("background-color: #ffcd00; border: 2px solid #ffcd00; border-radius: 10px")
 
+        self.toggle_button = None
+
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_response)
         self.command_manager = QNetworkAccessManager()
@@ -61,6 +63,12 @@ class RoomDevice(QLabel):
 
     def parse_data(self, data):
         raise NotImplementedError("This method must be implemented by the child class")
+
+    def toggle_device(self):
+        command = {"on": not self.state["on"]}
+        if self.toggle_button is not None:
+            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: blue;")
+        self.send_command(command)
 
     def handle_response(self, response):
         try:

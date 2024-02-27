@@ -9,9 +9,8 @@ from loguru import logger as logging
 from Utils.RoomDevice import RoomDevice
 
 
-class ToggleDevice(RoomDevice):
-
-    supported_types = ["VoiceMonkeyDevice", "abstract_toggle_device"]
+class AutoLightController(RoomDevice):
+    supported_types = ["light_controller"]
 
     def __init__(self, parent=None, device=None):
         super().__init__(parent.auth, parent, device, False)
@@ -27,7 +26,7 @@ class ToggleDevice(RoomDevice):
         self.toggle_button.setFont(parent.font)
         self.toggle_button.setFixedSize(135, 30)
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
-        self.toggle_button.setText("Turn ???")
+        self.toggle_button.setText("?????")
         self.toggle_button.setCheckable(True)
         self.toggle_button.clicked.connect(self.toggle_device)
         self.toggle_button.move(5, 40)
@@ -51,14 +50,19 @@ class ToggleDevice(RoomDevice):
         elif health["fault"]:
             self.device_text.setText(f"<pre>Online: FAULT</pre>")
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: orange;")
+        elif self.state["on"]:
+            match self.state["current_state"]:
+                case 0:
+                    self.device_text.setText(f"<pre>Online: IDLE</pre>")
+                case 1:
+                    self.device_text.setText(f"<pre>Online: MOTION</pre>")
+                case 2:
+                    self.device_text.setText(f"<pre>Online: ACTIVE</pre>")
         else:
-            if self.data["auto_state"]["is_auto"]:
-                self.device_text.setText(f"<pre>Online: AUTO</pre>")
-            else:
-                self.device_text.setText(f"<pre>Online: MANUAL</pre>")
+            self.device_text.setText(f"<pre>Online: STANDBY</pre>")
 
     def parse_data(self, data):
-        self.toggle_button.setText(f"Turn {['On', 'Off'][self.state['on']]}")
+        self.toggle_button.setText(f"{['Enable', 'Disable'][self.state['on']]}")
         button_color = "#4080FF" if self.state["on"] else "grey"
         self.toggle_button.setStyleSheet(f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
         self.update_status()

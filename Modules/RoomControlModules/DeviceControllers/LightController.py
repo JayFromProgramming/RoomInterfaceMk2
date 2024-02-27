@@ -41,7 +41,7 @@ class LightController(RoomDevice):
         self.toggle_button.setText("Turn ???")
         self.toggle_button.move(self.width() - self.toggle_button.width() - 10, 5)
         self.toggle_button.setCheckable(True)
-        self.toggle_button.clicked.connect(self.toggle_light)
+        self.toggle_button.clicked.connect(self.toggle_device)
         self.toggle_button.setFont(parent.font)
 
         self.color_picker_button = QPushButton(self)
@@ -59,8 +59,7 @@ class LightController(RoomDevice):
     def parse_data(self, data):
         color = self.state["color"] if not self.state["white_enabled"] else "Warm White"
         brightness = round(self.state["brightness"] / 255 * 100)
-
-        self.info_text.setText(f"<pre>Color: {color}\nBrightness: {brightness}%\nMode: {self.state['mode']}</pre>")
+        self.info_text.setText(f"<pre>Color: {color}\nBrightness: {brightness}%\nMode: {self.state['control_type']}</pre>")
         self.toggle_button.setText("Turn Off" if self.state["on"] else "Turn On")
         button_color = "#4080FF" if self.state["on"] else "grey"
         self.toggle_button.setStyleSheet(f"background: {button_color}; font-size: 14px; font-weight: bold;")
@@ -71,12 +70,6 @@ class LightController(RoomDevice):
         self.info_text.setText(f"<pre>Server Error\n{error_string[0]}\n{error_string[1]}</pre>")
         self.toggle_button.setText("Turn ???")
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
-
-    def toggle_light(self):
-        logging.info(f"Toggling light: {self.device} to {not self.state['on']}")
-        command = {"on": not self.state["on"]}
-        self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: blue;")
-        self.send_command(command)
 
     def set_color(self, color):
         logging.info(f"Setting color of light: {self.device} to {color.name()}")

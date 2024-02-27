@@ -24,7 +24,7 @@ class RoomControlHost(QLabel):
         self.scroll_offset = 0
         self.scroll_start = 0
         self.scroll_velocity = 0  # Pixels per second
-        self.scroll_velocity_decay = 0.8  # Percentage of velocity to keep each frame
+        self.scroll_velocity_decay = 0.9  # Percentage of velocity to keep each frame
         self.scroll_max_velocity = 100  # Pixels per second
         self.scroll_total_offset = 0
         self.last_scroll = time.time()
@@ -183,8 +183,8 @@ class RoomControlHost(QLabel):
     def move_widgets(self, y):
         y = round(y)
         # Determine if this movement would cause the ungrouped device host to go off the top of the screen
-        if self.ungrouped_device_host.y() + y < 0:
-            y = -self.ungrouped_device_host.y()
+        if self.ungrouped_device_host.y() + y < -80:
+            y = -self.ungrouped_device_host.y() - 80
             self.scroll_velocity = 0
             self.scroll_offset = y
         # Determine if this movement would cause the starred device host to go below its original position
