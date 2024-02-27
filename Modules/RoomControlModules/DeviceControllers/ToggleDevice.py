@@ -71,5 +71,5 @@ class ToggleDevice(RoomDevice):
     def handle_failure(self, response):
         self.device_text.setText(f"<pre>Server Error</pre>")
         self.toggle_button.setText("Turn ???")
+        self.device_text.setText(f"<pre>Network Error</pre>")
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
-        self.update_status()

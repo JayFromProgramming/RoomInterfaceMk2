@@ -76,9 +76,14 @@ class EnvivControlDevice(RoomDevice):
         button_color = "#4080FF" if self.state["on"] else "grey"
 
         self.toggle_button.setStyleSheet(f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
-        self.info_text.setText(f"<pre>Target:  {round(self.state['target_value'], 2)}{self.unit}\n"
-                               f"Current: {round(self.state['current_value'], 2)}{self.unit}\n"
-                               f"State: {self.update_state()}</pre>")
+        if self.state['current_value'] is None:
+            self.info_text.setText(f"<pre>Target:  {round(self.state['target_value'], 2)}{self.unit}\n"
+                                   f"Current: N/A\n"
+                                   f"State: {self.update_state()}</pre>")
+        else:
+            self.info_text.setText(f"<pre>Target:  {round(self.state['target_value'], 2)}{self.unit}\n"
+                                   f"Current: {round(self.state['current_value'], 2)}{self.unit}\n"
+                                   f"State: {self.update_state()}</pre>")
         self.toggle_button.setText(f"{['Enable', 'Disable'][self.state['on']]}")
 
     def toggle_device(self):
@@ -114,4 +119,12 @@ class EnvivControlDevice(RoomDevice):
         self.send_command(command)
 
     def handle_failure(self, response):
-        pass
+        self.info_text.setText(f"<pre>Server Error</pre>")
+        self.toggle_button.setText("?????")
+        self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red")
+        self.update_state()
+        self.spin_box.hide()
+        self.toggle_button.show()
+        self.target_selector_button.setText("Set Target")
+        self.target_selector_button.move(self.width() - self.target_selector_button.width() - 10, 40)
+        self.info_text.show()

@@ -78,6 +78,7 @@ class ForecastHost(QLabel):
         try:
             if str(reply.error()) != "NetworkError.NoError":
                 logging.error(f"Error: {reply.error()}")
+                self.refresh_timer.start(5000)
                 return
             data = reply.readAll()
             data = data.data().decode("utf-8")
@@ -92,6 +93,9 @@ class ForecastHost(QLabel):
         except Exception as e:
             logging.error(f"Error handling icon response: {e}")
             logging.exception(e)
+            self.refresh_timer.start(5000)  # Retry in 5 seconds
+        else:
+            self.refresh_timer.start(300000)
 
     def layout_widgets(self):
         """

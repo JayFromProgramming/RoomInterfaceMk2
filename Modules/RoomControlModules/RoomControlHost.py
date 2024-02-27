@@ -2,7 +2,7 @@ import json
 import os
 import time
 
-from PyQt6.QtCore import QUrl, QTimer
+from PyQt6.QtCore import QUrl, QTimer, Qt
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel
 
@@ -28,6 +28,14 @@ class RoomControlHost(QLabel):
         self.scroll_max_velocity = 100  # Pixels per second
         self.scroll_total_offset = 0
         self.last_scroll = time.time()
+
+        self.loading_label = QLabel(self)
+        self.loading_label.setFont(self.font)
+        self.loading_label.setFixedSize(600, 60)
+        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+        self.loading_label.setStyleSheet("color: white; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
+        self.loading_label.setText("Loading Room Control Schema, Please Wait...")
+        self.loading_label.move(round((self.width() - self.loading_label.width()) / 2), 20)
 
         self.scroll_motion_timer = QTimer(self)
         self.scroll_motion_timer.timeout.connect(self.scroll_motion)
@@ -75,6 +83,7 @@ class RoomControlHost(QLabel):
             except Exception as e:
                 logging.error(f"Error parsing network response: {e}")
                 logging.error(f"Data: {data}")
+                self.loading_label.setText(f"Error Loading Room Control Schema, Retrying...\n{e}")
                 return
             for device_name, values in data.items():
                 # Check if the device is in a group
@@ -93,9 +102,11 @@ class RoomControlHost(QLabel):
                 else:
                     self.ungrouped_device_host.add_device(device_name)
             self.layout_widgets()
-            self.retry_timer.stop() # Stop retrying if we got a response
+            self.loading_label.hide()
+            self.retry_timer.stop()  # Stop retrying if we got a response
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
+            self.loading_label.setText(f"Error Loading Room Control Schema, Retrying...\n{e}")
             logging.exception(e)
 
     def set_focus(self, focus):
