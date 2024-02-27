@@ -186,10 +186,13 @@ class RoomControlHost(QLabel):
         if self.ungrouped_device_host.y() + y < 0:
             y = -self.ungrouped_device_host.y()
             self.scroll_velocity = 0
+            self.scroll_offset = y
         # Determine if this movement would cause the starred device host to go below its original position
         if self.starred_device_host.y() + y > 0:
             y = -self.starred_device_host.y()
             self.scroll_velocity = 0
+            self.scroll_offset = y
+
         self.scroll_total_offset += y
         self.starred_device_host.move(20, y)
         y += self.starred_device_host.height() + 10
