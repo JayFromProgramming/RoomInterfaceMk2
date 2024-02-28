@@ -40,7 +40,7 @@ class SystemControlHost(ScrollableMenu):
 
         self.retry_timer = QTimer(self)
         self.retry_timer.timeout.connect(self.make_request)
-        self.retry_timer.start(5000)
+        # self.retry_timer.start(5000)
         self.make_request()
 
     def make_request(self):
@@ -52,7 +52,7 @@ class SystemControlHost(ScrollableMenu):
         try:
             if str(reply.error()) != "NetworkError.NoError":
                 logging.error(f"Error: {reply.error()}")
-                self.retry_timer.start(5000)
+                # self.retry_timer.start(5000)
                 return
             data = reply.readAll()
             data = data.data().decode("utf-8")
@@ -68,7 +68,17 @@ class SystemControlHost(ScrollableMenu):
         pass
 
     def layout_widgets(self):
-        pass
+        # Lay the widgets out row by row with a 10 pixel margin
+        y_offset = 20
+        x_offset = 10
+        # Start a new row when the widgets won't fit on the current row
+        for widget in self.system_widgets:
+            widget.move(x_offset, y_offset)
+            x_offset += widget.width() + 10
+            # Wrap around to the next row if the widget won't fit on the current row
+            if x_offset + widget.width() > self.width():
+                x_offset = 10
+                y_offset += widget.height() + 10
 
     def move_widgets(self, y):
         pass

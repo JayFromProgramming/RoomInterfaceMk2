@@ -80,6 +80,7 @@ class MainWindow(QMainWindow):
                 self.system_control.set_focus(True)
                 self.system_control.show()
                 self.menu_bar.system_control_expand.setText("↓System Control↓")
+                self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
                 self.forecast.hide()
         except Exception as e:
             logging.exception(e)
