@@ -77,6 +77,10 @@ class RoomSceneHost(ScrollableMenu):
         self.scroll_offset = 0
 
     def layout_widgets(self):
+
+        # Sort the scenes by immediate requests first
+        self.scene_widgets.sort(key=lambda x: x.is_immediate, reverse=True)
+
         # Lay the widgets out row by row with a 10 pixel margin
         y_offset = 20
         x_offset = 10
