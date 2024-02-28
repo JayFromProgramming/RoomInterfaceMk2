@@ -23,6 +23,8 @@ class MenuBar(QLabel):
         self.room_control_expand.clicked.connect(parent.focus_room_control)
         self.room_control_expand.setFont(self.font)
 
+        self.font.setStrikeOut(True)
+
         self.system_control_expand = QPushButton(self)
         self.system_control_expand.setFixedSize(140, 30)
         self.system_control_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"

@@ -1,4 +1,5 @@
 import json
+import random
 
 from PyQt6.QtCore import QUrl, QTimer
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
@@ -37,14 +38,15 @@ class RoomDevice(QLabel):
         self.get_data()
         self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self.get_data)
-        self.refresh_timer.start(5000)
+        self.refresh_timer.start(5000 + random.randint(0, 1000))
 
     def hideEvent(self, a0):
         self.refresh_timer.stop()
         super().hideEvent(a0)
 
     def showEvent(self, a0):
-        self.refresh_timer.start(5000)
+        # Randomize the refresh time to prevent all the devices from refreshing at the same time
+        self.refresh_timer.start(5000 + random.randint(0, 1000))
         self.get_data()
         super().showEvent(a0)
 
