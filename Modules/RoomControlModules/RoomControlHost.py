@@ -95,12 +95,6 @@ class RoomControlHost(ScrollableMenu):
             self.loading_label.setText(f"Error Loading Room Control Schema, Retrying...\n{e}")
             logging.exception(e)
 
-    def set_focus(self, focus):
-        print("Toggling focus")
-        self.focused = focus
-        self.resizeEvent(None)
-        self.layout_widgets()
-
     def resizeEvent(self, event):
         # Our height is the height from our x position to the bottom of the window
         self.setFixedSize(self.parent.width(), self.parent.height() - self.y() - 30)

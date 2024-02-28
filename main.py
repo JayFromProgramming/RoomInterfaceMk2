@@ -16,6 +16,7 @@ from Modules.RoomControlModules.RoomControlHost import RoomControlHost
 from loguru import logger as logging
 
 from Modules.RoomSceneModules.RoomSceneHost import RoomSceneHost
+from Modules.SystemControlModules.SystemControlHost import SystemControlHost
 
 
 class MainWindow(QMainWindow):
@@ -44,10 +45,8 @@ class MainWindow(QMainWindow):
         self.scene_control = RoomSceneHost(self)
         self.scene_control.move(0, 90)
 
-        # self.system_status = SystemStatus(self)
-        # # Put the system status dead center (it gets to choose if it's shown or not)
-        # self.system_status.move(round((self.width() - self.system_status.width()) / 2),
-        #                         round((self.height() - self.system_status.height()) / 2))
+        self.system_control = SystemControlHost(self)
+        self.system_control.move(0, 90)
 
         self.menu_bar = MenuBar(self)
         # Move the menu bar to the very bottom of the window
@@ -58,42 +57,46 @@ class MainWindow(QMainWindow):
         if os.name == "posix":
             self.showFullScreen()
 
-    def focus_room_control(self):
-        if self.scene_control.focused:
-            self.focus_scene_control()
-        # if not self.system_control.focused:
-        #     self.focus_system_control()
-        if not self.room_control.focused:
-            self.room_control.move(0, 90)
-            self.room_control.set_focus(True)
-            self.menu_bar.room_control_expand.setText("↓Room Control↓")
-            self.forecast.hide()
-        else:
+    def focus_room_control(self, force_close=False):
+        if self.room_control.focused or force_close:
             self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
             self.room_control.set_focus(False)
             self.menu_bar.room_control_expand.setText("↑Room Control↑")
             self.forecast.show()
+        else:
+            self.room_control.move(0, 90)
+            self.room_control.set_focus(True)
+            self.menu_bar.room_control_expand.setText("↓Room Control↓")
+            self.forecast.hide()
 
-    def focus_system_control(self):
-        pass
+    def focus_system_control(self, force_close=False):
+        try:
+            if self.system_control.focused or force_close:
+                self.system_control.set_focus(False)
+                self.system_control.hide()
+                self.menu_bar.system_control_expand.setText("↑System Control↑")
+                self.forecast.show()
+            else:
+                self.system_control.set_focus(True)
+                self.system_control.show()
+                self.menu_bar.system_control_expand.setText("↓System Control↓")
+                self.forecast.hide()
+        except Exception as e:
+            logging.exception(e)
 
-    def focus_scene_control(self):
-        if self.room_control.focused:
-            self.focus_room_control()  # Close the room control if it's open
-        # if not self.system_control.focused:
-        #     self.focus_system_control()
-        if not self.scene_control.focused:
+    def focus_scene_control(self, force_close=False):
+        if self.scene_control.focused or force_close:
+            self.scene_control.set_focus(False)
+            self.scene_control.hide()
+            self.menu_bar.scenes_expand.setText("↑Scene Control↑")
+            self.forecast.show()
+        else:
             self.scene_control.set_focus(True)
             self.scene_control.show()
             # The scene controls max height is the distance from 90 pixels to the top of room control
             self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
             self.menu_bar.scenes_expand.setText("↓Scene Control↓")
             self.forecast.hide()
-        else:
-            self.scene_control.set_focus(False)
-            self.scene_control.hide()
-            self.menu_bar.scenes_expand.setText("↑Scene Control↑")
-            self.forecast.show()
 
     def get_font(self, name: str):
         # Load the custom font from a file

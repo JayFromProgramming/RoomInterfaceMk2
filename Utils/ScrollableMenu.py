@@ -27,7 +27,7 @@ class ScrollableMenu(QLabel):
         self.scroll_motion_timer.timeout.connect(self.scroll_motion)
 
     def set_focus(self, focus):
-        print("Toggling focus")
+        logging.debug(f"Setting focus to {focus}")
         self.focused = focus
         self.resizeEvent(None)
         self.layout_widgets()
