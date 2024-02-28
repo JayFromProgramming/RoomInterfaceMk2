@@ -83,25 +83,28 @@ class InterfaceControl(QLabel):
         # self.move(0, parent.height() - self.height())
 
     def update_interface_stats(self):
-        cpu_percent = round(psutil.cpu_percent(), 2)
-        if hasattr(psutil, "sensors_temperatures"):
-            cpu_temp = round(psutil.sensors_temperatures()["coretemp"][0].current, 2)
-        else:
-            cpu_temp = "N/A"
+        try:
+            cpu_percent = round(psutil.cpu_percent(), 2)
+            if hasattr(psutil, "sensors_temperatures"):
+                cpu_temp = round(psutil.sensors_temperatures()["coretemp"][0].current, 2)
+            else:
+                cpu_temp = "N/A"
 
-        ram_percent = round(psutil.virtual_memory().percent, 2)
-        disk_percent = round(psutil.disk_usage("/").percent, 2)
-        network_usage = psutil.net_io_counters().bytes_sent - self.last_network_bytes
-        self.last_network_bytes = psutil.net_io_counters().bytes_sent
-        network_usage = humanize.naturalsize(network_usage, binary=True)
-        uptime = time.time() - psutil.boot_time()
-        uptime = time.strftime("%H:%M:%S", time.gmtime(uptime))
+            ram_percent = round(psutil.virtual_memory().percent, 2)
+            disk_percent = round(psutil.disk_usage("/").percent, 2)
+            network_usage = psutil.net_io_counters().bytes_sent - self.last_network_bytes
+            self.last_network_bytes = psutil.net_io_counters().bytes_sent
+            network_usage = humanize.naturalsize(network_usage, binary=True)
+            uptime = time.time() - psutil.boot_time()
+            uptime = time.strftime("%H:%M:%S", time.gmtime(uptime))
 
-        text = f"CPU: {cpu_percent}% | Temp: {cpu_temp}°C | RAM: {ram_percent}%\n"
-        text += f"Disk: {disk_percent}% | Network: {network_usage}\n"
-        text += f"Uptime: {uptime} | Version: Latest\n"
+            text = f"CPU: {cpu_percent}% | Temp: {cpu_temp}°C | RAM: {ram_percent}%\n"
+            text += f"Disk: {disk_percent}% | Network: {network_usage}\n"
+            text += f"Uptime: {uptime} | Version: Latest\n"
 
-        self.interface_stats.setText(f"<pre>{text}</pre>")
+            self.interface_stats.setText(f"<pre>{text}</pre>")
+        except Exception as e:
+            self.interface_stats.setText(f"<pre>Error: {e}</pre>")
 
     def get_confirmation(self, message, sub_message=None):
         # Open a dialog box to confirm the action
