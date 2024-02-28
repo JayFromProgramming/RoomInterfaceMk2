@@ -57,7 +57,7 @@ class RoomControlHost(ScrollableMenu):
         self.make_request()
 
     def make_request(self):
-        request = QNetworkRequest(QUrl("http://moldy.mug.loafclan.org/get_schema"))
+        request = QNetworkRequest(QUrl(f"http://{self.host}/get_schema"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.network_manager.get(request)
 

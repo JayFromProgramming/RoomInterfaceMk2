@@ -23,8 +23,17 @@ class MenuBar(QLabel):
         self.room_control_expand.clicked.connect(parent.focus_room_control)
         self.room_control_expand.setFont(self.font)
 
-        self.font.setStrikeOut(True)
+        self.scenes_expand = QPushButton(self)
+        self.scenes_expand.setFixedSize(140, 30)
+        self.scenes_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
+                                           "border: none; border-radius: 10px")
+        self.scenes_expand.setText("↑Scene Control↑")
+        # Have this buttons position mirror the system control button
+        self.scenes_expand.move(round(self.width() / 5 * 4 - self.scenes_expand.width() / 2), 5)
+        self.scenes_expand.setFont(self.font)
+        self.scenes_expand.clicked.connect(parent.focus_scene_control)
 
+        self.font.setStrikeOut(True)
         self.system_control_expand = QPushButton(self)
         self.system_control_expand.setFixedSize(140, 30)
         self.system_control_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
@@ -32,18 +41,10 @@ class MenuBar(QLabel):
         self.system_control_expand.setText("↑System Control↑")
         self.system_control_expand.move(round(self.width() / 5 - self.system_control_expand.width() / 2), 5)
         self.system_control_expand.setFont(self.font)
-
-        self.settings_expand = QPushButton(self)
-        self.settings_expand.setFixedSize(140, 30)
-        self.settings_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
-                                           "border: none; border-radius: 10px")
-        self.settings_expand.setText("↑Scene Control↑")
-        # Have this buttons position mirror the system control button
-        self.settings_expand.move(round(self.width() / 5 * 4 - self.settings_expand.width() / 2), 5)
-        self.settings_expand.setFont(self.font)
+        self.system_control_expand.clicked.connect(parent.focus_system_control)
 
     def resizeEvent(self, a0):
         self.room_control_expand.move(round((self.width() - self.room_control_expand.width()) / 2), 5)
         self.system_control_expand.move(round(self.width() / 5 - self.system_control_expand.width() / 2), 5)
-        self.settings_expand.move(round(self.width() / 5 * 4 - self.settings_expand.width() / 2), 5)
+        self.scenes_expand.move(round(self.width() / 5 * 4 - self.scenes_expand.width() / 2), 5)
         super().resizeEvent(a0)

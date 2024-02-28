@@ -16,20 +16,20 @@ class DisplayClock(QLabel):
 
         # Create the text for the label
         self.text_label = QLabel(self)
-        self.text_label.setStyleSheet("color: #ffcd00; font-size: 55px; font-weight: bold")
+        self.text_label.setStyleSheet("color: #ffcd00; font-size: 55px; font-weight: bold; background-color: transparent")
         self.text_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.text_label.setFont(parent.get_font("JetBrainsMono-Bold"))
-        self.text_label.setFixedSize(385, 60)
+        self.text_label.setFixedSize(400, 60)
         self.text_label.move(0, 0)
 
         self.date_label = QLabel(self)
-        self.date_label.setStyleSheet("color: #ffcd00; font-size: 21px")
+        self.date_label.setStyleSheet("color: #ffcd00; font-size: 21px; background-color: transparent")
         self.date_label.setFont(parent.get_font("JetBrainsMono-Regular"))
         self.date_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.date_label.setFixedSize(385, 27)
+        self.date_label.setFixedSize(400, 27)
         self.date_label.move(0, self.text_label.height())
 
-        self.setFixedSize(385, self.text_label.height() + self.date_label.height())
+        self.setFixedSize(400, self.text_label.height() + self.date_label.height())
 
         self.updateTime()
         self.timer = QTimer(self)

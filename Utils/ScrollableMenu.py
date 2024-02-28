@@ -85,3 +85,6 @@ class ScrollableMenu(QLabel):
 
     def move_widgets(self, y):
         raise NotImplementedError("This method must be implemented by the child class")
+
+    def layout_widgets(self):
+        raise NotImplementedError("This method must be implemented by the child class")

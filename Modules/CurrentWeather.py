@@ -22,6 +22,7 @@ class CurrentWeather(QLabel):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setStyleSheet("background-color: transparent")
 
         # Setup the 3 labels for the rows
         self.weather_label_icon = QLabel(self)
