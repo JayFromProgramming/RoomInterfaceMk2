@@ -34,11 +34,14 @@ class RoomDevice(QLabel):
         self.command_manager.finished.connect(self.handle_command)
         self.state = None
         self.data = None
-        self.parent.make_name_request(self.device)
-        self.get_data()
+        self.has_names = False
+        # self.get_data()
         self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self.get_data)
         self.refresh_timer.start(5000 + random.randint(0, 1000))
+
+    def update_human_name(self, name):
+        self.has_names = True
 
     def hideEvent(self, a0):
         self.refresh_timer.stop()
@@ -48,6 +51,8 @@ class RoomDevice(QLabel):
         # Randomize the refresh time to prevent all the devices from refreshing at the same time
         self.refresh_timer.start(5000 + random.randint(0, 1000))
         self.get_data()
+        if not self.has_names:
+            self.parent.make_name_request(self.device)
         super().showEvent(a0)
 
     def get_data(self):

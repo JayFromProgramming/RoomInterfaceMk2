@@ -46,7 +46,9 @@ class EnvivControlDevice(RoomDevice):
         self.spin_box = QDoubleSpinBox(self)
         self.spin_box.setFixedSize(90, 40)
         self.spin_box.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey;"
-                                    "border: none; border-radius: none")
+                                    "border: none; border-radius: none;"
+                                    "QDoubleSpinBox::up-button { width: 40px; height: 20px; };"
+                                    "QDoubleSpinBox::down-button { width: 40px; height: 20px; };")
         self.spin_box.setRange(0, 100)
         self.spin_box.setSingleStep(0.5)
         self.spin_box.setValue(0)

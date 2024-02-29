@@ -54,6 +54,7 @@ class LightController(RoomDevice):
         self.color_picker_button.setFont(parent.font)
 
     def update_human_name(self, name):
+        super().update_human_name(name)
         self.name_label.setText(f"Light: {name}")
 
     def parse_data(self, data):
