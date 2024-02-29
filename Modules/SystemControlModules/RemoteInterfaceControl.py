@@ -57,21 +57,22 @@ class RemoteInterfaceControl(InterfaceControl):
     def parse_interface_stats(self, data):
         try:
             self.title_label.setText(f"{data['name']} Info")
-            self.action_title_label.setText(f"{data['name']} Actions")
-            cpu_temp = str(data["temperature"]).rjust(5, " ")
+            # self.action_title_label.setText(f"{data['name']} Actions")
+            cpu_temp = str(data["temperature"]).rjust(3, " ")
             cpu_percent = str(round(data["cpu_usage"], 2)).rjust(5, " ")
             ram_percent = str(round(data["memory_usage"], 2)).rjust(5, " ")
             disk_percent = str(round(data["disk_usage"], 2)).rjust(5, " ")
             network_usage = data["network_usage"]
             network_usage = humanize.naturalsize(network_usage, binary=True)
-            uptime = data["uptime_system"]
-            uptime = time.strftime("%H:%M:%S", time.gmtime(uptime))
+            sys_uptime = self.format_uptime(data["uptime_system"])
+            prog_uptime = self.format_uptime(data["uptime_controller"])
             version = "Latest Commit" if data["update_available"] else "Behind" \
                 if data["update_available"] is not None else "Git Error"
-
+            network_address = str(data["address"]).rjust(15, " ")
             text = f"CPU:  {cpu_percent}% | Temp: {cpu_temp}°C | RAM: {ram_percent}%\n"
-            text += f"Disk: {disk_percent}% | Network: {network_usage}\n"
-            text += f"Uptime: {uptime} | Version: {version}\n"
+            text += f"Disk: {disk_percent}% | Net: {network_usage}\n"
+            text += f"S.Uptime: {sys_uptime} | Version: {version}\n"
+            text += f"P.Uptime: {prog_uptime} | Addr: {network_address}\n"
 
             self.interface_stats.setText(f"<pre>{text}</pre>")
         except Exception as e:
