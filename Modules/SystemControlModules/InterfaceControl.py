@@ -84,21 +84,25 @@ class InterfaceControl(QLabel):
 
     def update_interface_stats(self):
         try:
-            cpu_percent = round(psutil.cpu_percent(), 2)
+            cpu_percent = str(round(psutil.cpu_percent(), 2)).rjust(5, " ")
             if hasattr(psutil, "sensors_temperatures"):
-                cpu_temp = round(psutil.sensors_temperatures()["coretemp"][0].current, 2)
+                sys_temp = psutil.sensors_temperatures()
+                if "cpu_thermal" in sys_temp:
+                    cpu_temp = round(sys_temp["cpu_thermal"][0].current)
+                else:
+                    cpu_temp = None
             else:
-                cpu_temp = "N/A"
+                cpu_temp = None
 
-            ram_percent = round(psutil.virtual_memory().percent, 2)
-            disk_percent = round(psutil.disk_usage("/").percent, 2)
+            ram_percent = str(round(psutil.virtual_memory().percent, 2)).rjust(5, " ")
+            disk_percent = str(round(psutil.disk_usage("/").percent, 2)).rjust(5, " ")
             network_usage = psutil.net_io_counters().bytes_sent - self.last_network_bytes
             self.last_network_bytes = psutil.net_io_counters().bytes_sent
             network_usage = humanize.naturalsize(network_usage, binary=True)
             uptime = time.time() - psutil.boot_time()
             uptime = time.strftime("%H:%M:%S", time.gmtime(uptime))
 
-            text = f"CPU: {cpu_percent}% | Temp: {cpu_temp}°C | RAM: {ram_percent}%\n"
+            text = f"CPU:  {cpu_percent}% | Temp: {cpu_temp}°C | RAM: {ram_percent}%\n"
             text += f"Disk: {disk_percent}% | Network: {network_usage}\n"
             text += f"Uptime: {uptime} | Version: Latest\n"
 

@@ -14,7 +14,7 @@ class SceneWidget(QLabel):
         self.data = data
         self.font = self.parent.font
         self.setStyleSheet("background-color: #ffcd00; border: 2px solid #ffcd00; border-radius: 10px")
-        self.setFixedSize(500, 120)
+        self.setFixedSize(500, 90)
 
         self.device_names = {}
         self.description = data["action"]
@@ -30,19 +30,19 @@ class SceneWidget(QLabel):
         # Labels
         self.scene_name_label = QLabel(self)
         self.scene_name_label.setFont(self.font)
-        self.scene_name_label.setFixedSize(135, 20)
+        self.scene_name_label.setFixedSize(105, 20)
         self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.scene_name_label.setStyleSheet("color: black; font-size: 16px; font-weight: bold; border: none;")
         self.scene_name_label.setText(f"{data['name']}")
-        self.scene_name_label.move(5, 0)
+        self.scene_name_label.move(7, 5)
 
         self.scene_description_label = QLabel(self)
         self.scene_description_label.setFont(self.font)
-        self.scene_description_label.setFixedSize(380, 70)
+        self.scene_description_label.setFixedSize(380, 60)
         self.scene_description_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         self.scene_description_label.setStyleSheet("color: black; font-size: 13px; font-weight: bold; "
                                                    "border: 2px solid black; border-radius: 10px; background-color: transparent;")
-        self.scene_description_label.move(5, 25)
+        self.scene_description_label.move(115, 10)
         self.scene_description_label.setWordWrap(True)
         self.scene_description_label.setText(f"<pre>{self.description}</pre>")
 
@@ -56,7 +56,7 @@ class SceneWidget(QLabel):
             self.scene_trigger.setText("Disable" if data["active"] else "Enable")
         self.scene_trigger.setFont(self.font)
         self.scene_trigger.clicked.connect(self.trigger_scene)
-        self.scene_trigger.move(390, 30)
+        self.scene_trigger.move(7, 30)
 
         self.request_names()
 
