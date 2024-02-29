@@ -5,7 +5,7 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QLabel, QPushButton, QDialog, QMessageBox, QStyleFactory
 import psutil
 import humanize
-
+from loguru import logger as logging
 
 class InterfaceControl(QLabel):
 
@@ -121,26 +121,30 @@ class InterfaceControl(QLabel):
         diag.setDefaultButton(QMessageBox.StandardButton.No)
         diag.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         diag.exec()
-        if diag.result() == QDialog.DialogCode.Accepted:
+        if diag.result() == 16384:
             return True
         return False
 
     def reboot(self):
         if self.get_confirmation("Are you sure you want to reboot this device?"):
+            logging.info("Rebooting the interface on user request")
             os.system("sudo reboot")
 
     def restart(self):
         if self.get_confirmation("Are you sure you want to restart the interface?"):
-            # Crash the program
-            os._exit(1)
+            # Exit the application and let the service manager restart it
+            logging.info("Restarting the interface on user request")
+            exit(0)
 
     def update_code(self):
         if self.get_confirmation("Are you sure you want to update the interface?"):
+            logging.info("Updating the interface on user request")
             os.system("git pull")
-            os._exit(1)
+            exit(0)
 
     def shutdown(self):
         if self.get_confirmation("Are you sure you want to shutdown this device?",
                                  "This action is irreversible and will require"
                                  " manual intervention to power this device back on."):
+            logging.info("Shutting down the interface on user request")
             os.system("sudo shutdown now")
