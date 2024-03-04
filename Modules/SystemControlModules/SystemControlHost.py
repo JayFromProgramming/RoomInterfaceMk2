@@ -71,7 +71,7 @@ class SystemControlHost(ScrollableMenu):
 
     def layout_widgets(self):
         # Lay the widgets out row by row with a 10 pixel margin
-        y_offset = 20
+        y_offset = 10
         x_offset = 10
         first_row_x_offset = 0
         # Start a new row when the widgets won't fit on the current row

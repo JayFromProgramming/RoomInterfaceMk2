@@ -17,6 +17,7 @@ class RemoteInterfaceControl(InterfaceControl):
     def __init__(self, parent=None, name=None):
         super().__init__(parent)
         self.parent = parent
+        self.auth = self.parent.auth
         self.name = name
         self.font = self.parent.font
         self.setStyleSheet("background-color: #ffcd00; border: 2px solid #ffcd00; border-radius: 10px")
@@ -26,6 +27,14 @@ class RemoteInterfaceControl(InterfaceControl):
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_network_response)
+
+    def send_command(self, command):
+        request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/set/{self.name}"))
+        # Add a json payload to the post request
+        request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
+        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        payload = json.dumps(command)
+        self.network_manager.post(request, payload.encode("utf-8"))
 
     def update_interface_stats(self):
         self.make_request()
@@ -97,23 +106,21 @@ class RemoteInterfaceControl(InterfaceControl):
     def reboot(self):
         if self.get_confirmation("Are you sure you want to reboot this device?"):
             logging.info("Rebooting the interface on user request")
-            os.system("sudo reboot")
+            self.send_command({"action": "reboot"})
 
     def restart(self):
         if self.get_confirmation("Are you sure you want to restart the interface?"):
             # Exit the application and let the service manager restart it
-            logging.info("Restarting the interface on user request")
-            exit(0)
+            self.send_command({"action": "restart"})
 
     def update_code(self):
         if self.get_confirmation("Are you sure you want to update the interface?"):
             logging.info("Updating the interface on user request")
-            os.system("git pull")
-            exit(0)
+            self.send_command({"action": "update"})
 
     def shutdown(self):
         if self.get_confirmation("Are you sure you want to shutdown this device?",
                                  "This action is irreversible and will require"
                                  " manual intervention to power this device back on."):
             logging.info("Shutting down the interface on user request")
-            os.system("sudo shutdown now")
+            self.send_command({"action": "shutdown"})
