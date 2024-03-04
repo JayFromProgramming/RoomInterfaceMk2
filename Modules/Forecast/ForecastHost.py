@@ -159,7 +159,6 @@ class ForecastHost(QLabel):
     def mousePressEvent(self, ev):
         self.dragging = True
         self.scroll_start = ev.pos().x()
-        print("Scroll enter")
 
     def mouseMoveEvent(self, ev):
         """
@@ -184,4 +183,3 @@ class ForecastHost(QLabel):
         self.parent.resizeEvent(None)
         self.parent.update()
         self.last_scroll = time.time()
-        print("Scroll exit")
