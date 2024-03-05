@@ -97,6 +97,7 @@ class InterfaceControl(QLabel):
         diag.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         diag.setDefaultButton(QMessageBox.StandardButton.No)
         diag.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
+        diag.setWindowModality(Qt.WindowModality.WindowModal)
         diag.exec()
         if diag.result() == 16384:
             return True
