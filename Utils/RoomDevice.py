@@ -28,6 +28,8 @@ class RoomDevice(QLabel):
 
         self.toggle_button = None
 
+        self.device_label = QLabel(self)
+
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_response)
         self.command_manager = QNetworkAccessManager()
@@ -42,6 +44,7 @@ class RoomDevice(QLabel):
 
     def update_human_name(self, name):
         self.has_names = True
+        self.device_label.setText(name)
 
     def hideEvent(self, a0):
         self.refresh_timer.stop()

@@ -10,7 +10,6 @@ class EnvivControlDevice(RoomDevice):
     def __init__(self, parent=None, device=None):
         super().__init__(parent.auth, parent, device, True)
 
-        self.device_label = QLabel(self)
         self.device_label.setFont(parent.font)
         self.device_label.setFixedSize(200, 20)
         self.device_label.setAlignment(Qt.AlignmentFlag.AlignLeft)

@@ -18,13 +18,12 @@ class LightController(RoomDevice):
         super().__init__(parent.auth, parent, device, True)
 
         # This is one of many widgets that will be placed on the RoomControlHost so they shouldn't use too much space
-        self.name_label = QLabel(self)
-        self.name_label.setFont(parent.font)
-        self.name_label.setFixedSize(300, 20)
-        self.name_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        self.name_label.setStyleSheet("color: black; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
-        self.name_label.setText(f"Light: {device}")
-        self.name_label.move(10, 0)
+        self.device_label.setFont(parent.font)
+        self.device_label.setFixedSize(300, 20)
+        self.device_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        self.device_label.setStyleSheet("color: black; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
+        self.device_label.setText(f"Light: {device}")
+        self.device_label.move(10, 0)
 
         self.info_text = QLabel(self)
         self.info_text.setFixedSize(200, 75)
@@ -52,10 +51,6 @@ class LightController(RoomDevice):
         self.color_picker_button.move(self.width() - self.color_picker_button.width() - 10, 40)
         self.color_picker_button.clicked.connect(self.open_color_picker)
         self.color_picker_button.setFont(parent.font)
-
-    def update_human_name(self, name):
-        super().update_human_name(name)
-        self.name_label.setText(f"Light: {name}")
 
     def parse_data(self, data):
         color = self.state["color"] if not self.state["white_enabled"] else "Warm White"

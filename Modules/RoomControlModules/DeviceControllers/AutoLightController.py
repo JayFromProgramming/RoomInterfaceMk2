@@ -15,7 +15,6 @@ class AutoLightController(RoomDevice):
     def __init__(self, parent=None, device=None):
         super().__init__(parent.auth, parent, device, False)
 
-        self.device_label = QLabel(self)
         self.device_label.setFont(parent.font)
         self.device_label.setFixedSize(135, 20)
         self.device_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
