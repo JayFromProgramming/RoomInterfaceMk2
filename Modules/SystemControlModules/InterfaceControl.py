@@ -86,8 +86,7 @@ class InterfaceControl(QLabel):
 
         # self.move(0, parent.height() - self.height())
 
-    @staticmethod
-    def get_confirmation(message, sub_message=None):
+    def get_confirmation(self, message, sub_message=None):
         # Open a dialog box to confirm the action
         diag = QMessageBox()
         diag.setWindowTitle("Confirmation")
@@ -98,6 +97,7 @@ class InterfaceControl(QLabel):
         diag.setDefaultButton(QMessageBox.StandardButton.No)
         diag.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         diag.setWindowModality(Qt.WindowModality.WindowModal)
+        diag.setParent(self)
         diag.exec()
         if diag.result() == 16384:
             return True
