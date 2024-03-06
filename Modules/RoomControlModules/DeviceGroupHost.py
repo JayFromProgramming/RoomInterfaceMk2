@@ -84,7 +84,7 @@ class DeviceGroupHost(QLabel):
                     found = True
                     break
             if not found:
-                logging.warning(f"Device type {device_type} not supported")
+                logging.warning(f"Device ({device}) of type [{device_type}] not supported")
             self.layout_widgets()
         except Exception as e:
             logging.error(f"Error handling network response: {e}")

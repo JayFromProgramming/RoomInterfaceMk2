@@ -6,9 +6,9 @@ from PyQt6.QtWidgets import QLabel, QPushButton
 from Utils.RoomDevice import RoomDevice
 from loguru import logger as logging
 
-class BlueStalkerControl(RoomDevice):
 
-    supported_types = ["blue_stalker"]
+class BlueStalkerControl(RoomDevice):
+    supported_types = ["BlueStalker", "satellite_BlueStalker"]
 
     def __init__(self, parent=None, device=None):
         super().__init__(parent.auth, parent, device, True)
@@ -16,14 +16,16 @@ class BlueStalkerControl(RoomDevice):
         self.device_label.setFont(parent.font)
         self.device_label.setFixedSize(300, 20)
         self.device_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.device_label.setStyleSheet("color: black; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
+        self.device_label.setStyleSheet(
+            "color: black; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
         self.device_label.setText(f"{device}")
         self.device_label.move(10, 0)
 
         self.info_text = QLabel(self)
         self.info_text.setFixedSize(200, 75)
         self.info_text.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.info_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none; background-color: transparent")
+        self.info_text.setStyleSheet(
+            "color: black; font-size: 14px; font-weight: bold; border: none; background-color: transparent")
         self.info_text.setText("<pre>Last Scan: UNKNOWN\nOccupants: N/A\nHealth: N/A</pre>")
         self.info_text.move(10, 20)
         self.info_text.setFont(parent.font)
@@ -57,7 +59,7 @@ class BlueStalkerControl(RoomDevice):
             health = self.parse_health(data['health'])
 
             self.info_text.setText(f"<pre>Last Scan: {last_scan}\nOccupants: {occupants}\nHealth: {health}</pre>")
-            self.toggle_button.setText("Disable" if self.state["on"] else "Enable")
+            # self.toggle_button.setText("Disable" if self.state["on"] else "Enable")
         except Exception as e:
             self.info_text.setText(f"<pre>Last Scan: UNKNOWN\nOccupants: N/A\nHealth: N/A</pre>")
             logging.error(f"Failed to parse BlueStalker data: {e}")
@@ -66,4 +68,3 @@ class BlueStalkerControl(RoomDevice):
         command = {"on": not self.state["on"]}
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: blue;")
         self.send_command(command)
-
