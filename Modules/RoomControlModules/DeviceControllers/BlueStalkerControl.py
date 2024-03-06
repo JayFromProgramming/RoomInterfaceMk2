@@ -61,7 +61,7 @@ class BlueStalkerControl(RoomDevice):
 
     def parse_data(self, data):
         try:
-            last_scan = data['info']["last_scan"]
+            last_scan = data['info']["last_scan"] if "last_scan" in data['info'] else 0
             last_scan = datetime.datetime.fromtimestamp(last_scan).strftime('%H:%M:%S')
             occupants = self.state["occupants"]
             health = self.parse_health(data['health'])
