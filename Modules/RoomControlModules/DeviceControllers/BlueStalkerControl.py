@@ -51,6 +51,14 @@ class BlueStalkerControl(RoomDevice):
         else:
             return "Watching"
 
+    def parse_occupants(self, occupants):
+        result = ""
+        for _, occupant in occupants.items():
+            result += f"{occupant['name']}, "
+        if result == "":
+            return "No Occupants"
+        return result[:-2]
+
     def parse_data(self, data):
         try:
             last_scan = data['info']["last_scan"]
