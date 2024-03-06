@@ -61,7 +61,7 @@ class BlueStalkerControl(RoomDevice):
 
     def parse_data(self, data):
         try:
-            if 'info' in data:
+            if 'info' in data and data['info'] is not None:
                 last_scan = data['info']["last_scan"] if "last_scan" in data['info'] else 0
                 last_scan = datetime.datetime.fromtimestamp(last_scan).strftime('%H:%M:%S')
             else:
@@ -75,6 +75,7 @@ class BlueStalkerControl(RoomDevice):
         except Exception as e:
             self.info_text.setText(f"<pre>Last Scan: UNKNOWN\nOccupants: N/A\nHealth: N/A</pre>")
             logging.error(f"Failed to parse BlueStalker data: {e}")
+            logging.exception(e)
 
     def toggle_device(self):
         command = {"on": not self.state["on"]}

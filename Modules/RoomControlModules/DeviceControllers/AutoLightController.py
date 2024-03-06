@@ -55,9 +55,9 @@ class AutoLightController(RoomDevice):
                 case 0:
                     self.device_text.setText(f"<pre>Online: IDLE</pre>")
                 case 1:
-                    self.device_text.setText(f"<pre>Online: MOTION</pre>")
-                case 2:
                     self.device_text.setText(f"<pre>Online: ACTIVE</pre>")
+                case 2:
+                    self.device_text.setText(f"<pre>Online: MOTION</pre>")
         else:
             self.device_text.setText(f"<pre>Online: STANDBY</pre>")
 
