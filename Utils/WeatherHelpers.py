@@ -38,3 +38,7 @@ def wind_direction_arrow(degree):
     elif 22.5 >= offset(315) >= -22.5:
         return "↖"
     return ""
+
+
+def mps_to_mph(mps):
+    return mps * 2.23694

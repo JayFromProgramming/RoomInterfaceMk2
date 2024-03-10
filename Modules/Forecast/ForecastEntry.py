@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QLabel
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from loguru import logger as logging
 
-from Utils.WeatherHelpers import kelvin_to_fahrenheit, wind_direction_arrow, visibility_to_text
+from Utils.WeatherHelpers import kelvin_to_fahrenheit, wind_direction_arrow, visibility_to_text, mps_to_mph
 
 
 class ForecastValue(QLabel):
@@ -166,7 +166,7 @@ class ForecastEntry(QLabel):
             feels_like = kelvin_to_fahrenheit(data["temperature"]["feels_like"])
             self.feels_like_label.lower_label.setText(f"{round(feels_like)}°F")
 
-            wind_speed = data["wind"]["speed"]
+            wind_speed = round(mps_to_mph(data["wind"]["speed"]), 2)
             wind_direction = wind_direction_arrow(data["wind"]["deg"])
             self.wind_speed_label.lower_label.setText(f"{wind_direction}{round(wind_speed)}mph")
 

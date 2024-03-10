@@ -7,6 +7,7 @@ from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from loguru import logger as logging
 
 from Modules.Forecast.ForecastEntry import ForecastEntry
+from Modules.Forecast.ForecastFocus import ForecastFocus
 
 
 class ForecastHost(QLabel):
@@ -24,28 +25,21 @@ class ForecastHost(QLabel):
         self.dragging = False
         self.scroll_offset = 0
         self.scroll_start = 0
+        self.scroll_begin = 0
         self.last_scroll = 0
         # self.setStyleSheet("background-color: white")
+        self.forecast_focus = ForecastFocus(self)
 
         self.forecast_widgets = [ForecastEntry(self, i, True) for i in range(48)]
         self.lines = []
         self.layout_widgets()
 
-        # self.upper_line = QLabel(self)
-        # self.upper_line.setFixedSize(self.width(), 1)
-        # self.upper_line.setStyleSheet("background-color: #ffcd00")
-        # self.upper_line.move(0, 0)
-        #
-        # self.title = QLabel(self)
-        # self.title.setFixedSize(100, 10)
-        # self.title.setStyleSheet("color: #ffcd00; font-size: 10px; font-weight: bold")
-        # self.title.setText("Forecast")
-        # self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        #
-        # # Put the title dead center
-        # self.title.move(round((self.width() - self.title.width()) / 2), 0)
-
         self.lines = []
+
+        # Put the forecast focus on top of the forecast widgets and hide it
+        self.forecast_focus.move(20, 20)
+        self.forecast_focus.hide()
+        self.forecast_focus.raise_()
 
         self.forecast_manager = QNetworkAccessManager()
         self.forecast_manager.finished.connect(self.handle_forecast_response)
@@ -62,7 +56,7 @@ class ForecastHost(QLabel):
         self.scroll_reset_timer.start(500)
 
     def reset_scroll(self):
-        if time.time() - self.last_scroll > 10:
+        if time.time() - self.last_scroll > 10 and self.forecast_focus.isHidden():
             self.scroll_offset -= 1
             self.layout_widgets()
 
@@ -155,10 +149,12 @@ class ForecastHost(QLabel):
             # line.deleteLater()
 
         # self.lines.clear()
+        self.forecast_focus.raise_()
 
     def mousePressEvent(self, ev):
         self.dragging = True
         self.scroll_start = ev.pos().x()
+        self.scroll_begin = ev.pos().x()
 
     def mouseMoveEvent(self, ev):
         """
@@ -178,8 +174,39 @@ class ForecastHost(QLabel):
                 self.layout_widgets()
                 self.scroll_start = ev.pos().x()
 
+    def get_clicked_forecast(self, x, y):
+        """
+        Returns the forecast widget that was clicked
+        :param x: The x position of the click
+        :param y: The y position of the click
+        :return: The forecast widget that was clicked
+        """
+        for widget in self.forecast_widgets:
+            if widget.x() < x < widget.x() + widget.width() and widget.y() < y < widget.y() + widget.height():
+                return widget
+        return None
+
     def mouseReleaseEvent(self, ev):
-        self.dragging = False
-        self.parent.resizeEvent(None)
-        self.parent.update()
-        self.last_scroll = time.time()
+        try:
+            self.dragging = False
+            self.parent.resizeEvent(None)
+            self.parent.update()
+            # If the mouse moved less than 20 pixels, then the user clicked
+            if abs(ev.pos().x() - self.scroll_begin) < 20:
+                if self.forecast_focus.isHidden():
+                    logging.info("Showing forecast focus")
+                    self.forecast_focus.show()
+                    self.forecast_focus.raise_()
+                    self.forecast_focus.load(self.get_clicked_forecast(ev.pos().x(), ev.pos().y()).reference_time)
+                else:
+                    logging.info("Hiding forecast focus")
+                    self.forecast_focus.hide()
+                    self.forecast_focus.clear()
+            self.last_scroll = time.time()
+        except Exception as e:
+            logging.error(f"Error handling mouse release event: {e}")
+            logging.exception(e)
+            self.dragging = False
+            self.parent.resizeEvent(None)
+            self.parent.update()
+            self.last_scroll = time.time()

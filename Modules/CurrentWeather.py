@@ -9,7 +9,7 @@ from loguru import logger as logging
 
 import json
 
-from Utils.WeatherHelpers import wind_direction_arrow, kelvin_to_fahrenheit, visibility_to_text
+from Utils.WeatherHelpers import wind_direction_arrow, kelvin_to_fahrenheit, visibility_to_text, mps_to_mph
 
 
 class CurrentWeather(QLabel):
@@ -119,7 +119,7 @@ class CurrentWeather(QLabel):
         try:
             temperature = kelvin_to_fahrenheit(data["temperature"]["temp"])
             feels_like = kelvin_to_fahrenheit(data["temperature"]["feels_like"])
-            wind_speed = data["wind"]["speed"]
+            wind_speed = round(mps_to_mph(data["wind"]["speed"]), 2)
             wind_direction = wind_direction_arrow(data["wind"]["deg"])
             visibility = visibility_to_text(data["visibility_distance"])
             status = str(data["detailed_status"]).capitalize()

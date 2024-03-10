@@ -39,8 +39,8 @@ class DisplayClock(QLabel):
     def updateTime(self):
         """Updates the label to the current time"""
         current_time = QDateTime.currentDateTime()
-        # date_suffix = ordinal(current_time.date().day())
+        date_suffix = ordinal(current_time.date().day())
         self.text_label.setText(current_time.toString("hh:mm:ssAP"))
-        self.date_label.setText(current_time.toString(f"dddd, MMMM d, yyyy"))
+        self.date_label.setText(current_time.toString(f"dddd, MMMM '{date_suffix}', yyyy"))
 
         self.repaint()
