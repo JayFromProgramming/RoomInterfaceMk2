@@ -197,7 +197,12 @@ class ForecastHost(QLabel):
                     logging.info("Showing forecast focus")
                     self.forecast_focus.show()
                     self.forecast_focus.raise_()
-                    self.forecast_focus.load(self.get_clicked_forecast(ev.pos().x(), ev.pos().y()).reference_time)
+                    clicked = self.get_clicked_forecast(ev.pos().x(), ev.pos().y())
+                    if clicked:
+                        self.forecast_focus.load(clicked.reference_time)
+                    else:
+                        self.forecast_focus.hide()
+                        self.forecast_focus.clear()
                 else:
                     logging.info("Hiding forecast focus")
                     self.forecast_focus.hide()

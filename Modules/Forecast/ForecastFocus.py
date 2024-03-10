@@ -8,7 +8,8 @@ from PyQt6.QtWidgets import QLabel
 
 from loguru import logger as logging
 
-from Utils.WeatherHelpers import kelvin_to_fahrenheit, mps_to_mph, wind_direction_arrow
+from Utils.WeatherHelpers import kelvin_to_fahrenheit, mps_to_mph, wind_direction_arrow, convert_relative_humidity, \
+    visibility_to_text
 
 
 def ordinal(n):
@@ -52,7 +53,7 @@ class ForecastFocus(QLabel):
 
         self.weather_info = QLabel(self)
         self.weather_info.setFont(self.font)
-        self.weather_info.setFixedSize(800, 100)
+        self.weather_info.setFixedSize(800, 225)
         self.weather_info.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         self.weather_info.setStyleSheet("color: white; font-size: 19px; font-weight: bold; border: none;"
                                         " background-color: transparent")
@@ -65,7 +66,18 @@ class ForecastFocus(QLabel):
         self.icon_manager = QNetworkAccessManager()
         self.icon_manager.finished.connect(self.handle_icon_response)
 
+    def hideEvent(self, a0) -> None:
+        self.focused = False
+        super().hideEvent(a0)
+        # Reset the text
+        self.header.setText("Forecast for Loading...")
+        self.detailed_status.setText("Loading...")
+        self.weather_info.setText("Loading...")
+        self.icon_label.clear()
+
     def load(self, reference_time):
+        if reference_time is None:
+            return
         try:
             self.current_reference_time = reference_time
             ref_time = datetime.datetime.fromtimestamp(reference_time)
@@ -90,6 +102,10 @@ class ForecastFocus(QLabel):
             output += f"The temperature will be {round(kelvin_to_fahrenheit(temp['temp']), 2)}°F "
             output += f"with a feels like of {round(kelvin_to_fahrenheit(temp['feels_like']), 2)}°F.\n"
 
+            humidity = data["humidity"]
+            indoor_humidity = convert_relative_humidity(humidity, temp["temp"] - 273.15, 17.2222)
+            output += f"The humidity will be {humidity}% (~{round(indoor_humidity, 2)}% indoors).\n"
+
             wind = data["wind"]
             wind_speed = round(mps_to_mph(wind["speed"]), 2)
             direction = wind_direction_arrow(wind["deg"])
@@ -99,6 +115,14 @@ class ForecastFocus(QLabel):
                 output += f" with gusts up to {gust_speed} mph.\n"
             else:
                 output += ".\n"
+
+            visibility = data["visibility_distance"]
+            output += f"The expected visibility will be {visibility_to_text(visibility)}.\n"
+
+            if data['precipitation_probability'] > 0:
+                output += f"There is a {data['precipitation_probability']}% chance of precipitation.\n"
+            else:
+                output += "There is no chance of precipitation.\n"
 
             self.icon_manager.get(
                 QNetworkRequest(QUrl(f"http://openweathermap.org/img/wn/{data['weather_icon_name']}@2x.png")))

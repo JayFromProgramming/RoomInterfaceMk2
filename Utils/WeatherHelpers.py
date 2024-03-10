@@ -1,3 +1,6 @@
+import math
+
+
 def kelvin_to_fahrenheit(kelvin):
     return (kelvin - 273.15) * 9 / 5 + 32
 
@@ -42,3 +45,25 @@ def wind_direction_arrow(degree):
 
 def mps_to_mph(mps):
     return mps * 2.23694
+
+
+def convert_relative_humidity(R1, T1, T2):
+    """
+    @param R1: Relative humidity in environment 1 (as a fraction)
+    @param T1: Temperature in environment 1  (in Celsius)
+    @param T2: Temperature in environment 2  (in Celsius)
+    @return: Relative humidity in environment 2 (as a fraction)
+    """
+    # Calculate saturation vapor pressure at temperature T1
+    Ps1 = 0.611 * math.exp(17.27 * T1 / (T1 + 237.3))
+
+    # Calculate saturation vapor pressure at temperature T2
+    Ps2 = 0.611 * math.exp(17.27 * T2 / (T2 + 237.3))
+
+    # Calculate vapor pressure in environment 1
+    Pv1 = R1 * Ps1 / 100
+
+    # Calculate relative humidity in environment 2
+    R2 = Pv1 / Ps2 * 100
+
+    return R2
