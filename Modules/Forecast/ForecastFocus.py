@@ -1,7 +1,7 @@
 import datetime
 import json
 
-from PyQt6.QtCore import QUrl, Qt
+from PyQt6.QtCore import QUrl, Qt, QTimer
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel
@@ -66,6 +66,10 @@ class ForecastFocus(QLabel):
         self.icon_manager = QNetworkAccessManager()
         self.icon_manager.finished.connect(self.handle_icon_response)
 
+        self.show_timer = QTimer(self)
+        self.show_timer.timeout.connect(self.hide_focus)
+        self.show_timer.setSingleShot(True)
+
     def hideEvent(self, a0) -> None:
         self.focused = False
         super().hideEvent(a0)
@@ -74,6 +78,15 @@ class ForecastFocus(QLabel):
         self.detailed_status.setText("Loading...")
         self.weather_info.setText("Loading...")
         self.icon_label.clear()
+        self.show_timer.stop()
+
+    def hide_focus(self):
+        self.hide()
+
+    def showEvent(self, a0) -> None:
+        self.focused = True
+        super().showEvent(a0)
+        self.show_timer.start(30000)
 
     def load(self, reference_time):
         if reference_time is None:

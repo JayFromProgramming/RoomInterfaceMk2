@@ -67,6 +67,16 @@ class ScrollableMenu(QLabel):
             logging.error(f"Error handling mouse release event: {e}")
             logging.exception(e)
 
+    def wheelEvent(self, a0) -> None:
+        try:
+            if not self.focused:
+                return
+            self.scroll_offset += a0.angleDelta().y() / 5
+            self.move_widgets(self.scroll_offset)
+        except Exception as e:
+            logging.error(f"Error handling wheel event: {e}")
+            logging.exception(e)
+
     def scroll_motion(self):
         try:
             # Decay the scroll velocity

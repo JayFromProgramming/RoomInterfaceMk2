@@ -81,7 +81,8 @@ class ForecastHost(QLabel):
             for widget in self.forecast_widgets:
                 widget.deleteLater()
             self.forecast_widgets.clear()
-            self.forecast_widgets = [ForecastEntry(self, forecast) for forecast in forecasts]
+            self.forecast_widgets = [ForecastEntry(self, forecast) for forecast in forecasts
+                                     if forecast > time.time()]
             reply.deleteLater()
             self.layout_widgets()
         except Exception as e:
@@ -150,6 +151,19 @@ class ForecastHost(QLabel):
 
         # self.lines.clear()
         self.forecast_focus.raise_()
+
+    def wheelEvent(self, a0) -> None:
+        """
+        Used to scroll the forecast widgets up and down
+        :param a0:
+        :return:
+        """
+        if a0.angleDelta().y() > 0:
+            self.scroll_offset -= 1
+        else:
+            self.scroll_offset += 1
+        self.layout_widgets()
+        self.last_scroll = time.time()
 
     def mousePressEvent(self, ev):
         self.dragging = True
