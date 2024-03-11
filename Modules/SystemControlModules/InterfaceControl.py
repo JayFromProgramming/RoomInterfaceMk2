@@ -98,6 +98,7 @@ class InterfaceControl(QLabel):
         diag.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         diag.setWindowModality(Qt.WindowModality.WindowModal)
         diag.setParent(self)
+        diag.setFocusPolicy(Qt.FocusPolicy.StrongFocus)                                                                                                                                 
         diag.exec()
         if diag.result() == 16384:
             return True
