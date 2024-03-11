@@ -25,6 +25,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.cached_fonts = {}
+
         self.setWindowTitle("RoomInterfaceMk2")
         self.setGeometry(100, 100, 1024, 600)
         # Set the background color to black
@@ -120,13 +122,15 @@ class MainWindow(QMainWindow):
             self.forecast.hide()
             self.refocus_timer.start(30000)  # 15 seconds
 
-    @staticmethod
-    def get_font(name: str):
+    def get_font(self, name: str):
         # Load the custom font from a file
+        if name in self.cached_fonts:
+            return self.cached_fonts[name]
         font_id = QFontDatabase.addApplicationFont(f"Assets/Fonts/Jetbrains/{name}.ttf")
         if font_id != -1:
             font_families = QFontDatabase.applicationFontFamilies(font_id)
             if font_families:
+                self.cached_fonts[name] = QFont(font_families[0])
                 return QFont(font_families[0])
             else:
                 print(f"Failed to load the font family: {name}.ttf")
