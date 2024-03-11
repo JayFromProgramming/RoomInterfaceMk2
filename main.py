@@ -1,4 +1,5 @@
 import os
+import time
 
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QMainWindow, QApplication, QPushButton
@@ -68,7 +69,7 @@ class MainWindow(QMainWindow):
         self.refocus_timer.stop()
 
     def mousePressEvent(self, a0) -> None:
-        self.refocus_timer.start(15000)  # Reset the refocus timer to 15 seconds
+        self.refocus_timer.start(15000)  # Reset refocus timer to 15 seconds
         super().mousePressEvent(a0)
 
     def focus_room_control(self, force_close=False):
@@ -119,7 +120,8 @@ class MainWindow(QMainWindow):
             self.forecast.hide()
             self.refocus_timer.start(30000)  # 15 seconds
 
-    def get_font(self, name: str):
+    @staticmethod
+    def get_font(name: str):
         # Load the custom font from a file
         font_id = QFontDatabase.addApplicationFont(f"Assets/Fonts/Jetbrains/{name}.ttf")
         if font_id != -1:

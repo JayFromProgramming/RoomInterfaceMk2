@@ -58,7 +58,7 @@ class ForecastFocus(QLabel):
         self.weather_info.setStyleSheet("color: white; font-size: 19px; font-weight: bold; border: none;"
                                         " background-color: transparent")
         self.weather_info.setText("Loading...")
-        self.weather_info.move(10, 75)
+        self.weather_info.move(10, 65)
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_forecast_response)
@@ -96,7 +96,7 @@ class ForecastFocus(QLabel):
             ref_time = datetime.datetime.fromtimestamp(reference_time)
             date_suffix = ordinal(ref_time.day)
             # Display the reference time as Day Month Day(suffix), Time AM/PM
-            reference_time_str = ref_time.strftime(f"%A %B {date_suffix}, %I:%M%p")
+            reference_time_str = ref_time.strftime(f"%A, %B {date_suffix}, %I:%M%p")
             self.header.setText(f"Forecast for {reference_time_str}")
             self.make_request(reference_time)
         except Exception as e:
@@ -110,14 +110,19 @@ class ForecastFocus(QLabel):
     def parse_forecast(self, data):
         output = ""
         try:
-            self.detailed_status.setText(data["detailed_status"].capitalize())
+            self.detailed_status.setText(f"Expect: {data['detailed_status'].capitalize()}")
             temp = data["temperature"]
             output += f"The temperature will be {round(kelvin_to_fahrenheit(temp['temp']), 2)}°F "
             output += f"with a feels like of {round(kelvin_to_fahrenheit(temp['feels_like']), 2)}°F.\n"
 
             humidity = data["humidity"]
-            indoor_humidity = convert_relative_humidity(humidity, temp["temp"] - 273.15, 17.2222)
+            indoor_humidity = convert_relative_humidity(humidity, temp["temp"] - 273.15, 16.6667)
             output += f"The humidity will be {humidity}% (~{round(indoor_humidity, 2)}% indoors).\n"
+
+            if data["clouds"] == 0:
+                output += "There will be no cloud cover.\n"
+            else:
+                output += f"There will be {data['clouds']}% cloud cover.\n"
 
             wind = data["wind"]
             wind_speed = round(mps_to_mph(wind["speed"]), 2)

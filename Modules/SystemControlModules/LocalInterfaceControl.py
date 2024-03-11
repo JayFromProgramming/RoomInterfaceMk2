@@ -37,7 +37,7 @@ class LocalInterfaceControl(InterfaceControl):
     def showEvent(self, a0):
         super().showEvent(a0)
         self.version_check_timer.start(1000 * 60)
-        self.check_version()
+        # self.check_version()
 
     def check_version(self):
         # Check if the current version is the latest (use git to check if the current commit is the latest)

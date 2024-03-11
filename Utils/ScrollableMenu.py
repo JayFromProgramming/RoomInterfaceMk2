@@ -1,6 +1,6 @@
 import time
 
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, QElapsedTimer
 from PyQt6.QtWidgets import QLabel
 from loguru import logger as logging
 
@@ -27,9 +27,12 @@ class ScrollableMenu(QLabel):
         self.scroll_motion_timer.timeout.connect(self.scroll_motion)
 
     def set_focus(self, focus):
+        # timer = QElapsedTimer()
+        # timer.start()
         self.focused = focus
         self.resizeEvent(None)
         self.layout_widgets()
+        # logging.debug(f"Setting focus to {focus} took {timer.elapsed()}ms")
 
     def mousePressEvent(self, event):
         try:
@@ -49,10 +52,12 @@ class ScrollableMenu(QLabel):
                 # Offset the entire room control host by the difference in the y position
                 self.scroll_offset += ev.pos().y() - self.scroll_start
                 # Calculate the velocity of the scroll
-                self.scroll_velocity = (ev.pos().y() - self.scroll_start) / (time.time() - self.last_scroll)
-                self.scroll_start = ev.pos().y()
-                # Move the widgets by the scroll offset
-                self.move_widgets(self.scroll_offset)
+                t_delta = time.time() - self.last_scroll
+                if t_delta > 0:  # Avoid division by zero
+                    self.scroll_velocity = (ev.pos().y() - self.scroll_start) / t_delta
+                    self.scroll_start = ev.pos().y()
+                    # Move the widgets by the scroll offset
+                    self.move_widgets(self.scroll_offset)
         except Exception as e:
             logging.error(f"Error handling mouse move event: {e}")
             logging.exception(e)
