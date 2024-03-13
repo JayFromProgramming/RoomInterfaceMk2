@@ -27,6 +27,10 @@ class SceneEditorFlyout(QDialog):
 
         self.trigger_list = TriggerColumn(self)
         self.trigger_list.move(10, 5)
+        # print(data)
+
+        self.trigger_list.add_trigger(data['trigger_name'], {'trigger_type': data['trigger_type'],
+                                                             'trigger_value': data['trigger_value']})
 
         api_action = json.loads(data["api_action"])
 
@@ -46,10 +50,10 @@ class SceneEditorFlyout(QDialog):
 
         self.save_button = QPushButton(self)
         self.save_button.setFont(self.font)
-        self.save_button.setFixedSize(100, 30)
+        self.save_button.setFixedSize(180, 40)
         self.save_button.setText("Save Scene")
         self.save_button.move(10, self.trigger_list.height() + 10)
-        self.setStyleSheet("background-color: green; border: 2px solid #ffcd00; border-radius: 10px")
+        self.save_button.setStyleSheet("background-color: green; border: none; border-radius: 10px")
         self.save_button.show()
         self.save_button.clicked.connect(self.save_scene)
 
@@ -90,4 +94,3 @@ class SceneEditorFlyout(QDialog):
         # devices = self.action_device_list.get_devices()
         # self.parent.save_scene(self.starting_data["scene_id"], trigger, devices)
         self.close()
-

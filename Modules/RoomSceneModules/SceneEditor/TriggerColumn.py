@@ -3,6 +3,7 @@ from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel
 from loguru import logger as logging
 
+from Modules.RoomSceneModules.SceneEditor.TriggerTile import TriggerTile
 from Utils.ScrollableMenu import ScrollableMenu
 
 
@@ -26,8 +27,22 @@ class TriggerColumn(ScrollableMenu):
         self.column_name.setStyleSheet("color: #ffcd00; font-size: 16px; font-weight: bold; border: none;")
         self.column_name.setText("Triggers")
 
+        self.trigger_labels = []
+
+        self.layout_widgets()
+
+    def add_trigger(self, name, data):
+        self.trigger_labels.append(TriggerTile(self, name, data))
+        self.layout_widgets()
+
     def move_widgets(self, y):
         pass
 
     def layout_widgets(self):
-        pass
+        y = 20
+        for label in self.trigger_labels:
+            label.move(5, y)
+            y += label.height() + 5
+            label.show()
+        self.column_name.move(0, 0)
+        self.show()
