@@ -27,7 +27,8 @@ class DeviceColumn(ScrollableMenu):
         self.font = self.parent.font
         self.setFixedSize(290, 490)
         self.focused = True
-        self.setStyleSheet("background-color: transparent; border: 2px solid #ffcd00; border-radius: 10px")
+        self.setStyleSheet("background-color: transparent; border: 2px solid #ffcd00; border-radius: 10px;"
+                           "overflow: hidden;")
 
         self.column_name = QLabel(self)
         self.column_name.setFont(self.font)
@@ -43,11 +44,19 @@ class DeviceColumn(ScrollableMenu):
         self.name_manager = QNetworkAccessManager()
         self.name_manager.finished.connect(self.handle_name_response)
 
+        self.placeholder_label = QLabel(self)
+        self.placeholder_label.setFont(self.font)
+        self.placeholder_label.setFixedSize(280, 100)
+        self.placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
+        self.placeholder_label.setStyleSheet("color: #ffcd00; font-size: 16px; font-weight: bold; border: none;")
+        self.placeholder_label.setText("Loading Devices\nFrom RoomController\nPlease Wait...")
+        self.placeholder_label.move(0, 20)
+
         self.device_labels = []
         # logging.debug(f"Starting device ids: {starting_device_ids}")
         if starting_device_ids is not None:
             for device, action in starting_device_ids.items():
-                self.device_labels.append(DeviceTile(self, device, action))
+                self.device_labels.append(DeviceTile(self, device, "Unknown", action))
         # logging.debug(f"Device labels: {self.device_labels}")
 
         self.layout_widgets()
@@ -78,9 +87,9 @@ class DeviceColumn(ScrollableMenu):
                 return True
         return False
 
-    def add_device(self, device):
+    def add_device(self, device, group=None):
         if isinstance(device, str):
-            tile = DeviceTile(self, device)
+            tile = DeviceTile(self, device, group)
         else:
             device.setParent(self)
             device.parent = self
@@ -117,8 +126,8 @@ class DeviceColumn(ScrollableMenu):
 
     def layout_widgets(self):
         y = 30
-        # Sort widgets by their device type
-        self.device_labels.sort(key=lambda x: self.sort_order.get(x.type, 5))
+        # Sort widgets by their group and then by their type
+        self.device_labels.sort(key=lambda x: (self.sort_order.get(x.type, 5)))
         for label in self.device_labels:
             label.move(5, y)
             y += label.height() + 5

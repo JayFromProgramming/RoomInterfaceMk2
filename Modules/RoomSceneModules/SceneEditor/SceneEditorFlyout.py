@@ -38,6 +38,7 @@ class SceneEditorFlyout(QDialog):
             api_action = {}
 
         self.action_device_list = DeviceColumn(self, "Selected Devices", api_action)
+        self.action_device_list.placeholder_label.hide()
 
         # Get the list of available devices from the master schema
 
@@ -99,6 +100,7 @@ class SceneEditorFlyout(QDialog):
 
     def handle_schema_response(self, reply):
         try:
+            self.available_device_list.placeholder_label.hide()
             data = reply.readAll()
             try:
                 data = json.loads(str(data, 'utf-8'))
@@ -107,11 +109,11 @@ class SceneEditorFlyout(QDialog):
                 logging.error(f"Data: {data}")
                 # self.loading_label.setText(f"Error Loading Room Control Schema, Retrying...\n{e}")
                 return
-            for device in data.keys():
+            for device, value in data.items():
                 # Check if the device is already in the action list
                 if self.action_device_list.has_device(device):
                     continue
-                self.available_device_list.add_device(device)
+                self.available_device_list.add_device(device, value['group'])
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
@@ -162,5 +164,12 @@ class SceneEditorFlyout(QDialog):
             exception_window.show()
             logging.error(f"Error saving scene: {e}")
             logging.exception(e)
+
+    def focusOutEvent(self, a0) -> None:
+        # Check if the focus was transferred to a child widget
+        logging.debug(f"Focus out event: {a0}")
+        if self.childAt(self.mapFromGlobal(self.cursor().pos())) is not None:
+            return
+        self.close()
 
 

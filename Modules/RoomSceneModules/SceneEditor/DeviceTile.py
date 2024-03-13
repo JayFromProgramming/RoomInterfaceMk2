@@ -20,12 +20,14 @@ class DeviceTile(QLabel):
         "environment_controller": "Environment",
     }
 
-    def __init__(self, parent=None, device=None, action_data=None):
+    def __init__(self, parent, device, group, action_data=None):
         super().__init__(parent)
         self.parent = parent
         self.auth = parent.auth
         self.host = parent.host
         self.device = device
+        print(group)
+        self.group = group
 
         self.human_name = None
         self.data = None

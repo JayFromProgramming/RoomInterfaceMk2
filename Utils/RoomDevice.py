@@ -41,6 +41,7 @@ class RoomDevice(QLabel):
         self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self.get_data)
         self.refresh_timer.start(5000 + random.randint(0, 1000))
+        self.refresh_timer.setSingleShot(True)
 
     def update_human_name(self, name):
         self.has_names = True
@@ -94,6 +95,8 @@ class RoomDevice(QLabel):
         except Exception as e:
             logging.error(f"Error handling response: {e}")
             logging.exception(e)
+        finally:
+            self.refresh_timer.start(5000 + random.randint(0, 1000))
 
     def handle_command(self, response):
         try:
