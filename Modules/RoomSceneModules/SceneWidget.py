@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel, QPushButton
 from loguru import logger as logging
+from Modules.RoomSceneModules.SceneEditor.SceneEditorFlyout import SceneEditorFlyout
 
 
 class SceneWidget(QLabel):
@@ -33,7 +34,7 @@ class SceneWidget(QLabel):
         self.scene_name_label.setFixedSize(105, 20)
         self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.scene_name_label.setStyleSheet("color: black; font-size: 16px; font-weight: bold; border: none;")
-        self.scene_name_label.setText(f"{data['name']}")
+        self.scene_name_label.setText(f"{data['trigger_name']}")
         self.scene_name_label.move(7, 5)
 
         self.scene_description_label = QLabel(self)
@@ -101,7 +102,8 @@ class SceneWidget(QLabel):
 
     def handle_scene_response(self, reply):
         try:
-            self.scene_trigger.setStyleSheet("background-color: grey; color: white; font-size: 14px; font-weight: bold;")
+            self.scene_trigger.setStyleSheet(
+                "background-color: grey; color: white; font-size: 14px; font-weight: bold;")
         except Exception as e:
             pass
 
@@ -114,3 +116,7 @@ class SceneWidget(QLabel):
         except Exception as e:
             logging.error(f"Error handling device name response: {e}")
             logging.exception(e)
+
+    def mouseDoubleClickEvent(self, a0) -> None:
+        flyout = SceneEditorFlyout(self.parent, self.data)
+        flyout.exec()
