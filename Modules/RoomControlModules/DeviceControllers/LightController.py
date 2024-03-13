@@ -69,7 +69,7 @@ class LightController(RoomDevice):
 
     def set_color(self, color):
         logging.info(f"Setting color of light: {self.device} to {color.name()}")
-        self.color_picker_button.setStyleSheet(f"background: {color.name()}; font-size: 14px; font-weight: bold;")
+        # self.color_picker_button.setStyleSheet(f"background: {color.name()}; font-size: 14px; font-weight: bold;")
         payload = json.dumps({"color": [color.red(), color.green(), color.blue()]})
         self.send_command(payload)
 

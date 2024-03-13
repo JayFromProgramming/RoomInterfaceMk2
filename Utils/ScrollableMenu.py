@@ -7,12 +7,15 @@ from loguru import logger as logging
 
 class ScrollableMenu(QLabel):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, font=None):
         super().__init__(parent)
         self.parent = parent
         self.dragging = False
         self.focused = False
-        self.font = self.parent.get_font("JetBrainsMono-Bold")
+        if font is not None:
+            self.font = font
+        else:
+            self.font = self.parent.get_font("JetBrainsMono-Bold")
 
         # Scroll related variables
         self.scroll_offset = 0

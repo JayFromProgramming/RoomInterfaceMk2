@@ -31,7 +31,7 @@ class SceneWidget(QLabel):
         # Labels
         self.scene_name_label = QLabel(self)
         self.scene_name_label.setFont(self.font)
-        if len(data["name"]) > 11:
+        if len(data["trigger_name"]) > 11:
             self.scene_name_label.setFixedSize(405, 20)
             self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         else:
@@ -131,5 +131,9 @@ class SceneWidget(QLabel):
             logging.exception(e)
 
     def mouseDoubleClickEvent(self, a0) -> None:
-        flyout = SceneEditorFlyout(self.parent, self.data)
-        flyout.exec()
+        try:
+            flyout = SceneEditorFlyout(self.parent, self.data)
+            flyout.exec()
+        except Exception as e:
+            logging.error(f"Error opening scene editor flyout: {e}")
+            logging.exception(e)
