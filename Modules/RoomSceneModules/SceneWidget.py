@@ -31,8 +31,12 @@ class SceneWidget(QLabel):
         # Labels
         self.scene_name_label = QLabel(self)
         self.scene_name_label.setFont(self.font)
-        self.scene_name_label.setFixedSize(105, 20)
-        self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
+        if len(data["name"]) > 11:
+            self.scene_name_label.setFixedSize(405, 20)
+            self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        else:
+            self.scene_name_label.setFixedSize(105, 20)
+            self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.scene_name_label.setStyleSheet("color: black; font-size: 16px; font-weight: bold; border: none;")
         self.scene_name_label.setText(f"{data['trigger_name']}")
         self.scene_name_label.move(7, 5)
@@ -43,9 +47,16 @@ class SceneWidget(QLabel):
         self.scene_description_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         self.scene_description_label.setStyleSheet("color: black; font-size: 13px; font-weight: bold; "
                                                    "border: 2px solid black; border-radius: 10px; background-color: transparent;")
-        self.scene_description_label.move(115, 10)
+        self.scene_description_label.move(115, 25)
         self.scene_description_label.setWordWrap(True)
         self.scene_description_label.setText(f"<pre>{self.description}</pre>")
+
+        self.scene_trigger_label = QLabel(self)
+        self.scene_trigger_label.setFont(self.font)
+        self.scene_trigger_label.setFixedSize(100, 20)
+        self.scene_trigger_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
+        self.scene_trigger_label.setStyleSheet("color: black; font-size: 12px; font-weight: bold; border: none;")
+        self.scene_trigger_label.move(7, 60)
 
         self.scene_trigger = QPushButton(self)
         self.scene_trigger.setFixedSize(100, 30)
@@ -53,8 +64,10 @@ class SceneWidget(QLabel):
                                          "border: none; border-radius: 10px")
         if data["trigger_type"] == "immediate":
             self.scene_trigger.setText("Trigger")
+            self.scene_trigger_label.setText("<pre>Immediate</pre>")
         else:
             self.scene_trigger.setText("Disable" if data["active"] else "Enable")
+            self.scene_trigger_label.setText(f"<pre>{data['trigger_type']}@{data['trigger_value']}</pre>")
         self.scene_trigger.setFont(self.font)
         self.scene_trigger.clicked.connect(self.trigger_scene)
         self.scene_trigger.move(7, 30)
