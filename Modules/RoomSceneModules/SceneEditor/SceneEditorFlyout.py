@@ -2,7 +2,7 @@ import json
 
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel, QPushButton, QDialog, QMessageBox
+from PyQt6.QtWidgets import QLabel, QPushButton, QDialog, QMessageBox, QProgressDialog
 from loguru import logger as logging
 
 from Modules.RoomSceneModules.SceneEditor.DeviceActionEditor import DeviceActionEditor
@@ -56,20 +56,37 @@ class SceneEditorFlyout(QDialog):
         self.scene_saver = QNetworkAccessManager()
         self.scene_saver.finished.connect(self.handle_scene_save_response)
 
+        # self.processing_request_dialog = QProgressDialog()
+        # # self.processing_request_dialog.setFixedSize(400, 200)
+        # self.processing_request_dialog.setWindowTitle("Processing Request")
+        # self.processing_request_dialog.setLabelText("Please Wait...")
+        # self.processing_request_dialog.setCancelButton(None)
+        # # Set the progress to be indeterminate
+        # self.processing_request_dialog.setRange(0, 0)
+        # self.processing_request_dialog.hide()
+
         self.save_button = QPushButton(self)
         self.save_button.setFont(self.font)
-        self.save_button.setFixedSize(180, 40)
+        self.save_button.setFixedSize(180, 30)
         self.save_button.setText("Save Scene")
         self.save_button.move(10, self.trigger_list.height() + 10)
         self.save_button.setStyleSheet("background-color: green; border: none; border-radius: 10px")
         self.save_button.show()
         self.save_button.clicked.connect(self.save_scene)
 
+        self.cancel_button = QPushButton(self)
+        self.cancel_button.setFont(self.font)
+        self.cancel_button.setFixedSize(180, 30)
+        self.cancel_button.setText("Cancel")
+        self.cancel_button.move(10, self.save_button.y() + self.save_button.height() + 10)
+        self.cancel_button.setStyleSheet("background-color: orange; border: none; border-radius: 10px")
+        self.cancel_button.show()
+
         self.delete_button = QPushButton(self)
         self.delete_button.setFont(self.font)
-        self.delete_button.setFixedSize(180, 40)
+        self.delete_button.setFixedSize(180, 30)
         self.delete_button.setText("Delete Scene")
-        self.delete_button.move(10, self.save_button.y() + self.save_button.height() + 10)
+        self.delete_button.move(10, self.cancel_button.y() + self.cancel_button.height() + 10)
         self.delete_button.setStyleSheet("background-color: red; border: none; border-radius: 10px")
         self.delete_button.show()
 
@@ -111,8 +128,10 @@ class SceneEditorFlyout(QDialog):
             data = json.loads(str(data, 'utf-8'))
             if data["result"] == "success":
                 self.parent.reload()
+                # self.processing_request_dialog.hide()
                 self.close()
             else:
+                # self.processing_request_dialog.hide()
                 exception_window = QMessageBox()
                 exception_window.setFixedSize(400, 200)
                 exception_window.setWindowTitle("Error Saving Scene")
@@ -135,6 +154,7 @@ class SceneEditorFlyout(QDialog):
             request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
             payload = {"scene_data": new_action_data}
             self.scene_saver.post(request, bytes(json.dumps(payload), 'utf-8'))
+            # self.processing_request_dialog.show()
         except Exception as e:
             exception_window = QDialog(self)
             exception_window.setFixedSize(400, 200)

@@ -123,6 +123,7 @@ class DeviceTile(QLabel):
         # Temporary fix until server code updated to handle
         # Color, White, and Brightness are mutually exclusive and should not be sent together
         # Prioritize white != 0, then color, then brightness
+        # Additionally if any of these are present remove the "on" action
         if "white" in self.action_data and self.action_data["white"] != 0:
             if "color" in self.action_data:
                 del self.action_data["color"]
@@ -131,6 +132,12 @@ class DeviceTile(QLabel):
         elif "color" in self.action_data:
             if "brightness" in self.action_data:
                 del self.action_data["brightness"]
+            if "white" in self.action_data:
+                del self.action_data["white"]
+
+        if "white" in self.action_data or "color" in self.action_data or "brightness" in self.action_data:
+            if "on" in self.action_data:
+                del self.action_data["on"]
 
     def handle_info_response(self, reply):
         try:

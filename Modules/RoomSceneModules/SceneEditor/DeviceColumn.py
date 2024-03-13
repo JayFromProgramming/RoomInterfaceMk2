@@ -21,6 +21,7 @@ class DeviceColumn(ScrollableMenu):
     def __init__(self, parent, column_name, starting_device_ids=None):
         super().__init__(parent, parent.font)
         self.parent = parent
+        self.name = column_name
         self.host = parent.host
         self.auth = parent.auth
         self.font = self.parent.font
@@ -33,8 +34,11 @@ class DeviceColumn(ScrollableMenu):
         self.column_name.setFixedSize(290, 20)
         self.column_name.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.column_name.setStyleSheet("color: #ffcd00; font-size: 16px; font-weight: bold; border: none;")
-        self.column_name.setText(column_name)
-        self.column_name.move(0, 0)
+        if starting_device_ids is not None:
+            self.column_name.setText(f"{column_name} [{len(starting_device_ids)}]")
+        else:
+            self.column_name.setText(f"{column_name} [?]")
+        self.column_name.move(0, 2)
 
         self.name_manager = QNetworkAccessManager()
         self.name_manager.finished.connect(self.handle_name_response)
@@ -83,6 +87,7 @@ class DeviceColumn(ScrollableMenu):
             tile = device
         tile.show()
         self.device_labels.append(tile)
+        self.column_name.setText(f"{self.name} [{len(self.device_labels)}]")
         self.layout_widgets()
 
     def remove_device(self, device):
@@ -90,6 +95,7 @@ class DeviceColumn(ScrollableMenu):
             if label.device == device:
                 label.hide()
                 self.device_labels.remove(label)
+                self.column_name.setText(f"{self.name} [{len(self.device_labels)}]")
                 self.layout_widgets()
                 return label
         return None
