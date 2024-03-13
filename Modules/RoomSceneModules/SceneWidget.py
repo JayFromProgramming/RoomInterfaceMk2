@@ -1,6 +1,6 @@
 import re
 
-from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtCore import Qt, QUrl, QTimer
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel, QPushButton
 from loguru import logger as logging
@@ -74,6 +74,10 @@ class SceneWidget(QLabel):
         self.scene_trigger.clicked.connect(self.trigger_scene)
         self.scene_trigger.move(7, 30)
 
+        self.double_click_timer = QTimer(self)
+        self.double_click_timer.setSingleShot(True)
+        self.double_click_primed = None
+
         self.request_names()
 
     def request_names(self):
@@ -132,13 +136,28 @@ class SceneWidget(QLabel):
             logging.error(f"Error handling device name response: {e}")
             logging.exception(e)
 
-    def mouseDoubleClickEvent(self, a0) -> None:
-        try:
+    def mousePressEvent(self, a0) -> None:
+        # Manually check for double click events
+        if self.double_click_primed:
+            self.double_click_primed = False
+            self.double_click_timer.stop()
             flyout = SceneEditorFlyout(self.parent, self.data)
             flyout.exec()
-        except Exception as e:
-            logging.error(f"Error opening scene editor flyout: {e}")
-            logging.exception(e)
+        else:
+            super(SceneWidget, self).mousePressEvent(a0)
+            self.double_click_primed = True
+            self.double_click_timer.start(450)
+
+    def resetDoubleClick(self):
+        self.double_click_primed = False
+
+    # def mouseDoubleClickEvent(self, a0) -> None:
+    #     try:
+    #         flyout = SceneEditorFlyout(self.parent, self.data)
+    #         flyout.exec()
+    #     except Exception as e:
+    #         logging.error(f"Error opening scene editor flyout: {e}")
+    #         logging.exception(e)
 
     def reload(self):
         self.parent.reload()
