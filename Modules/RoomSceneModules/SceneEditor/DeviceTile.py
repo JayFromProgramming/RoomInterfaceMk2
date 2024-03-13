@@ -71,6 +71,7 @@ class DeviceTile(QLabel):
         self.single_click_timer = QTimer(self)
         self.single_click_timer.setSingleShot(True)
         self.single_click_timer.timeout.connect(self.mouseSingleClickEvent)
+        self.double_click_occurred = False
 
         self.setToolTip(f"Double click to edit {device}")
 
@@ -141,16 +142,16 @@ class DeviceTile(QLabel):
     def mouseReleaseEvent(self, ev):
         try:
             super().mouseReleaseEvent(ev)
-            if self.single_click_timer.isActive():
-                self.single_click_timer.stop()
-            else:
-                self.single_click_timer.start(450)
+            self.single_click_timer.start(450)
         except Exception as e:
             logging.error(f"Error in DeviceTile.mouseReleaseEvent: {e}")
             logging.exception(e)
 
     def mouseSingleClickEvent(self):
         try:
+            if self.double_click_occurred:
+                self.double_click_occurred = False
+                return
             logging.debug(f"DeviceTile {self.device} clicked")
             self.parent.clicked(self)
         except Exception as e:
@@ -160,9 +161,7 @@ class DeviceTile(QLabel):
     def mouseDoubleClickEvent(self, a0):
         super().mouseDoubleClickEvent(a0)
         try:
-            if self.single_click_timer.isActive():
-                self.single_click_timer.stop()
-                # self.parent.parent.edit_device(self.device)
+            self.double_click_occurred = True
         except Exception as e:
             logging.error(f"Error")
             logging.exception(e)

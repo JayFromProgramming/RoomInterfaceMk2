@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QLabel, QPushButton, QDialog
 from loguru import logger as logging
 
 from Modules.RoomSceneModules.SceneEditor.DeviceColumn import DeviceColumn
+from Modules.RoomSceneModules.SceneEditor.TriggerColumn import TriggerColumn
 
 
 class SceneEditorFlyout(QDialog):
@@ -23,7 +24,12 @@ class SceneEditorFlyout(QDialog):
         self.setWindowTitle(f"Scene Editor: {data['scene_id']}")
         # self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
+
+        self.trigger_list = TriggerColumn(self)
+        self.trigger_list.move(10, 5)
+
         api_action = json.loads(data["api_action"])
+
         self.action_device_list = DeviceColumn(self, "Selected Devices", api_action)
 
         # Get the list of available devices from the master schema
@@ -37,6 +43,13 @@ class SceneEditorFlyout(QDialog):
 
         self.schema_getter = QNetworkAccessManager()
         self.schema_getter.finished.connect(self.handle_schema_response)
+
+        self.save_button = QPushButton(self)
+        self.save_button.setFont(self.font)
+        self.save_button.setFixedSize(100, 30)
+        self.save_button.setText("Save Scene")
+        self.save_button.move(10, self.height() - 40)
+        self.save_button.clicked.connect(self.save_scene)
 
         self.get_schema()
 
@@ -70,3 +83,10 @@ class SceneEditorFlyout(QDialog):
         else:
             self.available_device_list.add_device(self.action_device_list.remove_device(tile.device))
 
+    def save_scene(self):
+        # trigger = self.trigger_list.get_trigger()
+        # devices = self.action_device_list.get_devices()
+        # self.parent.save_scene(self.starting_data["scene_id"], trigger, devices)
+        self.close()
+
+        

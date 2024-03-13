@@ -30,7 +30,7 @@ class DeviceColumn(ScrollableMenu):
 
         self.column_name = QLabel(self)
         self.column_name.setFont(self.font)
-        self.column_name.setFixedSize(300, 20)
+        self.column_name.setFixedSize(290, 20)
         self.column_name.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.column_name.setStyleSheet("color: #ffcd00; font-size: 16px; font-weight: bold; border: none;")
         self.column_name.setText(column_name)
