@@ -9,6 +9,15 @@ from Utils.ScrollableMenu import ScrollableMenu
 
 class DeviceColumn(ScrollableMenu):
 
+    sort_order = {
+        "abstract_rgb": 0,
+        "VoiceMonkeyDevice": 1,
+        "abstract_toggle_device": 2,
+        "environment_controller": 3,
+        "light_controller": 4,
+        "Unknown": 5,
+    }
+
     def __init__(self, parent, column_name, starting_device_ids=None):
         super().__init__(parent, parent.font)
         self.parent = parent
@@ -66,7 +75,12 @@ class DeviceColumn(ScrollableMenu):
         return False
 
     def add_device(self, device):
-        tile = DeviceTile(self, device)
+        if isinstance(device, str):
+            tile = DeviceTile(self, device)
+        else:
+            device.setParent(self)
+            device.parent = self
+            tile = device
         tile.show()
         self.device_labels.append(tile)
         self.layout_widgets()
@@ -77,7 +91,8 @@ class DeviceColumn(ScrollableMenu):
                 label.hide()
                 self.device_labels.remove(label)
                 self.layout_widgets()
-                return
+                return label
+        return None
 
     def clicked(self, tile):
         """
@@ -85,6 +100,7 @@ class DeviceColumn(ScrollableMenu):
         :param tile:
         :return:
         """
+        self.parent.transfer_device(self, tile)
 
     def move_widgets(self, y):
         y = round(y)
@@ -95,6 +111,8 @@ class DeviceColumn(ScrollableMenu):
 
     def layout_widgets(self):
         y = 30
+        # Sort widgets by their device type
+        self.device_labels.sort(key=lambda x: self.sort_order.get(x.type, 5))
         for label in self.device_labels:
             label.move(5, y)
             y += label.height() + 5

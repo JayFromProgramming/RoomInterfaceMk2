@@ -66,8 +66,7 @@ class SceneEditorFlyout(QDialog):
 
     def transfer_device(self, source_column, tile):
         if source_column == self.available_device_list:
-            self.action_device_list.add_device(tile.device)
-            self.available_device_list.remove_device(tile.device)
+            self.action_device_list.add_device(self.available_device_list.remove_device(tile.device))
         else:
-            self.available_device_list.add_device(tile.device)
-            self.action_device_list.remove_device(tile.device)
+            self.available_device_list.add_device(self.action_device_list.remove_device(tile.device))
+

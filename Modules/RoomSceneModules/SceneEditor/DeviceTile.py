@@ -1,6 +1,6 @@
 import json
 
-from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtCore import Qt, QUrl, QTimer
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel
 from loguru import logger as logging
@@ -68,6 +68,10 @@ class DeviceTile(QLabel):
         self.info_getter = QNetworkAccessManager()
         self.info_getter.finished.connect(self.handle_info_response)
 
+        self.single_click_timer = QTimer(self)
+        self.single_click_timer.setSingleShot(True)
+        self.single_click_timer.timeout.connect(self.mouseSingleClickEvent)
+
         self.setToolTip(f"Double click to edit {device}")
 
         self.get_data()
@@ -75,6 +79,7 @@ class DeviceTile(QLabel):
 
     def update_device_text(self):
         self.device_label.setText(f"{self.device_type_translation.get(self.type, self.type)}: {self.human_name}")
+        self.parent.layout_widgets()
 
     def update_action_text(self):
         if self.action_data is None:
@@ -89,6 +94,10 @@ class DeviceTile(QLabel):
                 rows.append(text)
                 text = ""
             text += f"{key.capitalize()}={action}, "
+        if len(rows) >= 3:
+            # If we have more than 3 rows we need to expand the tile's height to fit the text
+            self.setFixedSize(280, 55 + (len(rows) - 2) * 20)
+            self.action_text.setFixedSize(280, 40 + (len(rows) - 2) * 20)
         if text[-2:] == ", ":
             text = text[:-2]
         rows.append(text)
@@ -130,7 +139,30 @@ class DeviceTile(QLabel):
         self.human_name = name
 
     def mouseReleaseEvent(self, ev):
-        super().mouseReleaseEvent(ev)
-        logging.debug(f"DeviceTile {self.device} clicked")
-        if ev.button() == Qt.MouseButton.LeftButton:
+        try:
+            super().mouseReleaseEvent(ev)
+            if self.single_click_timer.isActive():
+                self.single_click_timer.stop()
+            else:
+                self.single_click_timer.start(450)
+        except Exception as e:
+            logging.error(f"Error in DeviceTile.mouseReleaseEvent: {e}")
+            logging.exception(e)
+
+    def mouseSingleClickEvent(self):
+        try:
+            logging.debug(f"DeviceTile {self.device} clicked")
             self.parent.clicked(self)
+        except Exception as e:
+            logging.error(f"Error in DeviceTile.mouseSingleClickEvent: {e}")
+            logging.exception(e)
+
+    def mouseDoubleClickEvent(self, a0):
+        super().mouseDoubleClickEvent(a0)
+        try:
+            if self.single_click_timer.isActive():
+                self.single_click_timer.stop()
+                # self.parent.parent.edit_device(self.device)
+        except Exception as e:
+            logging.error(f"Error")
+            logging.exception(e)
