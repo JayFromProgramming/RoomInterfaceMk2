@@ -3,11 +3,13 @@ from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel
 from loguru import logger as logging
 
+from Utils.ScrollableMenu import ScrollableMenu
 
-class TriggerColumn(QLabel):
+
+class TriggerColumn(ScrollableMenu):
 
     def __init__(self, parent):
-        super().__init__(parent)
+        super().__init__(parent, parent.font)
         self.parent = parent
         self.auth = parent.auth
         self.host = parent.host
@@ -23,3 +25,9 @@ class TriggerColumn(QLabel):
         self.column_name.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.column_name.setStyleSheet("color: #ffcd00; font-size: 16px; font-weight: bold; border: none;")
         self.column_name.setText("Triggers")
+
+    def move_widgets(self, y):
+        pass
+
+    def layout_widgets(self):
+        pass

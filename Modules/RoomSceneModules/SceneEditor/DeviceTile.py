@@ -141,7 +141,11 @@ class DeviceTile(QLabel):
 
     def mouseReleaseEvent(self, ev):
         try:
-            super().mouseReleaseEvent(ev)
+            if abs(self.parent.scroll_total_offset) > 5:
+                super().mouseReleaseEvent(ev)
+                return
+            else:
+                super().mouseReleaseEvent(ev)
             self.single_click_timer.start(450)
         except Exception as e:
             logging.error(f"Error in DeviceTile.mouseReleaseEvent: {e}")

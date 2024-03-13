@@ -48,7 +48,9 @@ class SceneEditorFlyout(QDialog):
         self.save_button.setFont(self.font)
         self.save_button.setFixedSize(100, 30)
         self.save_button.setText("Save Scene")
-        self.save_button.move(10, self.height() - 40)
+        self.save_button.move(10, self.trigger_list.height() + 10)
+        self.setStyleSheet("background-color: green; border: 2px solid #ffcd00; border-radius: 10px")
+        self.save_button.show()
         self.save_button.clicked.connect(self.save_scene)
 
         self.get_schema()
@@ -89,4 +91,3 @@ class SceneEditorFlyout(QDialog):
         # self.parent.save_scene(self.starting_data["scene_id"], trigger, devices)
         self.close()
 
-        
