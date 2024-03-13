@@ -44,6 +44,7 @@ class ScrollableMenu(QLabel):
             self.dragging = True
             self.scroll_start = event.pos().y()
             self.last_scroll = time.time()
+            self.scroll_total_offset = 0
             self.scroll_motion_timer.stop()
         except Exception as e:
             logging.error(f"Error handling mouse press event: {e}")
@@ -54,6 +55,7 @@ class ScrollableMenu(QLabel):
             if self.dragging:
                 # Offset the entire room control host by the difference in the y position
                 self.scroll_offset += ev.pos().y() - self.scroll_start
+                self.scroll_total_offset += self.scroll_offset
                 # Calculate the velocity of the scroll
                 t_delta = time.time() - self.last_scroll
                 if t_delta > 0:  # Avoid division by zero
@@ -70,7 +72,15 @@ class ScrollableMenu(QLabel):
             self.dragging = False
             # Start the scroll motion timer to decay the scroll velocity and move the widgets
             self.last_scroll = time.time()
-            self.scroll_motion_timer.start(round(1000 / 60))
+            self.scroll_total_offset += self.scroll_offset
+            # Check if the total scroll motion was less than 5 pixels
+            # logging.debug(f"Scroll total offset: {self.scroll_total_offset}")
+            if abs(self.scroll_total_offset) < 5:
+                # If it was, emit the click event
+                # logging.debug("Emitting click event")
+                super().mouseReleaseEvent(ev)
+            else:
+                self.scroll_motion_timer.start(round(1000 / 60))
         except Exception as e:
             logging.error(f"Error handling mouse release event: {e}")
             logging.exception(e)

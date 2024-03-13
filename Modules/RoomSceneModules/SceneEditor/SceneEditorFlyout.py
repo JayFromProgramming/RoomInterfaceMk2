@@ -63,3 +63,11 @@ class SceneEditorFlyout(QDialog):
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
+
+    def transfer_device(self, source_column, tile):
+        if source_column == self.available_device_list:
+            self.action_device_list.add_device(tile.device)
+            self.available_device_list.remove_device(tile.device)
+        else:
+            self.available_device_list.add_device(tile.device)
+            self.action_device_list.remove_device(tile.device)

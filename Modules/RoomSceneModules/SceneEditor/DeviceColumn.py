@@ -16,6 +16,7 @@ class DeviceColumn(ScrollableMenu):
         self.auth = parent.auth
         self.font = self.parent.font
         self.setFixedSize(290, 490)
+        self.focused = True
         self.setStyleSheet("background-color: transparent; border: 2px solid #ffcd00; border-radius: 10px")
 
         self.column_name = QLabel(self)
@@ -30,11 +31,11 @@ class DeviceColumn(ScrollableMenu):
         self.name_manager.finished.connect(self.handle_name_response)
 
         self.device_labels = []
-        logging.debug(f"Starting device ids: {starting_device_ids}")
+        # logging.debug(f"Starting device ids: {starting_device_ids}")
         if starting_device_ids is not None:
             for device, action in starting_device_ids.items():
                 self.device_labels.append(DeviceTile(self, device, action))
-        logging.debug(f"Device labels: {self.device_labels}")
+        # logging.debug(f"Device labels: {self.device_labels}")
 
         self.layout_widgets()
 
@@ -70,12 +71,27 @@ class DeviceColumn(ScrollableMenu):
         self.device_labels.append(tile)
         self.layout_widgets()
 
+    def remove_device(self, device):
+        for label in self.device_labels:
+            if label.device == device:
+                label.hide()
+                self.device_labels.remove(label)
+                self.layout_widgets()
+                return
+
+    def clicked(self, tile):
+        """
+        Called by a DeviceTile when it is clicked
+        :param tile:
+        :return:
+        """
+
     def move_widgets(self, y):
         y = round(y)
         for label in self.device_labels:
             label.move(5, y)
             y += label.height() + 5
-        self.repaint()
+        # self.repaint()
 
     def layout_widgets(self):
         y = 30
