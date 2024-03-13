@@ -65,6 +65,13 @@ class RoomSceneHost(ScrollableMenu):
             logging.exception(e)
             self.retry_timer.start(5000)
 
+    def reload(self):
+        for widget in self.scene_widgets:
+            widget.hide()
+            widget.deleteLater()
+        self.scene_widgets = []
+        self.make_request()
+
     def handle_scene_data(self, data):
         for scene in data.values():
             self.scene_widgets.append(SceneWidget(self, scene))
@@ -87,9 +94,11 @@ class RoomSceneHost(ScrollableMenu):
         # Start a new row when the widgets won't fit on the current row
         for widget in self.scene_widgets:
             widget.move(x_offset, y_offset)
+            widget.show()
             x_offset += widget.width() + 10
             # Wrap around to the next row if the widget won't fit on the current row
             if x_offset + widget.width() > self.width():
                 x_offset = 10
                 y_offset += widget.height() + 10
+
 

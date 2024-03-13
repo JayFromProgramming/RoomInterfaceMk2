@@ -8,8 +8,8 @@ from loguru import logger as logging
 
 class DeviceTile(QLabel):
     valid_actions = [
-        'on', 'target_value', 'brightness', 'color',
-        'white',
+        'on', 'target_value', 'color',
+        'white', 'brightness'
     ]  # Temporary until the server will return only valid actions in "state" field and other info in "info" field
 
     device_type_translation = {
@@ -114,9 +114,23 @@ class DeviceTile(QLabel):
         Use the devices current state to generate a dictionary of actions that would set the device to that state
         """
         self.action_data = {}
+        if self.data["state"] is None:
+            return
         for key, value in self.data["state"].items():
             if key in self.valid_actions:
                 self.action_data[key] = value
+
+        # Temporary fix until server code updated to handle
+        # Color, White, and Brightness are mutually exclusive and should not be sent together
+        # Prioritize white != 0, then color, then brightness
+        if "white" in self.action_data and self.action_data["white"] != 0:
+            if "color" in self.action_data:
+                del self.action_data["color"]
+            if "brightness" in self.action_data:
+                del self.action_data["brightness"]
+        elif "color" in self.action_data:
+            if "brightness" in self.action_data:
+                del self.action_data["brightness"]
 
     def handle_info_response(self, reply):
         try:

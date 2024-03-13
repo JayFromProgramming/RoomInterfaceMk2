@@ -32,8 +32,10 @@ class SceneEditorFlyout(QDialog):
 
         self.trigger_list.add_trigger(data['trigger_name'], {'trigger_type': data['trigger_type'],
                                                              'trigger_value': data['trigger_value']})
-
-        api_action = json.loads(data["api_action"])
+        if data['api_action'] is not None and len(data['api_action']) > 0:
+            api_action = json.loads(data["api_action"])
+        else:
+            api_action = {}
 
         self.action_device_list = DeviceColumn(self, "Selected Devices", api_action)
 
@@ -100,12 +102,15 @@ class SceneEditorFlyout(QDialog):
             data = reply.readAll()
             data = json.loads(str(data, 'utf-8'))
             if data["result"] == "success":
+                self.parent.reload()
                 self.close()
             else:
                 exception_window = QMessageBox()
                 exception_window.setFixedSize(400, 200)
                 exception_window.setWindowTitle("Error Saving Scene")
-                exception_window.setText(f"Error saving scene: {data['result']}")
+                exception_window.setText(f"Server Error While Saving Scene")
+                exception_window.setInformativeText(data['result'])
+                exception_window.setIcon(QMessageBox.Icon.Critical)
                 exception_window.show()
                 exception_window.exec()
         except Exception as e:

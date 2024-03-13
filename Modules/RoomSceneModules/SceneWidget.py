@@ -139,3 +139,6 @@ class SceneWidget(QLabel):
         except Exception as e:
             logging.error(f"Error opening scene editor flyout: {e}")
             logging.exception(e)
+
+    def reload(self):
+        self.parent.reload()
