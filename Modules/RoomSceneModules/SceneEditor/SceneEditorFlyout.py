@@ -23,7 +23,7 @@ class SceneEditorFlyout(QDialog):
         self.setStyleSheet("background-color: transparent")
         self.setFixedSize(800, 500)
         self.setWindowTitle(f"Scene Editor: {data['scene_id']}")
-        # self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
+        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
 
         self.trigger_list = TriggerColumn(self)
