@@ -2,9 +2,10 @@ import json
 
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel, QPushButton, QDialog
+from PyQt6.QtWidgets import QLabel, QPushButton, QDialog, QMessageBox
 from loguru import logger as logging
 
+from Modules.RoomSceneModules.SceneEditor.DeviceActionEditor import DeviceActionEditor
 from Modules.RoomSceneModules.SceneEditor.DeviceColumn import DeviceColumn
 from Modules.RoomSceneModules.SceneEditor.TriggerColumn import TriggerColumn
 
@@ -45,8 +46,13 @@ class SceneEditorFlyout(QDialog):
         # Put the available devices to the left of the action devices
         self.available_device_list.move(self.action_device_list.x() - self.available_device_list.width() - 10, 5)
 
+        # self.action_editor = DeviceActionEditor(self)
+
         self.schema_getter = QNetworkAccessManager()
         self.schema_getter.finished.connect(self.handle_schema_response)
+
+        self.scene_saver = QNetworkAccessManager()
+        self.scene_saver.finished.connect(self.handle_scene_save_response)
 
         self.save_button = QPushButton(self)
         self.save_button.setFont(self.font)
@@ -89,8 +95,39 @@ class SceneEditorFlyout(QDialog):
         else:
             self.available_device_list.add_device(self.action_device_list.remove_device(tile.device))
 
+    def handle_scene_save_response(self, reply):
+        try:
+            data = reply.readAll()
+            data = json.loads(str(data, 'utf-8'))
+            if data["result"] == "success":
+                self.close()
+            else:
+                exception_window = QMessageBox()
+                exception_window.setFixedSize(400, 200)
+                exception_window.setWindowTitle("Error Saving Scene")
+                exception_window.setText(f"Error saving scene: {data['result']}")
+                exception_window.show()
+                exception_window.exec()
+        except Exception as e:
+            logging.error(f"Error handling network response: {e}")
+            logging.exception(e)
+
     def save_scene(self):
-        # trigger = self.trigger_list.get_trigger()
-        # devices = self.action_device_list.get_devices()
-        # self.parent.save_scene(self.starting_data["scene_id"], trigger, devices)
-        self.close()
+        try:
+            new_action_data = {}
+            for tile in self.action_device_list.device_labels:
+                new_action_data[tile.device] = tile.action_data
+            print(new_action_data)
+            request = QNetworkRequest(QUrl(f"http://{self.host}/update_scene/{self.starting_data['scene_id']}"))
+            request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+            payload = {"scene_data": new_action_data}
+            self.scene_saver.post(request, bytes(json.dumps(payload), 'utf-8'))
+        except Exception as e:
+            exception_window = QDialog(self)
+            exception_window.setFixedSize(400, 200)
+            exception_window.setWindowTitle("Error Saving Scene")
+            exception_window.show()
+            logging.error(f"Error saving scene: {e}")
+            logging.exception(e)
+
+
