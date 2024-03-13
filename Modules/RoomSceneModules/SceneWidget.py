@@ -12,6 +12,8 @@ class SceneWidget(QLabel):
     def __init__(self, parent=None, data=None):
         super().__init__(parent)
         self.parent = parent
+        self.host = parent.host
+        self.auth = parent.auth
         self.data = data
         self.font = self.parent.font
         self.setStyleSheet("background-color: #ffcd00; border: 2px solid #ffcd00; border-radius: 10px")
