@@ -24,7 +24,7 @@ class SceneEditorFlyout(QDialog):
         # self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
         api_action = json.loads(data["api_action"])
-        self.action_device_list = DeviceColumn(self, "Action Devices", api_action)
+        self.action_device_list = DeviceColumn(self, "Selected Devices", api_action)
 
         # Get the list of available devices from the master schema
 
@@ -43,7 +43,6 @@ class SceneEditorFlyout(QDialog):
     def get_schema(self):
         request = QNetworkRequest(QUrl(f"http://{self.host}/get_schema"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
-        logging.debug(f"Making schema request to {request.url().toString()}")
         self.schema_getter.get(request)
 
     def handle_schema_response(self, reply):
@@ -56,7 +55,6 @@ class SceneEditorFlyout(QDialog):
                 logging.error(f"Data: {data}")
                 # self.loading_label.setText(f"Error Loading Room Control Schema, Retrying...\n{e}")
                 return
-            logging.debug(f"Schema data: {data}")
             for device in data.keys():
                 # Check if the device is already in the action list
                 if self.action_device_list.has_device(device):

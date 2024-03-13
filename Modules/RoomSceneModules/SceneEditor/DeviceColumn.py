@@ -32,8 +32,8 @@ class DeviceColumn(ScrollableMenu):
         self.device_labels = []
         logging.debug(f"Starting device ids: {starting_device_ids}")
         if starting_device_ids is not None:
-            for device in starting_device_ids.keys():
-                self.device_labels.append(DeviceTile(self, device))
+            for device, action in starting_device_ids.items():
+                self.device_labels.append(DeviceTile(self, device, action))
         logging.debug(f"Device labels: {self.device_labels}")
 
         self.layout_widgets()
