@@ -16,7 +16,7 @@ class TriggerColumn(ScrollableMenu):
         self.host = parent.host
         self.font = parent.font
 
-        self.setFixedSize(180, 400)
+        self.setFixedSize(180, 390)
 
         self.setStyleSheet("background-color: transparent; border: 2px solid #ffcd00; border-radius: 10px")
 

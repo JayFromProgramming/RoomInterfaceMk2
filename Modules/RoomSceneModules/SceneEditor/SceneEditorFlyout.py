@@ -65,6 +65,14 @@ class SceneEditorFlyout(QDialog):
         self.save_button.show()
         self.save_button.clicked.connect(self.save_scene)
 
+        self.delete_button = QPushButton(self)
+        self.delete_button.setFont(self.font)
+        self.delete_button.setFixedSize(180, 40)
+        self.delete_button.setText("Delete Scene")
+        self.delete_button.move(10, self.save_button.y() + self.save_button.height() + 10)
+        self.delete_button.setStyleSheet("background-color: red; border: none; border-radius: 10px")
+        self.delete_button.show()
+
         self.get_schema()
 
     def get_schema(self):
