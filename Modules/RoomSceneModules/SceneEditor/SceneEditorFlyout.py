@@ -25,6 +25,9 @@ class SceneEditorFlyout(QDialog):
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
         api_action = json.loads(data["api_action"])
         self.action_device_list = DeviceColumn(self, "Action Devices", api_action)
+
+        # Get the list of available devices from the master schema
+
         self.available_device_list = DeviceColumn(self, "Available Devices")
 
         # Move both lists to the very right
@@ -32,5 +35,33 @@ class SceneEditorFlyout(QDialog):
         # Put the available devices to the left of the action devices
         self.available_device_list.move(self.action_device_list.x() - self.available_device_list.width() - 10, 5)
 
+        self.schema_getter = QNetworkAccessManager()
+        self.schema_getter.finished.connect(self.handle_schema_response)
 
+        self.get_schema()
 
+    def get_schema(self):
+        request = QNetworkRequest(QUrl(f"http://{self.host}/get_schema"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        logging.debug(f"Making schema request to {request.url().toString()}")
+        self.schema_getter.get(request)
+
+    def handle_schema_response(self, reply):
+        try:
+            data = reply.readAll()
+            try:
+                data = json.loads(str(data, 'utf-8'))
+            except Exception as e:
+                logging.error(f"Error parsing network response: {e}")
+                logging.error(f"Data: {data}")
+                # self.loading_label.setText(f"Error Loading Room Control Schema, Retrying...\n{e}")
+                return
+            logging.debug(f"Schema data: {data}")
+            for device in data.keys():
+                # Check if the device is already in the action list
+                if self.action_device_list.has_device(device):
+                    continue
+                self.available_device_list.add_device(device)
+        except Exception as e:
+            logging.error(f"Error handling network response: {e}")
+            logging.exception(e)

@@ -58,11 +58,24 @@ class DeviceColumn(ScrollableMenu):
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
 
+    def has_device(self, device):
+        for label in self.device_labels:
+            if label.device == device:
+                return True
+        return False
+
+    def add_device(self, device):
+        tile = DeviceTile(self, device)
+        tile.show()
+        self.device_labels.append(tile)
+        self.layout_widgets()
+
     def move_widgets(self, y):
         y = round(y)
         for label in self.device_labels:
-            label.move(0, y)
-            y += 25
+            label.move(5, y)
+            y += label.height() + 5
+        self.repaint()
 
     def layout_widgets(self):
         y = 30
