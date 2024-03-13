@@ -82,6 +82,7 @@ class SceneEditorFlyout(QDialog):
         self.cancel_button.move(10, self.save_button.y() + self.save_button.height() + 10)
         self.cancel_button.setStyleSheet("background-color: orange; border: none; border-radius: 10px")
         self.cancel_button.show()
+        self.cancel_button.clicked.connect(self.close)
 
         self.delete_button = QPushButton(self)
         self.delete_button.setFont(self.font)
@@ -92,6 +93,10 @@ class SceneEditorFlyout(QDialog):
         self.delete_button.show()
 
         self.get_schema()
+
+        # Check if the main window is full screen, if so make this window full screen on top of it
+        if self.parent.isFullScreen():
+            self.setWindowState(Qt.WindowState.WindowFullScreen)
 
     def get_schema(self):
         request = QNetworkRequest(QUrl(f"http://{self.host}/get_schema"))
@@ -164,12 +169,5 @@ class SceneEditorFlyout(QDialog):
             exception_window.show()
             logging.error(f"Error saving scene: {e}")
             logging.exception(e)
-
-    def focusOutEvent(self, a0) -> None:
-        # Check if the focus was transferred to a child widget
-        logging.debug(f"Focus out event: {a0}")
-        if self.childAt(self.mapFromGlobal(self.cursor().pos())) is not None:
-            return
-        self.close()
 
 
