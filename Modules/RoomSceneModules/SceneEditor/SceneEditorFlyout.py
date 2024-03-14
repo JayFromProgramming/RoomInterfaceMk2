@@ -2,7 +2,7 @@ import json
 
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel, QPushButton, QDialog, QMessageBox, QProgressDialog
+from PyQt6.QtWidgets import QLabel, QPushButton, QDialog, QMessageBox, QProgressDialog, QApplication
 from loguru import logger as logging
 
 from Modules.RoomSceneModules.SceneEditor.DeviceActionEditor import DeviceActionEditor
@@ -95,7 +95,8 @@ class SceneEditorFlyout(QDialog):
         self.get_schema()
 
         # Check if the main window is full screen, if so make this window full screen on top of it
-        if self.parent.isFullScreen():
+        active_window = QApplication.instance().activeWindow()
+        if active_window.isFullScreen():
             self.setWindowState(Qt.WindowState.WindowFullScreen)
 
     def get_schema(self):
