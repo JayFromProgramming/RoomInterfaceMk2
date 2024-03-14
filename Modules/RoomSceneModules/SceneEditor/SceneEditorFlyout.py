@@ -21,17 +21,21 @@ class SceneEditorFlyout(QDialog):
 
         # This is a flyout (popup) that will be used to edit a scene
         self.setStyleSheet("background-color: transparent")
-        self.setFixedSize(800, 500)
+        self.setFixedSize(1024, 600)
         self.setWindowTitle(f"Scene Editor: {data['scene_id']}")
         self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
 
-        self.trigger_list = TriggerColumn(self)
-        self.trigger_list.move(10, 5)
+        self.selected_trigger_list = TriggerColumn(self, "Selected Triggers")
+        self.selected_trigger_list.move(10, 5)
         # print(data)
 
-        self.trigger_list.add_trigger(data['trigger_name'], {'trigger_type': data['trigger_type'],
-                                                             'trigger_value': data['trigger_value']})
+        self.selected_trigger_list.add_trigger(data['trigger_name'], {'trigger_type': data['trigger_type'],
+                                                                      'trigger_value': data['trigger_value']})
+
+        self.available_trigger_list = TriggerColumn(self, "Available Triggers")
+        self.available_trigger_list.move(self.selected_trigger_list.x() + self.selected_trigger_list.width() + 10, 5)
+
         if data['api_action'] is not None and len(data['api_action']) > 0:
             api_action = json.loads(data["api_action"])
         else:
@@ -70,7 +74,7 @@ class SceneEditorFlyout(QDialog):
         self.save_button.setFont(self.font)
         self.save_button.setFixedSize(180, 30)
         self.save_button.setText("Save Scene")
-        self.save_button.move(10, self.trigger_list.height() + 10)
+        self.save_button.move(10, self.selected_trigger_list.y() + self.selected_trigger_list.height() + 10)
         self.save_button.setStyleSheet("background-color: green; border: none; border-radius: 10px")
         self.save_button.show()
         self.save_button.clicked.connect(self.save_scene)
@@ -100,9 +104,13 @@ class SceneEditorFlyout(QDialog):
             self.setWindowState(Qt.WindowState.WindowFullScreen)
 
     def get_schema(self):
-        request = QNetworkRequest(QUrl(f"http://{self.host}/get_schema"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
-        self.schema_getter.get(request)
+        try:
+            request = QNetworkRequest(QUrl(f"http://{self.host}/get_schema"))
+            request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+            self.schema_getter.get(request)
+        except Exception as e:
+            logging.error(f"Error getting schema: {e}")
+            logging.exception(e)
 
     def handle_schema_response(self, reply):
         try:
@@ -125,10 +133,14 @@ class SceneEditorFlyout(QDialog):
             logging.exception(e)
 
     def transfer_device(self, source_column, tile):
-        if source_column == self.available_device_list:
-            self.action_device_list.add_device(self.available_device_list.remove_device(tile.device))
-        else:
-            self.available_device_list.add_device(self.action_device_list.remove_device(tile.device))
+        try:
+            if source_column == self.available_device_list:
+                self.action_device_list.add_device(self.available_device_list.remove_device(tile.device))
+            else:
+                self.available_device_list.add_device(self.action_device_list.remove_device(tile.device))
+        except Exception as e:
+            logging.error(f"Error transferring device: {e}")
+            logging.exception(e)
 
     def handle_scene_save_response(self, reply):
         try:
@@ -170,5 +182,3 @@ class SceneEditorFlyout(QDialog):
             exception_window.show()
             logging.error(f"Error saving scene: {e}")
             logging.exception(e)
-
-

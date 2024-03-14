@@ -9,14 +9,14 @@ from Utils.ScrollableMenu import ScrollableMenu
 
 class TriggerColumn(ScrollableMenu):
 
-    def __init__(self, parent):
+    def __init__(self, parent, name):
         super().__init__(parent, parent.font)
         self.parent = parent
         self.auth = parent.auth
         self.host = parent.host
         self.font = parent.font
 
-        self.setFixedSize(180, 375)
+        self.setFixedSize(200, 375)
 
         self.setStyleSheet("background-color: transparent; border: 2px solid #ffcd00; border-radius: 10px")
 
@@ -25,7 +25,7 @@ class TriggerColumn(ScrollableMenu):
         self.column_name.setFixedSize(185, 20)
         self.column_name.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.column_name.setStyleSheet("color: #ffcd00; font-size: 16px; font-weight: bold; border: none;")
-        self.column_name.setText("Triggers")
+        self.column_name.setText(f"{name} [0]")
 
         self.trigger_labels = []
 
@@ -39,10 +39,14 @@ class TriggerColumn(ScrollableMenu):
         pass
 
     def layout_widgets(self):
-        y = 20
-        for label in self.trigger_labels:
-            label.move(5, y)
-            y += label.height() + 5
-            label.show()
-        self.column_name.move(0, 0)
-        self.show()
+        try:
+            y = 20
+            for label in self.trigger_labels:
+                label.move(5, y)
+                y += label.height() + 5
+                label.show()
+            self.column_name.move(0, 0)
+            self.show()
+        except Exception as e:
+            logging.error(f"Error laying out trigger labels: {e}")
+            logging.exception(e)

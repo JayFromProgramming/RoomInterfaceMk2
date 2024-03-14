@@ -25,7 +25,7 @@ class DeviceColumn(ScrollableMenu):
         self.host = parent.host
         self.auth = parent.auth
         self.font = self.parent.font
-        self.setFixedSize(290, 490)
+        self.setFixedSize(290, self.parent.height() - 20)
         self.focused = True
         self.setStyleSheet("background-color: transparent; border: 2px solid #ffcd00; border-radius: 10px;"
                            "overflow: hidden;")
@@ -88,16 +88,20 @@ class DeviceColumn(ScrollableMenu):
         return False
 
     def add_device(self, device, group=None):
-        if isinstance(device, str):
-            tile = DeviceTile(self, device, group)
-        else:
-            device.setParent(self)
-            device.parent = self
-            tile = device
-        tile.show()
-        self.device_labels.append(tile)
-        self.column_name.setText(f"{self.name} [{len(self.device_labels)}]")
-        self.layout_widgets()
+        try:
+            if isinstance(device, str):
+                tile = DeviceTile(self, device, group)
+            else:
+                device.setParent(self)
+                device.parent = self
+                tile = device
+            tile.show()
+            self.device_labels.append(tile)
+            self.column_name.setText(f"{self.name} [{len(self.device_labels)}]")
+            self.layout_widgets()
+        except Exception as e:
+            logging.error(f"Error adding device to column: {e}")
+            logging.exception(e)
 
     def remove_device(self, device):
         for label in self.device_labels:

@@ -138,15 +138,19 @@ class SceneWidget(QLabel):
 
     def mousePressEvent(self, a0) -> None:
         # Manually check for double click events
-        if self.double_click_primed:
-            self.double_click_primed = False
-            self.double_click_timer.stop()
-            flyout = SceneEditorFlyout(self.parent, self.data)
-            flyout.exec()
-        else:
-            super(SceneWidget, self).mousePressEvent(a0)
-            self.double_click_primed = True
-            self.double_click_timer.start(450)
+        try:
+            if self.double_click_primed:
+                self.double_click_primed = False
+                self.double_click_timer.stop()
+                flyout = SceneEditorFlyout(self.parent, self.data)
+                flyout.exec()
+            else:
+                super(SceneWidget, self).mousePressEvent(a0)
+                self.double_click_primed = True
+                self.double_click_timer.start(450)
+        except Exception as e:
+            logging.error(f"Error in SceneWidget.mousePressEvent: {e}")
+            logging.exception(e)
 
     def resetDoubleClick(self):
         self.double_click_primed = False

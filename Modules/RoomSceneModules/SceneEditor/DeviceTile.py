@@ -26,7 +26,6 @@ class DeviceTile(QLabel):
         self.auth = parent.auth
         self.host = parent.host
         self.device = device
-        print(group)
         self.group = group
 
         self.human_name = None
