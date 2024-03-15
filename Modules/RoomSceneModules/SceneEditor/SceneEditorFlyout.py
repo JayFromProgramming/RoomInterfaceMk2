@@ -27,13 +27,13 @@ class SceneEditorFlyout(QDialog):
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
 
         self.selected_trigger_list = TriggerColumn(self, "Selected Automatic Triggers")
-        self.selected_trigger_list.setFixedSize(400, round((self.height() - 100) / 2))
+        self.selected_trigger_list.setFixedSize(400, round((self.height() - 110) / 2))
         self.selected_trigger_list.move(10, 5)
         self.selected_trigger_list.add_trigger(data['trigger_name'], {'trigger_type': data['trigger_type'],
                                                                       'trigger_value': data['trigger_value']})
 
         self.available_trigger_list = TriggerColumn(self, "Available Automatic Triggers")
-        self.available_trigger_list.setFixedSize(400, round((self.height() - 100) / 2))
+        self.available_trigger_list.setFixedSize(400, round((self.height() - 110) / 2))
         self.available_trigger_list.move(10, self.selected_trigger_list.y() + self.selected_trigger_list.height() + 10)
 
         if data['api_action'] is not None and len(data['api_action']) > 0:
@@ -92,7 +92,7 @@ class SceneEditorFlyout(QDialog):
         self.cancel_button.setFixedSize(195, 30)
         self.cancel_button.setText("Cancel Changes")
         self.cancel_button.move(self.save_button.x() + self.save_button.width() + 10, self.save_button.y())
-        self.cancel_button.setStyleSheet("background-color: orange; border: none; border-radius: 10px")
+        self.cancel_button.setStyleSheet("background-color: orange; border: none; border-radius: 10px; font-style: bold")
         self.cancel_button.show()
         self.cancel_button.clicked.connect(self.close)
 
