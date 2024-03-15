@@ -23,18 +23,18 @@ class SceneEditorFlyout(QDialog):
         self.setStyleSheet("background-color: transparent")
         self.setFixedSize(1024, 600)
         self.setWindowTitle(f"Scene Editor: {data['scene_id']}")
-        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
+        # self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
 
         self.selected_trigger_list = TriggerColumn(self, "Selected Triggers")
+        self.selected_trigger_list.setFixedSize(400, round((self.height() - 100) / 2))
         self.selected_trigger_list.move(10, 5)
-        # print(data)
-
         self.selected_trigger_list.add_trigger(data['trigger_name'], {'trigger_type': data['trigger_type'],
                                                                       'trigger_value': data['trigger_value']})
 
         self.available_trigger_list = TriggerColumn(self, "Available Triggers")
-        self.available_trigger_list.move(self.selected_trigger_list.x() + self.selected_trigger_list.width() + 10, 5)
+        self.available_trigger_list.setFixedSize(400, round((self.height() - 100) / 2))
+        self.available_trigger_list.move(10, self.selected_trigger_list.y() + self.selected_trigger_list.height() + 10)
 
         if data['api_action'] is not None and len(data['api_action']) > 0:
             api_action = json.loads(data["api_action"])
@@ -72,27 +72,36 @@ class SceneEditorFlyout(QDialog):
 
         self.save_button = QPushButton(self)
         self.save_button.setFont(self.font)
-        self.save_button.setFixedSize(180, 30)
+        self.save_button.setFixedSize(195, 30)
         self.save_button.setText("Save Scene")
-        self.save_button.move(10, self.selected_trigger_list.y() + self.selected_trigger_list.height() + 10)
+        self.save_button.move(10, self.available_trigger_list.y() + self.available_trigger_list.height() + 10)
         self.save_button.setStyleSheet("background-color: green; border: none; border-radius: 10px")
         self.save_button.show()
         self.save_button.clicked.connect(self.save_scene)
 
+        self.test_button = QPushButton(self)
+        self.test_button.setFont(self.font)
+        self.test_button.setFixedSize(195, 30)
+        self.test_button.setText("Test Scene")
+        self.test_button.move(10, self.save_button.y() + self.save_button.height() + 10)
+        self.test_button.setStyleSheet("background-color: #4080FF; border: none; border-radius: 10px")
+        self.test_button.show()
+
         self.cancel_button = QPushButton(self)
         self.cancel_button.setFont(self.font)
-        self.cancel_button.setFixedSize(180, 30)
-        self.cancel_button.setText("Cancel")
-        self.cancel_button.move(10, self.save_button.y() + self.save_button.height() + 10)
+        self.cancel_button.setFixedSize(195, 30)
+        self.cancel_button.setText("Cancel Changes")
+        self.cancel_button.move(self.save_button.x() + self.save_button.width() + 10, self.save_button.y())
         self.cancel_button.setStyleSheet("background-color: orange; border: none; border-radius: 10px")
         self.cancel_button.show()
         self.cancel_button.clicked.connect(self.close)
 
         self.delete_button = QPushButton(self)
         self.delete_button.setFont(self.font)
-        self.delete_button.setFixedSize(180, 30)
+        self.delete_button.setFixedSize(195, 30)
         self.delete_button.setText("Delete Scene")
-        self.delete_button.move(10, self.cancel_button.y() + self.cancel_button.height() + 10)
+        self.delete_button.move(self.cancel_button.x(),
+                                self.cancel_button.y() + self.cancel_button.height() + 10)
         self.delete_button.setStyleSheet("background-color: red; border: none; border-radius: 10px")
         self.delete_button.show()
 

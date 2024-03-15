@@ -16,16 +16,16 @@ class TriggerColumn(ScrollableMenu):
         self.host = parent.host
         self.font = parent.font
 
-        self.setFixedSize(200, 375)
+        # self.setFixedSize(400, 375)
 
         self.setStyleSheet("background-color: transparent; border: 2px solid #ffcd00; border-radius: 10px")
 
         self.column_name = QLabel(self)
         self.column_name.setFont(self.font)
-        self.column_name.setFixedSize(185, 20)
+        self.column_name.setFixedSize(200, 20)
         self.column_name.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.column_name.setStyleSheet("color: #ffcd00; font-size: 16px; font-weight: bold; border: none;")
-        self.column_name.setText(f"{name} [0]")
+        self.column_name.setText(f"{name}")
 
         self.trigger_labels = []
 
