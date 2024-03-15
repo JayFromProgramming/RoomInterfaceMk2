@@ -22,7 +22,7 @@ class SceneWidget(QLabel):
         self.device_names = {}
         self.description = data["action"]
 
-        self.is_immediate = data["trigger_type"] == "immediate"
+        self.is_immediate = True
 
         # Network managers
         self.scene_caller = QNetworkAccessManager()
@@ -33,14 +33,16 @@ class SceneWidget(QLabel):
         # Labels
         self.scene_name_label = QLabel(self)
         self.scene_name_label.setFont(self.font)
-        if len(data["trigger_name"]) > 11:
+        if data["name"] is None:
+            data["name"] = "Unnamed Scene"
+        if len(data["name"]) > 11:
             self.scene_name_label.setFixedSize(405, 20)
             self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         else:
             self.scene_name_label.setFixedSize(105, 20)
             self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.scene_name_label.setStyleSheet("color: black; font-size: 16px; font-weight: bold; border: none;")
-        self.scene_name_label.setText(f"{data['trigger_name']}")
+        self.scene_name_label.setText(f"{data['name']}")
         self.scene_name_label.move(7, 5)
 
         self.scene_description_label = QLabel(self)
@@ -64,12 +66,12 @@ class SceneWidget(QLabel):
         self.scene_trigger.setFixedSize(100, 30)
         self.scene_trigger.setStyleSheet("color: white; font-size: 14px; font-weight: bold; background-color: grey;"
                                          "border: none; border-radius: 10px")
-        if data["trigger_type"] == "immediate":
-            self.scene_trigger.setText("Trigger")
-            self.scene_trigger_label.setText("<pre>Immediate</pre>")
-        else:
-            self.scene_trigger.setText("Disable" if data["active"] else "Enable")
-            self.scene_trigger_label.setText(f"<pre>{data['trigger_type']}@{data['trigger_value']}</pre>")
+        # if data["trigger_type"] == "immediate":
+        self.scene_trigger.setText("Trigger")
+            # self.scene_trigger_label.setText("<pre>Immediate</pre>")
+        # else:
+        #     self.scene_trigger.setText("Disable" if data["active"] else "Enable")
+        #     self.scene_trigger_label.setText(f"<pre>{data['trigger_type']}@{data['trigger_value']}</pre>")
         self.scene_trigger.setFont(self.font)
         self.scene_trigger.clicked.connect(self.trigger_scene)
         self.scene_trigger.move(7, 30)

@@ -22,22 +22,24 @@ class SceneEditorFlyout(QDialog):
         # This is a flyout (popup) that will be used to edit a scene
         self.setStyleSheet("background-color: transparent")
         self.setFixedSize(1024, 600)
-        self.setWindowTitle(f"Scene Editor: {data['scene_id']}")
+        self.setWindowTitle(f"Scene Editor: {data['name']}")
         # self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
 
         self.selected_trigger_list = TriggerColumn(self, "Selected Automatic Triggers")
         self.selected_trigger_list.setFixedSize(400, round((self.height() - 110) / 2))
         self.selected_trigger_list.move(10, 5)
-        self.selected_trigger_list.add_trigger(data['trigger_name'], {'trigger_type': data['trigger_type'],
-                                                                      'trigger_value': data['trigger_value']})
+        for trigger in data['triggers']:
+            self.selected_trigger_list.add_trigger(trigger['trigger_type'], trigger)
+        self.selected_trigger_list.layout_widgets()
 
         self.available_trigger_list = TriggerColumn(self, "Available Automatic Triggers")
         self.available_trigger_list.setFixedSize(400, round((self.height() - 110) / 2))
         self.available_trigger_list.move(10, self.selected_trigger_list.y() + self.selected_trigger_list.height() + 10)
+        self.available_trigger_list.load_default_triggers()
 
-        if data['api_action'] is not None and len(data['api_action']) > 0:
-            api_action = json.loads(data["api_action"])
+        if data['data'] is not None and len(data['data']) > 0:
+            api_action = json.loads(data["data"])
         else:
             api_action = {}
 
@@ -179,7 +181,8 @@ class SceneEditorFlyout(QDialog):
             for tile in self.action_device_list.device_labels:
                 new_action_data[tile.device] = tile.action_data
             print(new_action_data)
-            request = QNetworkRequest(QUrl(f"http://{self.host}/update_scene/{self.starting_data['scene_id']}"))
+            request = QNetworkRequest(
+                QUrl(f"http://{self.host}/scene_action/update_scene/{self.starting_data['scene_id']}"))
             request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
             payload = {"scene_data": new_action_data}
             self.scene_saver.post(request, bytes(json.dumps(payload), 'utf-8'))
