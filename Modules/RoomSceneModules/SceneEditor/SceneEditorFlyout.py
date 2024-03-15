@@ -26,13 +26,13 @@ class SceneEditorFlyout(QDialog):
         # self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
 
-        self.selected_trigger_list = TriggerColumn(self, "Selected Triggers")
+        self.selected_trigger_list = TriggerColumn(self, "Selected Automatic Triggers")
         self.selected_trigger_list.setFixedSize(400, round((self.height() - 100) / 2))
         self.selected_trigger_list.move(10, 5)
         self.selected_trigger_list.add_trigger(data['trigger_name'], {'trigger_type': data['trigger_type'],
                                                                       'trigger_value': data['trigger_value']})
 
-        self.available_trigger_list = TriggerColumn(self, "Available Triggers")
+        self.available_trigger_list = TriggerColumn(self, "Available Automatic Triggers")
         self.available_trigger_list.setFixedSize(400, round((self.height() - 100) / 2))
         self.available_trigger_list.move(10, self.selected_trigger_list.y() + self.selected_trigger_list.height() + 10)
 
