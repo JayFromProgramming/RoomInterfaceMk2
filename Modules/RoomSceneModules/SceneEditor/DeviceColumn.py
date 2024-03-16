@@ -130,6 +130,10 @@ class DeviceColumn(ScrollableMenu):
 
     def layout_widgets(self):
         y = 30
+        if len(self.device_labels) == 0:
+            self.placeholder_label.show()
+        else:
+            self.placeholder_label.hide()
         # Sort widgets by their group and then by their type
         self.device_labels.sort(key=lambda x: (self.sort_order.get(x.type, 5)))
         for label in self.device_labels:

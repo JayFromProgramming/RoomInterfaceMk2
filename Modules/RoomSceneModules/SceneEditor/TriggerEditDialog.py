@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QDialog, QTextEdit
+from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QDialog, QLineEdit
 
 
 class TriggerEditDialog(QDialog):
@@ -12,13 +12,13 @@ class TriggerEditDialog(QDialog):
         """Trigger edits only edit the subtype and value. They also provide the ability to delete the trigger."""
         self.layout = QVBoxLayout()
 
-        self.subtype_edit = QTextEdit()
-        self.subtype_edit.setPlainText(self.subtype)
+        self.subtype_edit = QLineEdit()
+        self.subtype_edit.setText(self.subtype)
         self.subtype_edit.setFixedSize(200, 30)
         self.layout.addWidget(self.subtype_edit)
 
-        self.value_edit = QTextEdit()
-        self.value_edit.setPlainText(self.value)
+        self.value_edit = QLineEdit()
+        self.value_edit.setText(self.value)
         # Adjust the size of the value edit to not be too large
         self.value_edit.setFixedSize(200, 30)
         self.layout.addWidget(self.value_edit)
@@ -34,8 +34,8 @@ class TriggerEditDialog(QDialog):
         self.setLayout(self.layout)
 
     def accept(self):
-        self.subtype = self.subtype_edit.toPlainText()
-        self.value = self.value_edit.toPlainText()
+        self.subtype = self.subtype_edit.text()
+        self.value = self.value_edit.text()
         self.done(1)
 
     def delete(self):

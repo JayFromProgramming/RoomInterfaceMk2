@@ -58,7 +58,7 @@ class RoomSceneHost(ScrollableMenu):
             data = reply.readAll()
             data = data.data().decode("utf-8")
             data = json.loads(data)
-            logging.debug(f"Data: {data}")
+            # logging.debug(f"Data: {data}")
             self.retry_timer.stop()
             self.handle_scene_data(data["scenes"])
         except Exception as e:

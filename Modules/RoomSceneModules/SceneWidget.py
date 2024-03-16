@@ -36,7 +36,7 @@ class SceneWidget(QLabel):
         self.scene_name_label.setFont(self.font)
         if data["name"] is None:
             data["name"] = "Unnamed Scene"
-        if len(data["name"]) > 11:
+        if len(data["name"]) > 10:
             self.scene_name_label.setFixedSize(405, 20)
             self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         else:
@@ -69,10 +69,7 @@ class SceneWidget(QLabel):
                                          "border: none; border-radius: 10px")
         # if data["trigger_type"] == "immediate":
         self.scene_trigger.setText("Trigger")
-            # self.scene_trigger_label.setText("<pre>Immediate</pre>")
-        # else:
-        #     self.scene_trigger.setText("Disable" if data["active"] else "Enable")
-        #     self.scene_trigger_label.setText(f"<pre>{data['trigger_type']}@{data['trigger_value']}</pre>")
+        self.scene_trigger_label.setText(f"<pre>{len(self.data['triggers'])} Triggers</pre>")
         self.scene_trigger.setFont(self.font)
         self.scene_trigger.clicked.connect(self.trigger_scene)
         self.scene_trigger.move(7, 30)
@@ -115,7 +112,7 @@ class SceneWidget(QLabel):
         lines = []
         current_line = ""
         for action in description.split(", "):
-            if len(current_line + action) > 50:
+            if len(current_line + action) > 40:
                 lines.append(current_line[:-2])
                 current_line = ""
             current_line += f"{action}, "

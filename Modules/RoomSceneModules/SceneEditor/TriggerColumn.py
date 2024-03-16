@@ -54,7 +54,6 @@ class TriggerColumn(ScrollableMenu):
             trigger = TriggerTile(self, copy.deepcopy(trigger_type),
                                     copy.deepcopy(data) if data is not None else None)
             self.trigger_labels.append(trigger)
-            print(f"Trigger labels: {self.trigger_labels}")
             self.layout_widgets()
         except Exception as e:
             logging.error(f"Error adding trigger: {e}")

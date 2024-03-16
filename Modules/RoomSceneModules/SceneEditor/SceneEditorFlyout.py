@@ -2,7 +2,7 @@ import json
 
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel, QPushButton, QDialog, QMessageBox, QProgressDialog, QApplication
+from PyQt6.QtWidgets import QLabel, QPushButton, QDialog, QMessageBox, QProgressDialog, QApplication, QInputDialog
 from loguru import logger as logging
 
 from Modules.RoomSceneModules.SceneEditor.DeviceActionEditor import DeviceActionEditor
@@ -45,7 +45,8 @@ class SceneEditorFlyout(QDialog):
             api_action = {}
 
         self.action_device_list = DeviceColumn(self, "Selected Devices", api_action)
-        self.action_device_list.placeholder_label.hide()
+        self.action_device_list.placeholder_label.setText("No Devices Selected\nFor This Scene"
+                                                          "\n---\nClick Devices To Add Them")
 
         # Get the list of available devices from the master schema
 
@@ -95,7 +96,8 @@ class SceneEditorFlyout(QDialog):
         self.cancel_button.setFixedSize(195, 30)
         self.cancel_button.setText("Cancel Changes")
         self.cancel_button.move(self.save_button.x() + self.save_button.width() + 10, self.save_button.y())
-        self.cancel_button.setStyleSheet("background-color: orange; border: none; border-radius: 10px; font-style: bold")
+        self.cancel_button.setStyleSheet(
+            "background-color: orange; border: none; border-radius: 10px; font-style: bold")
         self.cancel_button.show()
         self.cancel_button.clicked.connect(self.close)
 
@@ -126,7 +128,6 @@ class SceneEditorFlyout(QDialog):
 
     def handle_schema_response(self, reply):
         try:
-            self.available_device_list.placeholder_label.hide()
             data = reply.readAll()
             try:
                 data = json.loads(str(data, 'utf-8'))
@@ -196,11 +197,11 @@ class SceneEditorFlyout(QDialog):
             new_trigger_data = []
             for trigger in self.selected_trigger_list.trigger_labels:
                 new_trigger_data.append(trigger.trigger_data)
-            print(new_action_data, new_trigger_data)
             request = QNetworkRequest(
                 QUrl(f"http://{self.host}/scene_action/update_scene/{self.scene_id}"))
             request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
-            payload = {"scene_data": new_action_data, "triggers": new_trigger_data}
+            payload = {"scene_data": new_action_data, "triggers": new_trigger_data,
+                       "scene_name": self.starting_data['name']}
             self.scene_saver.post(request, bytes(json.dumps(payload), 'utf-8'))
             # self.processing_request_dialog.show()
         except Exception as e:
@@ -209,4 +210,23 @@ class SceneEditorFlyout(QDialog):
             exception_window.setWindowTitle("Error Saving Scene")
             exception_window.show()
             logging.error(f"Error saving scene: {e}")
+            logging.exception(e)
+
+    def mouseReleaseEvent(self, a0) -> None:
+        try:
+            if a0.button() == Qt.MouseButton.RightButton:
+                rename_window = QInputDialog()
+                rename_window.setFixedSize(200, 30)
+                rename_window.setWindowTitle("Rename Scene")
+                rename_window.setLabelText("New Scene Name:")
+                rename_window.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
+                rename_window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
+                rename_window.setWindowFlag(Qt.WindowType.WindowTitleHint)
+                result = rename_window.exec()
+                if result == 1:
+                    new_name = rename_window.textValue()
+                    self.starting_data['name'] = new_name
+                    self.setWindowTitle(f"Scene Editor: {new_name}")
+        except Exception as e:
+            logging.error(f"Error renaming scene: {e}")
             logging.exception(e)
