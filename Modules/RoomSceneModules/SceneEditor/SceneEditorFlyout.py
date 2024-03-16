@@ -154,6 +154,18 @@ class SceneEditorFlyout(QDialog):
             logging.error(f"Error transferring device: {e}")
             logging.exception(e)
 
+    def transfer_trigger(self, trigger):
+        try:
+            if trigger in self.selected_trigger_list.trigger_labels:
+                self.selected_trigger_list.remove_trigger(trigger)
+                logging.debug(f"Removed trigger: {trigger.trigger_data}")
+            else:
+                self.selected_trigger_list.add_trigger(trigger.trigger_type, trigger.trigger_data)
+                logging.debug(f"Added trigger: {trigger.trigger_data}")
+        except Exception as e:
+            logging.error(f"Error transferring trigger: {e}")
+            logging.exception(e)
+
     def handle_scene_save_response(self, reply):
         try:
             data = reply.readAll()

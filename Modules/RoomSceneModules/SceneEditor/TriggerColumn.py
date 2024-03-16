@@ -1,3 +1,5 @@
+import copy
+
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel
@@ -49,12 +51,23 @@ class TriggerColumn(ScrollableMenu):
 
     def add_trigger(self, trigger_type, data=None):
         try:
-            trigger = TriggerTile(self, trigger_type, data)
+            trigger = TriggerTile(self, copy.deepcopy(trigger_type),
+                                    copy.deepcopy(data) if data is not None else None)
             self.trigger_labels.append(trigger)
+            print(f"Trigger labels: {self.trigger_labels}")
             self.layout_widgets()
         except Exception as e:
             logging.error(f"Error adding trigger: {e}")
             logging.exception(e)
+
+    def transfer_trigger(self, trigger):
+        self.parent.transfer_trigger(trigger)
+
+    def remove_trigger(self, trigger, without_replacement=False):
+        self.trigger_labels.remove(trigger)
+        if without_replacement:
+            trigger.deleteLater()
+        self.layout_widgets()
 
     def move_widgets(self, y):
         pass
@@ -72,6 +85,7 @@ class TriggerColumn(ScrollableMenu):
             # Layout one row and then move to the next when the row is full
             for trigger in self.trigger_labels:
                 trigger.move(x, y)
+                trigger.show()
                 x += trigger.width() + 5
                 if x + trigger.width() > self.width():
                     x = 5

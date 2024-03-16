@@ -1,7 +1,9 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel, QPushButton
+from PyQt6.QtWidgets import QLabel, QPushButton, QDialog
 from loguru import logger as logging
+
+from Modules.RoomSceneModules.SceneEditor.TriggerEditDialog import TriggerEditDialog
 
 
 class TriggerTile(QLabel):
@@ -12,6 +14,7 @@ class TriggerTile(QLabel):
         self.auth = parent.auth
         self.host = parent.host
         self.font = parent.font
+        self.trigger_type = trigger_type
 
         self.setFixedSize(192, 60)
 
@@ -68,6 +71,43 @@ class TriggerTile(QLabel):
         self.trigger_enable.setFont(self.font)
         self.trigger_enable.move(self.width() - self.trigger_enable.width() - 5,
                                  self.height() - self.trigger_enable.height() - 5)
+        self.trigger_enable.clicked.connect(self.toggle_trigger)
+
+    def toggle_trigger(self):
+        if self.trigger_data["enabled"] == 1:
+            self.trigger_data["enabled"] = 0
+            self.trigger_enable.setText("Enable")
+            self.trigger_enable.setStyleSheet("background-color: grey; border: 2px solid #ffcd00;"
+                                              " border-radius: 10px")
+        elif self.trigger_data["enabled"] == 0:
+            self.trigger_data["enabled"] = 1
+            self.trigger_enable.setText("Disable")
+            self.trigger_enable.setStyleSheet("background-color: green; border: 2px solid #ffcd00;"
+                                              " border-radius: 10px")
+        elif self.trigger_data["enabled"] == -1:
+            self.trigger_data["enabled"] = 1
+            self.parent.transfer_trigger(self)
+            self.trigger_data["enabled"] = -1
+
+    def mouseReleaseEvent(self, ev) -> None:
+        try:
+            # Open a 2 text input dialog to edit the trigger subtype and value
+            modal = TriggerEditDialog(self.trigger_data['trigger_subtype'], self.trigger_data['trigger_value'])
+            result = modal.exec()
+            if result == QDialog.DialogCode.Accepted:
+                self.trigger_data['trigger_subtype'] = modal.subtype
+                self.trigger_data['trigger_value'] = modal.value
+                self.trigger_data_label.setText(f"Val: {self.trigger_data['trigger_subtype']}\n"
+                                                f"Arg: {self.trigger_data['trigger_value']}")
+            elif result == QDialog.DialogCode.Rejected:
+                logging.info("Trigger edit dialog was rejected")
+            elif result == 2:
+                self.parent.remove_trigger(self, True)
+            else:
+                logging.error(f"Trigger edit dialog returned an unexpected value: {modal.exec()}")
+        except Exception as e:
+            logging.error(f"Error editing trigger: {e}")
+            logging.exception(e)
 
     def resizeEvent(self, a0) -> None:
         self.trigger_name.setFixedSize(self.width(), 20)
