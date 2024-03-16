@@ -160,7 +160,11 @@ class ForecastEntry(QLabel):
             # date is mm/dd
             self.date_label.setText(reference_time.toString("MM/dd"))
             self.time_label.setText(reference_time.toString("hAP"))
-            self.status_label.setText(data["status"])
+            if data["status"] == "Snow" or data["status"] == "Rain":
+                # Get the first letter from the detailed status and add it so it shows as "L.Snow" or "L.Rain" ect
+                self.status_label.setText(f"{data['detailed_status'][0].upper()}.{data['status']}")
+            else:
+                self.status_label.setText(data["status"])
             temperature = kelvin_to_fahrenheit(data["temperature"]["temp"])
             self.temperature_label.setText(f"{round(temperature)}°F")
             feels_like = kelvin_to_fahrenheit(data["temperature"]["feels_like"])
