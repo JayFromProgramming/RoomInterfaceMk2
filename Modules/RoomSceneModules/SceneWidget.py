@@ -29,12 +29,14 @@ class SceneWidget(QLabel):
             self.is_new = True
             self.data = {
                 "name": "Create New Scene",
+                "description": "Double click to edit",
                 "action": "",
+                "data": "{}",
                 "triggers": [],
                 "trigger_type": "immediate"
             }
 
-        self.description = self.data["action"]
+        self.description = self.data["description"] if "description" in self.data else "No description"
 
         # Network managers
         self.scene_caller = QNetworkAccessManager()
@@ -47,47 +49,54 @@ class SceneWidget(QLabel):
         self.scene_name_label.setFont(self.font)
         if self.data["name"] is None:
             self.data["name"] = "Unnamed Scene"
-        if len(self.data["name"]) > 10:
-            self.scene_name_label.setFixedSize(405, 20)
-            self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        else:
-            self.scene_name_label.setFixedSize(105, 20)
-            self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
+        self.scene_name_label.setFixedSize(self.width(), 20)
+        self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.scene_name_label.setStyleSheet("color: black; font-size: 16px; font-weight: bold; border: none;")
         self.scene_name_label.setText(f"{self.data['name']}")
-        self.scene_name_label.move(7, 5)
+        self.scene_name_label.move(0, 5)
 
         self.scene_description_label = QLabel(self)
         self.scene_description_label.setFont(self.font)
-        self.scene_description_label.setFixedSize(380, 60)
+        self.scene_description_label.setFixedSize(self.width() - 10, 23)
         self.scene_description_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         self.scene_description_label.setStyleSheet("color: black; font-size: 13px; font-weight: bold; "
-                                                   "border: 2px solid black; border-radius: 10px;"
+                                                   "border: 2px solid black; border-radius: 5px;"
                                                    " background-color: transparent;")
-        self.scene_description_label.move(115, 25)
+        self.scene_description_label.move(5, self.scene_name_label.y() + self.scene_name_label.height() + 2)
         self.scene_description_label.setWordWrap(True)
-        # self.scene_description_label.setText(f"<pre>{self.description}</pre>")
-
-        self.scene_trigger_label = QLabel(self)
-        self.scene_trigger_label.setFont(self.font)
-        self.scene_trigger_label.setFixedSize(100, 20)
-        self.scene_trigger_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
-        self.scene_trigger_label.setStyleSheet("color: black; font-size: 12px; font-weight: bold; border: none;")
-        self.scene_trigger_label.move(7, 60)
+        self.scene_description_label.setText(f"<pre>{self.description}</pre>")
 
         self.scene_trigger = QPushButton(self)
-        self.scene_trigger.setFixedSize(100, 30)
+        self.scene_trigger.setFixedSize(70, 30)
         self.scene_trigger.setStyleSheet("color: white; font-size: 14px; font-weight: bold; background-color: grey;"
                                          "border: none; border-radius: 10px")
-        # if data["trigger_type"] == "immediate":
         if self.is_new:
             self.scene_trigger.setText("N/A")
         else:
-            self.scene_trigger.setText("Trigger")
-        self.scene_trigger_label.setText(f"<pre>{len(self.data['triggers'])} Triggers</pre>")
+            self.scene_trigger.setText("Run")
         self.scene_trigger.setFont(self.font)
         self.scene_trigger.clicked.connect(self.trigger_scene)
-        self.scene_trigger.move(7, 30)
+        self.scene_trigger.move(5, self.height() - self.scene_trigger.height() - 5)
+
+        self.scene_trigger_label = QLabel(self)
+        self.scene_trigger_label.setFont(self.font)
+        self.scene_trigger_label.setFixedSize(self.width() - self.scene_trigger.width() - 10, 30)
+        self.scene_trigger_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.scene_trigger_label.setStyleSheet("color: black; font-size: 12px; font-weight: bold; border: none;")
+
+        trig_count = len(self.data['triggers'])
+        enabled_trig_count = 0
+        for trigger in self.data['triggers']:
+            if trigger['enabled']:
+                enabled_trig_count += 1
+        try:
+            act_count = len(json.loads(self.data['data']))
+        except Exception as e:
+            act_count = -1
+        self.scene_trigger_label.setText(f"<pre>{trig_count} Trigger{'' if trig_count == 1 else 's'} | "
+                                         f"{enabled_trig_count} Enabled\n"
+                                         f"{act_count} Device{'' if act_count == 1 else 's'}</pre>")
+        self.scene_trigger_label.move(self.scene_trigger.x() + self.scene_trigger.width() + 5, self.scene_trigger.y())
 
         self.double_click_timer = QTimer(self)
         self.double_click_timer.setSingleShot(True)

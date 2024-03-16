@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
             self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
             self.menu_bar.scenes_expand.setText("↓Scene Control↓")
             self.forecast.hide()
-            self.refocus_timer.start(60000)  # 15 seconds
+            self.refocus_timer.start(120000)
 
     def get_font(self, name: str):
         # Load the custom font from a file
