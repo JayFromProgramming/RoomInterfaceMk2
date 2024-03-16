@@ -147,6 +147,7 @@ class MainWindow(QMainWindow):
             self.forecast.setFixedSize(self.width(), self.forecast.height())
             self.forecast.layout_widgets()
             self.room_control.resizeEvent(event)
+            self.scene_control.resizeEvent(event)
         except Exception as e:
             logging.exception(e)
 

@@ -14,6 +14,7 @@ class RoomSceneHost(ScrollableMenu):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.parent = parent
         self.setFixedSize(parent.width(), parent.height() - self.y())
 
         self.setStyleSheet("border: 2px solid #ffcd00; border-radius: 10px")
@@ -79,6 +80,11 @@ class RoomSceneHost(ScrollableMenu):
         self.scene_widgets.append(SceneWidget(self, None, None))
         self.layout_widgets()
 
+    def resizeEvent(self, a0) -> None:
+        super().resizeEvent(a0)
+        self.setFixedSize(self.parent.width(), self.height())
+        self.layout_widgets()
+
     def move_widgets(self, offset):
         offset = round(offset)
         for widget in self.scene_widgets:
@@ -92,15 +98,23 @@ class RoomSceneHost(ScrollableMenu):
 
         # Lay the widgets out row by row with a 10 pixel margin
         y_offset = 20
-        x_offset = 10
+        x_offset = 5
+        first_row_x_offset = 0
         # Start a new row when the widgets won't fit on the current row
         for widget in self.scene_widgets:
             widget.move(x_offset, y_offset)
             widget.show()
-            x_offset += widget.width() + 10
+            x_offset += widget.width() + 7
             # Wrap around to the next row if the widget won't fit on the current row
             if x_offset + widget.width() > self.width():
-                x_offset = 10
+                if first_row_x_offset == 0:
+                    # If centering is enabled, calculate the remaining space of the first row from the boarder
+                    first_row_x_offset = round((self.width() - x_offset) / 2)
+                x_offset = 5
                 y_offset += widget.height() + 10
+
+        # Center the widgets
+        for widget in self.scene_widgets:
+            widget.move(widget.x() + first_row_x_offset, widget.y())
 
 

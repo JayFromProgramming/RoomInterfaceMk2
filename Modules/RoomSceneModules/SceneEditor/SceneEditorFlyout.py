@@ -82,8 +82,8 @@ class SceneEditorFlyout(QDialog):
         self.schema_getter = QNetworkAccessManager()
         self.schema_getter.finished.connect(self.handle_schema_response)
 
-        self.scene_saver = QNetworkAccessManager()
-        self.scene_saver.finished.connect(self.handle_scene_save_response)
+        self.scene_request = QNetworkAccessManager()
+        self.scene_request.finished.connect(self.handle_scene_response)
 
         # self.processing_request_dialog = QProgressDialog()
         # # self.processing_request_dialog.setFixedSize(400, 200)
@@ -129,6 +129,7 @@ class SceneEditorFlyout(QDialog):
                                 self.cancel_button.y() + self.cancel_button.height() + 10)
         self.delete_button.setStyleSheet("background-color: red; border: none; border-radius: 10px")
         self.delete_button.show()
+        self.delete_button.clicked.connect(self.delete_scene)
 
         self.get_schema()
 
@@ -187,7 +188,7 @@ class SceneEditorFlyout(QDialog):
             logging.error(f"Error transferring trigger: {e}")
             logging.exception(e)
 
-    def handle_scene_save_response(self, reply):
+    def handle_scene_response(self, reply):
         try:
             data = reply.readAll()
             data = json.loads(str(data, 'utf-8'))
@@ -199,8 +200,8 @@ class SceneEditorFlyout(QDialog):
                 # self.processing_request_dialog.hide()
                 exception_window = QMessageBox()
                 exception_window.setFixedSize(400, 200)
-                exception_window.setWindowTitle("Error Saving Scene")
-                exception_window.setText(f"Server Error While Saving Scene")
+                exception_window.setWindowTitle("Error Processing Request")
+                exception_window.setText(f"Server Error While Processing Request")
                 exception_window.setInformativeText(data['result'])
                 exception_window.setIcon(QMessageBox.Icon.Critical)
                 exception_window.show()
@@ -226,7 +227,7 @@ class SceneEditorFlyout(QDialog):
             request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
             payload = {"scene_data": new_action_data, "triggers": new_trigger_data,
                        "scene_name": self.starting_data['name']}
-            self.scene_saver.post(request, bytes(json.dumps(payload), 'utf-8'))
+            self.scene_request.post(request, bytes(json.dumps(payload), 'utf-8'))
             # self.processing_request_dialog.show()
         except Exception as e:
             exception_window = QDialog(self)
@@ -235,6 +236,37 @@ class SceneEditorFlyout(QDialog):
             exception_window.show()
             logging.error(f"Error saving scene: {e}")
             logging.exception(e)
+
+    def confirm_delete(self):
+        confirm_window = QMessageBox()
+        confirm_window.setFixedSize(400, 200)
+        confirm_window.setWindowTitle("Confirm Delete")
+        confirm_window.setText(f"Are you sure you want to delete the scene {self.starting_data['name']}?")
+        confirm_window.setInformativeText("This action cannot be undone")
+        confirm_window.setIcon(QMessageBox.Icon.Warning)
+        confirm_window.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        confirm_window.setDefaultButton(QMessageBox.StandardButton.No)
+        confirm_window.show()
+        result = confirm_window.exec()
+        if result == 16384:
+            return True
+        return False
+
+    def delete_scene(self):
+        try:
+            if self.confirm_delete():
+                request = QNetworkRequest(
+                    QUrl(f"http://{self.host}/scene_action/delete_scene/{self.scene_id}"))
+                request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+                self.scene_request.post(request, bytes(json.dumps({}), 'utf-8'))
+        except Exception as e:
+            exception_window = QDialog(self)
+            exception_window.setFixedSize(400, 200)
+            exception_window.setWindowTitle("Error Deleting Scene")
+            exception_window.show()
+            logging.error(f"Error deleting scene: {e}")
+            logging.exception(e)
+
 
     def request_scene_name(self):
         rename_window = QInputDialog()

@@ -175,7 +175,7 @@ class SceneWidget(QLabel):
                     flyout = SceneEditorFlyout(self.parent, None, None)
                 else:
                     flyout = SceneEditorFlyout(self.parent, self.scene_id, self.data)
-                flyout.exec()
+                flyout.show()
             else:
                 super(SceneWidget, self).mousePressEvent(a0)
                 self.double_click_primed = True
