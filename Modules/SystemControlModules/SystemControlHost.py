@@ -69,6 +69,16 @@ class SystemControlHost(ScrollableMenu):
     def handle_system_data(self, data):
         pass
 
+    def showEvent(self, a0) -> None:
+        for widget in self.system_widgets:
+            widget.show()
+        super().showEvent(a0)
+
+    def hideEvent(self, a0) -> None:
+        for widget in self.system_widgets:
+            widget.hide()
+        super().hideEvent(a0)
+
     def layout_widgets(self):
         # Lay the widgets out row by row with a 10 pixel margin
         y_offset = 10

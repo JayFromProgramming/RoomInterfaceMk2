@@ -37,7 +37,7 @@ class InterfaceControl(QLabel):
 
         self.interface_stats_update_timer = QTimer(self)
         self.interface_stats_update_timer.timeout.connect(self.update_interface_stats)
-        self.interface_stats_update_timer.start(1000)
+        # self.interface_stats_update_timer.start(1000)
         self.last_network_bytes = 0
 
         # self.action_title_label = QLabel(self)

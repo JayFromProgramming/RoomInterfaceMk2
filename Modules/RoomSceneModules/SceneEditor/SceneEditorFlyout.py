@@ -211,14 +211,18 @@ class SceneEditorFlyout(QDialog):
 
     def save_scene(self):
         try:
+            if self.is_new and not self.has_set_name:
+                if not self.request_scene_name():
+                    return
             new_action_data = {}
             for tile in self.action_device_list.device_labels:
                 new_action_data[tile.device] = tile.action_data
             new_trigger_data = []
             for trigger in self.selected_trigger_list.trigger_labels:
                 new_trigger_data.append(trigger.trigger_data)
+            action = "add_scene" if self.is_new else "update_scene"
             request = QNetworkRequest(
-                QUrl(f"http://{self.host}/scene_action/update_scene/{self.scene_id}"))
+                QUrl(f"http://{self.host}/scene_action/{action}/{self.scene_id}"))
             request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
             payload = {"scene_data": new_action_data, "triggers": new_trigger_data,
                        "scene_name": self.starting_data['name']}
@@ -232,20 +236,26 @@ class SceneEditorFlyout(QDialog):
             logging.error(f"Error saving scene: {e}")
             logging.exception(e)
 
+    def request_scene_name(self):
+        rename_window = QInputDialog()
+        rename_window.setFixedSize(200, 30)
+        rename_window.setWindowTitle("Rename Scene")
+        rename_window.setLabelText("New Scene Name:")
+        rename_window.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
+        rename_window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
+        rename_window.setWindowFlag(Qt.WindowType.WindowTitleHint)
+        result = rename_window.exec()
+        if result == 1:
+            new_name = rename_window.textValue()
+            self.starting_data['name'] = new_name
+            self.setWindowTitle(f"Scene Editor: {new_name}")
+            return True
+        return False
+
     def titleClicked(self, a0) -> None:
         try:
-            rename_window = QInputDialog()
-            rename_window.setFixedSize(200, 30)
-            rename_window.setWindowTitle("Rename Scene")
-            rename_window.setLabelText("New Scene Name:")
-            rename_window.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
-            rename_window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
-            rename_window.setWindowFlag(Qt.WindowType.WindowTitleHint)
-            result = rename_window.exec()
-            if result == 1:
-                new_name = rename_window.textValue()
-                self.starting_data['name'] = new_name
-                self.setWindowTitle(f"Scene Editor: {new_name}")
+            self.request_scene_name()
+            self.has_set_name = True
         except Exception as e:
             logging.error(f"Error renaming scene: {e}")
             logging.exception(e)

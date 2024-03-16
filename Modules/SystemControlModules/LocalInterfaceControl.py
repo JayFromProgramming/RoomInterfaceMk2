@@ -33,10 +33,12 @@ class LocalInterfaceControl(InterfaceControl):
     def hideEvent(self, a0):
         super().hideEvent(a0)
         self.version_check_timer.stop()
+        self.interface_stats_update_timer.stop()
 
     def showEvent(self, a0):
         super().showEvent(a0)
         self.version_check_timer.start(1000 * 60)
+        self.interface_stats_update_timer.start(1000)
         # self.check_version()
 
     def check_version(self):
