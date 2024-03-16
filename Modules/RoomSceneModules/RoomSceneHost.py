@@ -74,8 +74,8 @@ class RoomSceneHost(ScrollableMenu):
         self.make_request()
 
     def handle_scene_data(self, data):
-        for scene in data.values():
-            self.scene_widgets.append(SceneWidget(self, scene))
+        for name, scene in data.items():
+            self.scene_widgets.append(SceneWidget(self, name, scene))
         self.layout_widgets()
 
     def move_widgets(self, offset):

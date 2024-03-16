@@ -11,11 +11,12 @@ from Modules.RoomSceneModules.SceneEditor.TriggerColumn import TriggerColumn
 
 
 class SceneEditorFlyout(QDialog):
-    def __init__(self, parent=None, data=None):
+    def __init__(self, parent=None, scene_id=None, data=None):
         super().__init__()
         self.parent = parent
         self.host = parent.host
         self.auth = parent.auth
+        self.scene_id = scene_id
         self.starting_data = data
         self.font = self.parent.font
 
@@ -180,11 +181,14 @@ class SceneEditorFlyout(QDialog):
             new_action_data = {}
             for tile in self.action_device_list.device_labels:
                 new_action_data[tile.device] = tile.action_data
-            print(new_action_data)
+            new_trigger_data = []
+            for trigger in self.selected_trigger_list.trigger_labels:
+                new_trigger_data.append(trigger.trigger_data)
+            print(new_action_data, new_trigger_data)
             request = QNetworkRequest(
-                QUrl(f"http://{self.host}/scene_action/update_scene/{self.starting_data['scene_id']}"))
+                QUrl(f"http://{self.host}/scene_action/update_scene/{self.scene_id}"))
             request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
-            payload = {"scene_data": new_action_data}
+            payload = {"scene_data": new_action_data, "triggers": new_trigger_data}
             self.scene_saver.post(request, bytes(json.dumps(payload), 'utf-8'))
             # self.processing_request_dialog.show()
         except Exception as e:

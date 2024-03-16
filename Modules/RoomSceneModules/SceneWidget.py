@@ -9,11 +9,12 @@ from Modules.RoomSceneModules.SceneEditor.SceneEditorFlyout import SceneEditorFl
 
 class SceneWidget(QLabel):
 
-    def __init__(self, parent=None, data=None):
+    def __init__(self, parent=None, scene_id=None, data=None):
         super().__init__(parent)
         self.parent = parent
         self.host = parent.host
         self.auth = parent.auth
+        self.scene_id = scene_id
         self.data = data
         self.font = self.parent.font
         self.setStyleSheet("background-color: #ffcd00; border: 2px solid #ffcd00; border-radius: 10px")
@@ -144,7 +145,7 @@ class SceneWidget(QLabel):
             if self.double_click_primed:
                 self.double_click_primed = False
                 self.double_click_timer.stop()
-                flyout = SceneEditorFlyout(self.parent, self.data)
+                flyout = SceneEditorFlyout(self.parent, self.scene_id, self.data)
                 flyout.exec()
             else:
                 super(SceneWidget, self).mousePressEvent(a0)

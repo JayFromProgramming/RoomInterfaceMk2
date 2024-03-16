@@ -27,33 +27,37 @@ class TriggerTile(QLabel):
         self.trigger_name.move(5, 0)
 
         if data is None:
-            data = {
+            self.trigger_data = {
+                "trigger_id": "0",  # "0" is a placeholder for "new trigger"
                 "trigger_type": trigger_type,
                 "trigger_subtype": None,
                 "trigger_value": None,
                 "enabled": -1
             }
+        else:
+            self.trigger_data = data
 
-        self.trigger_data = QLabel(self)
-        self.trigger_data.setFont(self.font)
-        self.trigger_data.setFixedSize(self.width(), 300)
-        self.trigger_data.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        self.trigger_data.setStyleSheet("color: black; font-size: 12px; font-weight: bold; border: none; "
-                                        "background-color: transparent")
-        self.trigger_data.setText(f"Val: {data['trigger_subtype']}\nArg: {data['trigger_value']}")
-        self.trigger_data.move(5, 20)
+        self.trigger_data_label = QLabel(self)
+        self.trigger_data_label.setFont(self.font)
+        self.trigger_data_label.setFixedSize(self.width(), 300)
+        self.trigger_data_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        self.trigger_data_label.setStyleSheet("color: black; font-size: 12px; font-weight: bold; border: none; "
+                                              "background-color: transparent")
+        self.trigger_data_label.setText(f"Val: {self.trigger_data['trigger_subtype']}\n"
+                                        f"Arg: {self.trigger_data['trigger_value']}")
+        self.trigger_data_label.move(5, 20)
 
         self.trigger_enable = QPushButton(self)
         self.trigger_enable.setFixedSize(60, 30)
-        if data["enabled"] == 1:
+        if self.trigger_data["enabled"] == 1:
             self.trigger_enable.setText("Disable")
             self.trigger_enable.setStyleSheet("background-color: green; border: 2px solid #ffcd00;"
                                               " border-radius: 10px")
-        elif data["enabled"] == 0:
+        elif self.trigger_data["enabled"] == 0:
             self.trigger_enable.setText("Enable")
             self.trigger_enable.setStyleSheet("background-color: grey; border: 2px solid #ffcd00;"
                                               " border-radius: 10px")
-        elif data["enabled"] == -1:
+        elif self.trigger_data["enabled"] == -1:
             self.trigger_enable.setText("Add")
             self.trigger_enable.setStyleSheet("background-color: grey; border: 2px solid #ffcd00;"
                                               " border-radius: 10px")
@@ -67,8 +71,5 @@ class TriggerTile(QLabel):
 
     def resizeEvent(self, a0) -> None:
         self.trigger_name.setFixedSize(self.width(), 20)
-        self.trigger_data.setFixedSize(self.width(), 300)
+        self.trigger_data_label.setFixedSize(self.width(), 300)
         super().resizeEvent(a0)
-
-
-
