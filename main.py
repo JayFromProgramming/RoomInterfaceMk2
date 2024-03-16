@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
             self.room_control.move(0, 90)
             self.room_control.set_focus(True)
             self.menu_bar.room_control_expand.setText("↓Room Control↓")
-            self.refocus_timer.start(30000)  # 15 seconds
+            self.refocus_timer.start(60000)  # 15 seconds
             self.forecast.hide()
 
     def focus_system_control(self, force_close=False):
@@ -101,7 +101,7 @@ class MainWindow(QMainWindow):
                 self.system_control.show()
                 self.menu_bar.system_control_expand.setText("↓System Control↓")
                 self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
-                self.refocus_timer.start(30000)  # 15 seconds
+                self.refocus_timer.start(60000)  # 15 seconds
                 self.forecast.hide()
         except Exception as e:
             logging.exception(e)
@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
             self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
             self.menu_bar.scenes_expand.setText("↓Scene Control↓")
             self.forecast.hide()
-            self.refocus_timer.start(30000)  # 15 seconds
+            self.refocus_timer.start(60000)  # 15 seconds
 
     def get_font(self, name: str):
         # Load the custom font from a file

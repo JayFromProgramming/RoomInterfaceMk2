@@ -74,8 +74,9 @@ class RoomSceneHost(ScrollableMenu):
         self.make_request()
 
     def handle_scene_data(self, data):
-        for name, scene in data.items():
-            self.scene_widgets.append(SceneWidget(self, name, scene))
+        for scene_id, scene in data.items():
+            self.scene_widgets.append(SceneWidget(self, scene_id, scene))
+        self.scene_widgets.append(SceneWidget(self, None, None))
         self.layout_widgets()
 
     def move_widgets(self, offset):
@@ -87,7 +88,7 @@ class RoomSceneHost(ScrollableMenu):
     def layout_widgets(self):
 
         # Sort the scenes by immediate requests first
-        self.scene_widgets.sort(key=lambda x: x.is_immediate, reverse=True)
+        # self.scene_widgets.sort(key=lambda x: x.is_immediate, reverse=True)
 
         # Lay the widgets out row by row with a 10 pixel margin
         y_offset = 20

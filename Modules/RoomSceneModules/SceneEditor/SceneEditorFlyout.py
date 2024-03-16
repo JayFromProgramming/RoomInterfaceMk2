@@ -20,17 +20,37 @@ class SceneEditorFlyout(QDialog):
         self.starting_data = data
         self.font = self.parent.font
 
+        self.is_new = True if scene_id is None and data is None else False
+        self.has_set_name = False
+
+        # If both the scene_id and data are None, we are creating a new scene
+        if self.is_new:
+            self.setWindowTitle("Create New Scene")
+            self.starting_data = {
+                "name": "Unnamed Scene",
+                "triggers": [],
+                "data": None
+            }
+
         # This is a flyout (popup) that will be used to edit a scene
         self.setStyleSheet("background-color: transparent")
         self.setFixedSize(1024, 600)
-        self.setWindowTitle(f"Scene Editor: {data['name']}")
+        self.setWindowTitle(f"Scene Editor: {self.starting_data['name']}")
         # self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
 
+        self.title_label = QLabel(self)
+        self.title_label.setFont(self.font)
+        self.title_label.setFixedSize(1024, 20)
+        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
+        self.title_label.setStyleSheet("color: #ffcd00; font-size: 16px; font-weight: bold; border: none;")
+        self.title_label.setText(f"Editing Scene: {self.starting_data['name']}")
+        self.title_label.mousePressEvent = self.titleClicked
+
         self.selected_trigger_list = TriggerColumn(self, "Selected Automatic Triggers")
-        self.selected_trigger_list.setFixedSize(400, round((self.height() - 110) / 2))
-        self.selected_trigger_list.move(10, 5)
-        for trigger in data['triggers']:
+        self.selected_trigger_list.setFixedSize(400, round((self.height() - 110) / 2) - 20)
+        self.selected_trigger_list.move(10, 25)
+        for trigger in self.starting_data['triggers']:
             self.selected_trigger_list.add_trigger(trigger['trigger_type'], trigger)
         self.selected_trigger_list.layout_widgets()
 
@@ -39,8 +59,8 @@ class SceneEditorFlyout(QDialog):
         self.available_trigger_list.move(10, self.selected_trigger_list.y() + self.selected_trigger_list.height() + 10)
         self.available_trigger_list.load_default_triggers()
 
-        if data['data'] is not None and len(data['data']) > 0:
-            api_action = json.loads(data["data"])
+        if self.starting_data['data'] is not None and len(self.starting_data['data']) > 0:
+            api_action = json.loads(self.starting_data["data"])
         else:
             api_action = {}
 
@@ -53,9 +73,9 @@ class SceneEditorFlyout(QDialog):
         self.available_device_list = DeviceColumn(self, "Available Devices")
 
         # Move both lists to the very right
-        self.action_device_list.move(self.width() - self.action_device_list.width() - 10, 5)
+        self.action_device_list.move(self.width() - self.action_device_list.width() - 10, 25)
         # Put the available devices to the left of the action devices
-        self.available_device_list.move(self.action_device_list.x() - self.available_device_list.width() - 10, 5)
+        self.available_device_list.move(self.action_device_list.x() - self.available_device_list.width() - 10, 25)
 
         # self.action_editor = DeviceActionEditor(self)
 
@@ -77,7 +97,7 @@ class SceneEditorFlyout(QDialog):
         self.save_button = QPushButton(self)
         self.save_button.setFont(self.font)
         self.save_button.setFixedSize(195, 30)
-        self.save_button.setText("Save Scene")
+        self.save_button.setText(f"Save Scene {'As New' if self.is_new else ''}")
         self.save_button.move(10, self.available_trigger_list.y() + self.available_trigger_list.height() + 10)
         self.save_button.setStyleSheet("background-color: green; border: none; border-radius: 10px")
         self.save_button.show()
@@ -212,21 +232,20 @@ class SceneEditorFlyout(QDialog):
             logging.error(f"Error saving scene: {e}")
             logging.exception(e)
 
-    def mouseReleaseEvent(self, a0) -> None:
+    def titleClicked(self, a0) -> None:
         try:
-            if a0.button() == Qt.MouseButton.RightButton:
-                rename_window = QInputDialog()
-                rename_window.setFixedSize(200, 30)
-                rename_window.setWindowTitle("Rename Scene")
-                rename_window.setLabelText("New Scene Name:")
-                rename_window.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
-                rename_window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
-                rename_window.setWindowFlag(Qt.WindowType.WindowTitleHint)
-                result = rename_window.exec()
-                if result == 1:
-                    new_name = rename_window.textValue()
-                    self.starting_data['name'] = new_name
-                    self.setWindowTitle(f"Scene Editor: {new_name}")
+            rename_window = QInputDialog()
+            rename_window.setFixedSize(200, 30)
+            rename_window.setWindowTitle("Rename Scene")
+            rename_window.setLabelText("New Scene Name:")
+            rename_window.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
+            rename_window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
+            rename_window.setWindowFlag(Qt.WindowType.WindowTitleHint)
+            result = rename_window.exec()
+            if result == 1:
+                new_name = rename_window.textValue()
+                self.starting_data['name'] = new_name
+                self.setWindowTitle(f"Scene Editor: {new_name}")
         except Exception as e:
             logging.error(f"Error renaming scene: {e}")
             logging.exception(e)

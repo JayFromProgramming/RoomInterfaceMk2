@@ -25,7 +25,7 @@ class DeviceColumn(ScrollableMenu):
         self.host = parent.host
         self.auth = parent.auth
         self.font = self.parent.font
-        self.setFixedSize(290, self.parent.height() - 20)
+        self.setFixedSize(290, self.parent.height() - 40)
         self.focused = True
         self.setStyleSheet("background-color: transparent; border: 2px solid #ffcd00; border-radius: 10px;"
                            "overflow: hidden;")

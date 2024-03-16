@@ -19,12 +19,22 @@ class SceneWidget(QLabel):
         self.data = data
         self.font = self.parent.font
         self.setStyleSheet("background-color: #ffcd00; border: 2px solid #ffcd00; border-radius: 10px")
-        self.setFixedSize(500, 90)
+        self.setFixedSize(245, 90)
 
         self.device_names = {}
-        self.description = data["action"]
+        self.is_new = False
 
-        self.is_immediate = True
+        # If scene_id is None and data is None, this is a new scene
+        if scene_id is None and data is None:
+            self.is_new = True
+            self.data = {
+                "name": "Create New Scene",
+                "action": "",
+                "triggers": [],
+                "trigger_type": "immediate"
+            }
+
+        self.description = self.data["action"]
 
         # Network managers
         self.scene_caller = QNetworkAccessManager()
@@ -35,16 +45,16 @@ class SceneWidget(QLabel):
         # Labels
         self.scene_name_label = QLabel(self)
         self.scene_name_label.setFont(self.font)
-        if data["name"] is None:
-            data["name"] = "Unnamed Scene"
-        if len(data["name"]) > 10:
+        if self.data["name"] is None:
+            self.data["name"] = "Unnamed Scene"
+        if len(self.data["name"]) > 10:
             self.scene_name_label.setFixedSize(405, 20)
             self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         else:
             self.scene_name_label.setFixedSize(105, 20)
             self.scene_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.scene_name_label.setStyleSheet("color: black; font-size: 16px; font-weight: bold; border: none;")
-        self.scene_name_label.setText(f"{data['name']}")
+        self.scene_name_label.setText(f"{self.data['name']}")
         self.scene_name_label.move(7, 5)
 
         self.scene_description_label = QLabel(self)
@@ -52,10 +62,11 @@ class SceneWidget(QLabel):
         self.scene_description_label.setFixedSize(380, 60)
         self.scene_description_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         self.scene_description_label.setStyleSheet("color: black; font-size: 13px; font-weight: bold; "
-                                                   "border: 2px solid black; border-radius: 10px; background-color: transparent;")
+                                                   "border: 2px solid black; border-radius: 10px;"
+                                                   " background-color: transparent;")
         self.scene_description_label.move(115, 25)
         self.scene_description_label.setWordWrap(True)
-        self.scene_description_label.setText(f"<pre>{self.description}</pre>")
+        # self.scene_description_label.setText(f"<pre>{self.description}</pre>")
 
         self.scene_trigger_label = QLabel(self)
         self.scene_trigger_label.setFont(self.font)
@@ -69,7 +80,10 @@ class SceneWidget(QLabel):
         self.scene_trigger.setStyleSheet("color: white; font-size: 14px; font-weight: bold; background-color: grey;"
                                          "border: none; border-radius: 10px")
         # if data["trigger_type"] == "immediate":
-        self.scene_trigger.setText("Trigger")
+        if self.is_new:
+            self.scene_trigger.setText("N/A")
+        else:
+            self.scene_trigger.setText("Trigger")
         self.scene_trigger_label.setText(f"<pre>{len(self.data['triggers'])} Triggers</pre>")
         self.scene_trigger.setFont(self.font)
         self.scene_trigger.clicked.connect(self.trigger_scene)
@@ -111,7 +125,7 @@ class SceneWidget(QLabel):
             rendered_description = rendered_description.replace(f"[{match}]", self.device_names.get(match, match))
             # If the length of the rendered description is greater than 100 characters, add a newline
         rendered_description = "<br>".join(self.split_description(rendered_description))
-        self.scene_description_label.setText(f"<pre>{rendered_description}</pre>")
+        # self.scene_description_label.setText(f"<pre>{rendered_description}</pre>")
 
     def split_description(self, description):
         # Split the description into multiple lines
@@ -148,7 +162,10 @@ class SceneWidget(QLabel):
             if self.double_click_primed:
                 self.double_click_primed = False
                 self.double_click_timer.stop()
-                flyout = SceneEditorFlyout(self.parent, self.scene_id, self.data)
+                if self.is_new:
+                    flyout = SceneEditorFlyout(self.parent, None, None)
+                else:
+                    flyout = SceneEditorFlyout(self.parent, self.scene_id, self.data)
                 flyout.exec()
             else:
                 super(SceneWidget, self).mousePressEvent(a0)

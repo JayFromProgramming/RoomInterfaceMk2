@@ -53,6 +53,8 @@ class BlueStalkerControl(RoomDevice):
 
     def parse_occupants(self, occupants):
         result = ""
+        if isinstance(occupants, list):
+            return "Bad Data"
         for _, occupant in occupants.items():
             result += f"{occupant['name']}, "
         if result == "":
