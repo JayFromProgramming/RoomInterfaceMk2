@@ -1,3 +1,4 @@
+import json
 import re
 
 from PyQt6.QtCore import Qt, QUrl, QTimer
@@ -91,10 +92,15 @@ class SceneWidget(QLabel):
             self.device_name_getter.get(request)
 
     def trigger_scene(self):
-        request = QNetworkRequest(QUrl(f"http://{self.parent.host}/set_scene/{self.data['trigger_id']}"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
-        self.scene_trigger.setStyleSheet("background-color: blue;")
-        self.scene_caller.get(request)
+        try:
+            request = QNetworkRequest(QUrl(f"http://{self.parent.host}/scene_action/execute_scene/{self.scene_id}"))
+            request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
+            self.scene_trigger.setStyleSheet("background-color: blue;")
+            payload = {}
+            self.scene_caller.post(request, bytes(json.dumps(payload), 'utf-8'))
+        except Exception as e:
+            logging.error(f"Error triggering scene: {e}")
+            logging.exception(e)
 
     def render_description(self):
         # Render the description with the device names replaced with the actual names
