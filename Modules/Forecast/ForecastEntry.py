@@ -52,6 +52,7 @@ class ForecastEntry(QLabel):
         self.placeholder = placeholder
         self.loaded = False
         self.reference_time = reference_time
+        self.setObjectName(f"forecast_entry_{reference_time}")
 
         font = parent.parent.get_font("JetBrainsMono-Bold")
 

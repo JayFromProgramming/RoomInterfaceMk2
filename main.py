@@ -1,7 +1,7 @@
 import os
 import time
 
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, QElapsedTimer, QEvent
 from PyQt6.QtWidgets import QMainWindow, QApplication, QPushButton
 from PyQt6.QtGui import QFont, QFontDatabase
 
@@ -21,7 +21,35 @@ from Modules.RoomSceneModules.RoomSceneHost import RoomSceneHost
 from Modules.SystemControlModules.SystemControlHost import SystemControlHost
 
 
+class RoomInterface(QApplication):
+    t = QElapsedTimer()
+
+    def __init__(self):
+        super().__init__([])
+        self.window = MainWindow()
+        self.window.show()
+        self.exec()
+
+    # @staticmethod
+    # def event_type_to_name(event_type):
+    #     return QEvent.Type(event_type).name
+    #
+    # def notify(self, receiver, event):
+    #     try:
+    #         self.t.start()
+    #         ret = QApplication.notify(self, receiver, event)
+    #         if (self.t.elapsed() > 1):
+    #             logging.debug(f"processing event type {self.event_type_to_name(event.type())} "
+    #                           f"for object {receiver.objectName()} "
+    #                           f"took {self.t.elapsed()}ms")
+    #         return ret
+    #     except Exception as e:
+    #         logging.error(f"Error in notify: {e}")
+    #         logging.exception(e)
+
+
 class MainWindow(QMainWindow):
+
     def __init__(self):
         super().__init__()
 
@@ -152,6 +180,6 @@ class MainWindow(QMainWindow):
             logging.exception(e)
 
 
-app = QApplication([])
-window = MainWindow()
-app.exec()
+if __name__ == "__main__":
+    app = RoomInterface()
+    app.exec()

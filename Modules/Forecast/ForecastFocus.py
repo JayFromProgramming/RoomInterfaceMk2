@@ -69,6 +69,7 @@ class ForecastFocus(QLabel):
         self.show_timer = QTimer(self)
         self.show_timer.timeout.connect(self.hide_focus)
         self.show_timer.setSingleShot(True)
+        self.setObjectName("ForecastFocus")
 
     def hideEvent(self, a0) -> None:
         self.focused = False
@@ -138,7 +139,7 @@ class ForecastFocus(QLabel):
             output += f"The expected visibility will be {visibility_to_text(visibility)}.\n"
 
             if data['precipitation_probability'] > 0:
-                output += f"There is a {data['precipitation_probability']}% chance of precipitation.\n"
+                output += f"There is a {round(data['precipitation_probability'] * 100)}% chance of precipitation.\n"
             else:
                 output += "There is no chance of precipitation.\n"
 
