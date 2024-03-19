@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import threading
 
@@ -14,7 +15,7 @@ from Modules.MenuBar import MenuBar
 
 from Modules.RoomControlModules.RoomControlHost import RoomControlHost
 
-# from Modules.SystemStatus import SystemStatus
+import traceback
 
 from loguru import logger as logging
 
@@ -32,11 +33,12 @@ class WatchdogThread(threading.Thread):
         self.fail_callback = fail_callback
 
     def run(self):
+        logging.info("Watchdog thread started")
         while self.running:
             if time.time() - self.last_feed > self.timeout:
                 if self.fail_callback is not None:
                     self.fail_callback()
-                break
+                    time.sleep(self.timeout)
             time.sleep(1)
 
     def stop(self):
@@ -51,37 +53,36 @@ class RoomInterface(QApplication):
 
     def __init__(self):
         super().__init__([])
+        logging.add("Logs/RoomInterface.log", rotation="1 week")
+        logging.info("RoomInterface started")
         self.window = MainWindow()
         self.window.show()
-        self.exec()
         self.watchdog = WatchdogThread(timeout=10, fail_callback=self.watchdog_failed)
         self.feed_timer = QTimer()
         self.feed_timer.timeout.connect(self.feed_watchdog)
         self.feed_timer.start(1000)
         self.watchdog.start()
+        self.exec()
 
     def feed_watchdog(self):
         self.watchdog.feed()
 
     def watchdog_failed(self):
-        logging.error("Watchdog failed")
-
-    # @staticmethod
-    # def event_type_to_name(event_type):
-    #     return QEvent.Type(event_type).name
-    #
-    # def notify(self, receiver, event):
-    #     try:
-    #         self.t.start()
-    #         ret = QApplication.notify(self, receiver, event)
-    #         if (self.t.elapsed() > 1):
-    #             logging.debug(f"processing event type {self.event_type_to_name(event.type())} "
-    #                           f"for object {receiver.objectName()} "
-    #                           f"took {self.t.elapsed()}ms")
-    #         return ret
-    #     except Exception as e:
-    #         logging.error(f"Error in notify: {e}")
-    #         logging.exception(e)
+        # If the watchdog fails that means that an event in the qt event loop has locked up the main thread
+        # We need to log what the current event is and then restart the application
+        logging.error("Watchdog failed, attempting to find root cause before restarting")
+        try:
+            main_thread_id = threading.main_thread()
+            logging.error(f"At time of failure there were {len(sys._current_frames())} threads running"
+                            f" and the main thread id is {main_thread_id.ident}")
+            for thread_id, frame in sys._current_frames().items():
+                if thread_id == main_thread_id.ident:
+                    logging.error("Main thread stack trace:")
+                    traceback.print_stack(frame)
+        except Exception as e:
+            logging.error(f"Error logging stack: {e}")
+        logging.error("Restarting application")
+        self.quit()
 
 
 class MainWindow(QMainWindow):
