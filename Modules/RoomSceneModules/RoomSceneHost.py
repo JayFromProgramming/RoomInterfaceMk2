@@ -46,7 +46,7 @@ class RoomSceneHost(ScrollableMenu):
         self.make_request()
 
     def make_request(self):
-        request = QNetworkRequest(QUrl(f"http://{self.host}/get_scenes"))
+        request = QNetworkRequest(QUrl(f"http://{self.host}/scene_get/scenes/null"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.network_manager.get(request)
 
@@ -61,7 +61,7 @@ class RoomSceneHost(ScrollableMenu):
             data = json.loads(data)
             # logging.debug(f"Data: {data}")
             self.retry_timer.stop()
-            self.handle_scene_data(data["scenes"])
+            self.handle_scene_data(data["result"])
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)

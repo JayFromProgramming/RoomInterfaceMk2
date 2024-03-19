@@ -97,9 +97,9 @@ class SceneEditorFlyout(QDialog):
         self.save_button = QPushButton(self)
         self.save_button.setFont(self.font)
         self.save_button.setFixedSize(195, 30)
-        self.save_button.setText(f"Save Scene {'As New' if self.is_new else ''}")
+        self.save_button.setText(f"Save Scene{' As New' if self.is_new else ''}")
         self.save_button.move(10, self.available_trigger_list.y() + self.available_trigger_list.height() + 10)
-        self.save_button.setStyleSheet("background-color: green; border: none; border-radius: 10px")
+        self.save_button.setStyleSheet("background-color: green; border: none; border-radius: 10px; font-style: bold")
         self.save_button.show()
         self.save_button.clicked.connect(self.save_scene)
 
@@ -108,7 +108,7 @@ class SceneEditorFlyout(QDialog):
         self.test_button.setFixedSize(195, 30)
         self.test_button.setText("Test Scene")
         self.test_button.move(10, self.save_button.y() + self.save_button.height() + 10)
-        self.test_button.setStyleSheet("background-color: #4080FF; border: none; border-radius: 10px")
+        self.test_button.setStyleSheet("background-color: #4080FF; border: none; border-radius: 10px; font-style: bold")
         self.test_button.show()
 
         self.cancel_button = QPushButton(self)

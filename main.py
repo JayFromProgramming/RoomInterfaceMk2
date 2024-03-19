@@ -1,5 +1,6 @@
 import os
 import time
+import threading
 
 from PyQt6.QtCore import QTimer, QElapsedTimer, QEvent
 from PyQt6.QtWidgets import QMainWindow, QApplication, QPushButton
@@ -21,6 +22,30 @@ from Modules.RoomSceneModules.RoomSceneHost import RoomSceneHost
 from Modules.SystemControlModules.SystemControlHost import SystemControlHost
 
 
+class WatchdogThread(threading.Thread):
+
+    def __init__(self, timeout=60, fail_callback=None):
+        super().__init__(name="WatchdogThread", daemon=True)
+        self.running = True
+        self.last_feed = time.time()
+        self.timeout = timeout
+        self.fail_callback = fail_callback
+
+    def run(self):
+        while self.running:
+            if time.time() - self.last_feed > self.timeout:
+                if self.fail_callback is not None:
+                    self.fail_callback()
+                break
+            time.sleep(1)
+
+    def stop(self):
+        self.running = False
+
+    def feed(self):
+        self.last_feed = time.time()
+
+
 class RoomInterface(QApplication):
     t = QElapsedTimer()
 
@@ -29,6 +54,17 @@ class RoomInterface(QApplication):
         self.window = MainWindow()
         self.window.show()
         self.exec()
+        self.watchdog = WatchdogThread(timeout=10, fail_callback=self.watchdog_failed)
+        self.feed_timer = QTimer()
+        self.feed_timer.timeout.connect(self.feed_watchdog)
+        self.feed_timer.start(1000)
+        self.watchdog.start()
+
+    def feed_watchdog(self):
+        self.watchdog.feed()
+
+    def watchdog_failed(self):
+        logging.error("Watchdog failed")
 
     # @staticmethod
     # def event_type_to_name(event_type):

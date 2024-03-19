@@ -36,7 +36,8 @@ class SceneWidget(QLabel):
                 "trigger_type": "immediate"
             }
 
-        self.description = self.data["description"] if "description" in self.data else "No description"
+        self.description = self.data["description"] if "description" in self.data else "Failed to load description"
+        self.description = self.description if self.description is not None else "No description sset"
 
         # Network managers
         self.scene_caller = QNetworkAccessManager()
@@ -102,17 +103,17 @@ class SceneWidget(QLabel):
         self.double_click_timer.setSingleShot(True)
         self.double_click_primed = None
 
-        self.request_names()
+        # self.request_names()
 
-    def request_names(self):
-        # Find all the device names in the action
-        # Send a request for each device name
-        regex = r"\[(.*?)\]"
-        matches = re.findall(regex, self.description)
-        for match in matches:
-            request = QNetworkRequest(QUrl(f"http://{self.parent.host}/name/{match}"))
-            request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
-            self.device_name_getter.get(request)
+    # def request_names(self):
+    #     # Find all the device names in the action
+    #     # Send a request for each device name
+    #     regex = r"\[(.*?)\]"
+    #     matches = re.findall(regex, self.description)
+    #     for match in matches:
+    #         request = QNetworkRequest(QUrl(f"http://{self.parent.host}/name/{match}"))
+    #         request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
+    #         self.device_name_getter.get(request)
 
     def trigger_scene(self):
         try:

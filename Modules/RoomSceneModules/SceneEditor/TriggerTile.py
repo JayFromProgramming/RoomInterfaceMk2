@@ -91,6 +91,8 @@ class TriggerTile(QLabel):
 
     def mouseReleaseEvent(self, ev) -> None:
         try:
+            if self.trigger_data["enabled"] == -1:
+                return
             # Open a 2 text input dialog to edit the trigger subtype and value
             modal = TriggerEditDialog(self.trigger_data['trigger_subtype'], self.trigger_data['trigger_value'])
             result = modal.exec()

@@ -1,4 +1,5 @@
 import copy
+import json
 
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
@@ -10,8 +11,6 @@ from Utils.ScrollableMenu import ScrollableMenu
 
 
 class TriggerColumn(ScrollableMenu):
-
-    default_triggers = ["IntervalTrigger", "SunTrigger", "MotionTrigger", "BlueTrigger"]
 
     def __init__(self, parent, name):
         super().__init__(parent, parent.font)
@@ -42,12 +41,29 @@ class TriggerColumn(ScrollableMenu):
                                     round(self.height() / 2 - self.place_holder_text.height() / 2))
 
         self.trigger_labels = []
+        self.default_trigger_network_manager = QNetworkAccessManager()
+        self.default_trigger_network_manager.finished.connect(self.handle_default_trigger_response)
 
         self.layout_widgets()
 
     def load_default_triggers(self):
-        for trigger_type in self.default_triggers:
-            self.add_trigger(trigger_type)
+        request = QNetworkRequest(QUrl(f"http://{self.host}/scene_get/default_triggers/null"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        self.default_trigger_network_manager.get(request)
+
+    def handle_default_trigger_response(self, reply):
+        try:
+            if str(reply.error()) != "NetworkError.NoError":
+                logging.error(f"Error: {reply.error()}")
+                return
+            data = reply.readAll()
+            data = data.data().decode("utf-8")
+            data = json.loads(data)
+            for trigger in data["result"]:
+                self.add_trigger(trigger["trigger_type"], trigger)
+        except Exception as e:
+            logging.error(f"Error handling default trigger response: {e}")
+            logging.exception(e)
 
     def add_trigger(self, trigger_type, data=None):
         try:
