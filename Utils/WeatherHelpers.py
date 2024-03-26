@@ -20,7 +20,7 @@ def visibility_to_text(visibility):
     elif len(str(float(round(visibility, 2)).as_integer_ratio()[0])) > 4:
         visibility = f"{round(visibility, 2)} mi"
     else:
-        top, bottom = float(visibility).as_integer_ratio()
+        top, bottom = float(round(visibility, 2)).as_integer_ratio()
         visibility = f"{top}/{bottom} mi"
     return visibility
 
