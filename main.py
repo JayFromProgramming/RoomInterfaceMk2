@@ -82,7 +82,7 @@ class RoomInterface(QApplication):
         except Exception as e:
             logging.error(f"Error logging stack: {e}")
         logging.error("Restarting application")
-        self.quit()
+        exit(-1)
 
 
 class MainWindow(QMainWindow):

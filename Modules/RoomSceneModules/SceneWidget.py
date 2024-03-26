@@ -39,12 +39,6 @@ class SceneWidget(QLabel):
         self.description = self.data["description"] if "description" in self.data else "Failed to load description"
         self.description = self.description if self.description is not None else "No description sset"
 
-        # Network managers
-        self.scene_caller = QNetworkAccessManager()
-        self.scene_caller.finished.connect(self.handle_scene_response)
-        self.device_name_getter = QNetworkAccessManager()
-        self.device_name_getter.finished.connect(self.handle_device_name_response)
-
         # Labels
         self.scene_name_label = QLabel(self)
         self.scene_name_label.setFont(self.font)
@@ -126,45 +120,12 @@ class SceneWidget(QLabel):
             logging.error(f"Error triggering scene: {e}")
             logging.exception(e)
 
-    def render_description(self):
-        # Render the description with the device names replaced with the actual names
-        regex = r"\[(.*?)\]"
-        matches = re.findall(regex, self.description)
-        rendered_description = self.description
-        for match in matches:
-            rendered_description = rendered_description.replace(f"[{match}]", self.device_names.get(match, match))
-            # If the length of the rendered description is greater than 100 characters, add a newline
-        rendered_description = "<br>".join(self.split_description(rendered_description))
-        # self.scene_description_label.setText(f"<pre>{rendered_description}</pre>")
-
-    def split_description(self, description):
-        # Split the description into multiple lines
-        lines = []
-        current_line = ""
-        for action in description.split(", "):
-            if len(current_line + action) > 40:
-                lines.append(current_line[:-2])
-                current_line = ""
-            current_line += f"{action}, "
-        lines.append(current_line)
-        return lines
-
     def handle_scene_response(self, reply):
         try:
             self.scene_trigger.setStyleSheet(
                 "background-color: grey; color: white; font-size: 14px; font-weight: bold;")
         except Exception as e:
             pass
-
-    def handle_device_name_response(self, reply):
-        try:
-            data = reply.readAll()
-            device = reply.request().url().toString().split("/")[-1]
-            self.device_names[device] = str(data, 'utf-8')
-            self.render_description()
-        except Exception as e:
-            logging.error(f"Error handling device name response: {e}")
-            logging.exception(e)
 
     def mousePressEvent(self, a0) -> None:
         # Manually check for double click events

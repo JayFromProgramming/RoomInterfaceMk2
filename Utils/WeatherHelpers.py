@@ -5,14 +5,19 @@ def kelvin_to_fahrenheit(kelvin):
     return (kelvin - 273.15) * 9 / 5 + 32
 
 
+def meters_to_miles(meters):
+    return meters * 0.000621371
+
+
 def visibility_to_text(visibility):
+    visibility = meters_to_miles(visibility)
     if visibility > 6:
         visibility = "Clear"
     elif visibility % 1 == 0:
         visibility = f"{int(visibility)} mi"
     elif visibility > 1:
         visibility = f"{round(visibility, 2)} mi"
-    elif len(str(float(visibility).as_integer_ratio()[0])) > 4:
+    elif len(str(float(round(visibility, 2)).as_integer_ratio()[0])) > 4:
         visibility = f"{round(visibility, 2)} mi"
     else:
         top, bottom = float(visibility).as_integer_ratio()

@@ -267,12 +267,15 @@ class SceneEditorFlyout(QDialog):
             logging.error(f"Error deleting scene: {e}")
             logging.exception(e)
 
-
     def request_scene_name(self):
         rename_window = QInputDialog()
         rename_window.setFixedSize(200, 30)
         rename_window.setWindowTitle("Rename Scene")
-        rename_window.setLabelText("New Scene Name:")
+        if self.is_new and not self.has_set_name:
+            rename_window.setLabelText("New Scene Name:")
+        else:
+            rename_window.setLabelText("Scene Name:")
+            rename_window.setTextValue(self.starting_data['name'])
         rename_window.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
         rename_window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         rename_window.setWindowFlag(Qt.WindowType.WindowTitleHint)
