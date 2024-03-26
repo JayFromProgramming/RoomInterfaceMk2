@@ -53,7 +53,10 @@ class RoomInterface(QApplication):
 
     def __init__(self):
         super().__init__([])
-        logging.add("Logs/RoomInterface.log", rotation="1 week")
+        try:
+            logging.add("Logs/RoomInterface.log", rotation="1 week")
+        except Exception as e:
+            print(f"Failed to setup logging: {e}")
         logging.info("RoomInterface started")
         self.window = MainWindow()
         self.window.show()
