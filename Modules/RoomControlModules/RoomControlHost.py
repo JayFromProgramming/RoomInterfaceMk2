@@ -64,6 +64,11 @@ class RoomControlHost(ScrollableMenu):
     def handle_network_response(self, reply):
         try:
             data = reply.readAll()
+            if str(reply.error()) != "NetworkError.NoError":
+                logging.error(f"Error: {reply.error()}")
+                self.loading_label.setText(
+                    f"Error Loading Room Control Schema\n{reply.error()}\nAttempting to acquire schema again...")
+                return
             try:
                 data = json.loads(str(data, 'utf-8'))
             except Exception as e:
