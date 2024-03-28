@@ -97,6 +97,9 @@ class SceneWidget(QLabel):
         self.double_click_timer.setSingleShot(True)
         self.double_click_primed = None
 
+        self.scene_caller = QNetworkAccessManager()
+        self.scene_caller.finished.connect(self.handle_scene_response)
+
         # self.request_names()
 
     # def request_names(self):
