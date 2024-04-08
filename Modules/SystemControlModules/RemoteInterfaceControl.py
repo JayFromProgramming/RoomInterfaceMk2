@@ -54,14 +54,17 @@ class RemoteInterfaceControl(InterfaceControl):
     def handle_network_response(self, reply):
         try:
             if str(reply.error()) != "NetworkError.NoError":
-                logging.error(f"Error: {reply.error()}")
+                logging.error(f"Network Error: {reply.error()}")
                 return
             data = reply.readAll()
             data = data.data().decode("utf-8")
             data = json.loads(data)
+            if "state" not in data:
+                logging.error(f"Invalid Response Received: {data}")
+                return
             self.parse_interface_stats(data["state"])
         except Exception as e:
-            logging.error(f"Error: {e}")
+            logging.error(f"Parsing Error: {e}")
 
     def parse_interface_stats(self, data):
         try:
