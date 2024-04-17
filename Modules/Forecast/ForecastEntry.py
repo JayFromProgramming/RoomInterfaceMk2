@@ -169,7 +169,12 @@ class ForecastEntry(QLabel):
             temperature = kelvin_to_fahrenheit(data["temperature"]["temp"])
             self.temperature_label.setText(f"{round(temperature)}°F")
             feels_like = kelvin_to_fahrenheit(data["temperature"]["feels_like"])
-            self.feels_like_label.lower_label.setText(f"{round(feels_like)}°F")
+            chance = data['precipitation_probability']
+            if chance > 0.2:
+                self.feels_like_label.upper_label.setText(f"Chance")
+                self.feels_like_label.lower_label.setText(f"{round(chance * 100)}%")
+            else:
+                self.feels_like_label.lower_label.setText(f"{round(feels_like)}°F")
 
             wind_speed = round(mps_to_mph(data["wind"]["speed"]), 2)
             wind_direction = wind_direction_arrow(data["wind"]["deg"])
