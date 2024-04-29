@@ -1,0 +1,54 @@
+import json
+
+from PyQt6.QtWidgets import QLabel
+from loguru import logger as logging
+
+from Modules.CameraPlayback.WebcamWindow import WebcamWindow
+
+
+class WebcamLayout(QLabel):
+    min_cam_width = 400
+    target_layout = (4, 3)
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+
+        self.webcams = []
+
+        with open("Config/webcams.json", "r") as f:
+            self.webcam_file = json.load(f)
+
+        self.create_layout()
+
+    def create_layout(self):
+        self.clear_layout()
+        self.webcams = []
+        for i, webcam in enumerate(self.webcam_file):
+            if "thumb" not in webcam:
+                webcam["thumb"] = None
+            webcam_window = WebcamWindow(self, webcam["url"], webcam["thumb"],
+                                         webcam["title"], (self.width() / self.target_layout[0],
+                                                           self.height() / self.target_layout[1]))
+            webcam_window.move((i % self.target_layout[0]) * webcam_window.width(), (i // self.target_layout[0]) * webcam_window.height())
+            self.webcams.append(webcam_window)
+
+    def update_layout(self):
+        for i, webcam in enumerate(self.webcams):
+            webcam.setFixedSize(round(self.width() / self.target_layout[0]), round(self.height() / self.target_layout[1]))
+            webcam.move((i % self.target_layout[0]) * webcam.width(), (i // self.target_layout[0]) * webcam.height())
+
+    def clear_layout(self):
+        for webcam in self.webcams:
+            webcam.hide()
+            # webcam.deleteLater()
+        # self.webcams = []
+
+    def resizeEvent(self, a0):
+        self.update_layout()
+
+    # def hideEvent(self, a0):
+    #     self.clear_layout()
+    #
+    # def showEvent(self, a0):
+    #     self.update_layout()

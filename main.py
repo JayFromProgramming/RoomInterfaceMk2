@@ -7,6 +7,8 @@ from PyQt6.QtCore import QTimer, QElapsedTimer, QEvent
 from PyQt6.QtWidgets import QMainWindow, QApplication, QPushButton
 from PyQt6.QtGui import QFont, QFontDatabase
 
+from Modules.CameraPlayback.WebcamLayout import WebcamLayout
+from Modules.CameraPlayback.WebcamWindow import WebcamWindow
 # Replace this with auto-import later
 from Modules.DisplayClock import DisplayClock
 from Modules.CurrentWeather import CurrentWeather
@@ -120,6 +122,10 @@ class MainWindow(QMainWindow):
         self.system_control = SystemControlHost(self)
         self.system_control.move(0, 90)
 
+        # self.webcam_layout = WebcamLayout(self)
+        # self.webcam_layout.move(0, 90)
+        # self.webcam_layout.show()
+
         self.menu_bar = MenuBar(self)
         # Move the menu bar to the very bottom of the window
         self.menu_bar.move(0, self.height() - self.menu_bar.height())
@@ -212,6 +218,8 @@ class MainWindow(QMainWindow):
             self.menu_bar.setFixedSize(self.width(), self.menu_bar.height())
             self.menu_bar.move(0, self.height() - self.menu_bar.height())
             self.clock.move(self.width() - self.clock.width(), 0)
+            # self.webcam_layout.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
+            # self.webcam_layout.resizeEvent(event)
             self.forecast.setFixedSize(self.width(), self.forecast.height())
             self.forecast.layout_widgets()
             self.room_control.resizeEvent(event)

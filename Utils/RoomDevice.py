@@ -44,6 +44,7 @@ class RoomDevice(QLabel):
         self.refresh_timer.setSingleShot(True)
 
     def update_human_name(self, name):
+        print(f"Updating name to {name}")
         self.has_names = True
         self.device_label.setText(name)
 

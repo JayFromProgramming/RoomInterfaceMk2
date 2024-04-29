@@ -68,6 +68,8 @@ class BlueStalkerControl(RoomDevice):
                 last_scan = datetime.datetime.fromtimestamp(last_scan).strftime('%H:%M:%S')
             else:
                 last_scan = "UNKNOWN"
+            if self.state is None:
+                return
             occupants = self.state["occupants"]
             health = self.parse_health(data['health'])
 
