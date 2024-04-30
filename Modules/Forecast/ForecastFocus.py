@@ -106,7 +106,7 @@ class ForecastFocus(QLabel):
             logging.exception(e)
 
     def make_request(self, reference_time):
-        request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/weather/forecast/{reference_time}"))
+        request = QNetworkRequest(QUrl(f"http://{self.parent.auth['host']}/weather/forecast/{reference_time}"))
         self.network_manager.get(request)
 
     def parse_forecast(self, data):

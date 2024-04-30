@@ -53,6 +53,13 @@ class LightController(RoomDevice):
         self.color_picker_button.setFont(parent.font)
 
     def parse_data(self, data):
+        if not data['health']['online']:
+            self.info_text.setText(f"<pre>Device Offline\n{data['health']['reason']}</pre>")
+            self.toggle_button.setText("Turn ???")
+            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
+            self.color_picker_button.setStyleSheet("color: black; font-size: 14px; "
+                                                   "font-weight: bold; background-color: red")
+            return
         color = self.state["color"] if not self.state["white_enabled"] else "Warm White"
         brightness = round(self.state["brightness"] / 255 * 100)
         self.info_text.setText(f"<pre>Color: {color}\nBrightness: {brightness}%\nMode: {self.state['control_type']}</pre>")

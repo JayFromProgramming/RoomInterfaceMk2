@@ -63,6 +63,9 @@ class CurrentWeather(QLabel):
         # Set the size of the label
         self.setFixedSize(690, 200)
 
+        with open("Config/auth.json", "r") as f:
+            self.auth = json.load(f)
+
         # Create the network manager
         self.weather_manager = QNetworkAccessManager()
         self.icon_manager = QNetworkAccessManager()
@@ -78,7 +81,7 @@ class CurrentWeather(QLabel):
     def make_request(self):
         """Makes a request to the given URL"""
         # logging.info("Making request to get current weather")
-        request = QNetworkRequest(QUrl("http://moldy.mug.loafclan.org/weather/now"))
+        request = QNetworkRequest(QUrl(f"http://{self.auth['host']}/weather/now"))
         # request.setRawHeader(b"Cookie", b"auth=5149e8d1606397fddc35cf0303b98c1318b963c3c0e6069fcabb8d970c8fe9bd")
         self.weather_manager.get(request)
 

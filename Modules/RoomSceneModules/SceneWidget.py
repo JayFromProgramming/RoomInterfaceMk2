@@ -37,7 +37,7 @@ class SceneWidget(QLabel):
             }
 
         self.description = self.data["description"] if "description" in self.data else "Failed to load description"
-        self.description = self.description if self.description is not None else "No description sset"
+        self.description = self.description if self.description is not None else "No description set"
 
         # Labels
         self.scene_name_label = QLabel(self)

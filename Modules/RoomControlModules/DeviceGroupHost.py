@@ -30,7 +30,6 @@ class DeviceGroupHost(QLabel):
         self.last_scroll = 0
         self.device_widgets = []
         self.lines = []
-        self.layout_widgets()
         self.font = self.parent.font
 
         self.group_label = QLabel(self)
@@ -41,6 +40,18 @@ class DeviceGroupHost(QLabel):
         self.group_label.setText(f"{group_name}")
         # Move the group label to the middle of the top
         self.group_label.move(round((self.width() - self.group_label.width()) / 2), 0)
+
+        self.no_devices_label = QLabel(self)
+        self.no_devices_label.setFont(self.font)
+        self.no_devices_label.setFixedSize(300, 20)
+        self.no_devices_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+        self.no_devices_label.setStyleSheet(
+            "color: white; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
+        self.no_devices_label.setText(f"No Devices Found For {group_name}")
+        self.no_devices_label.move(round((self.width() - self.no_devices_label.width()) / 2), 20)
+        self.no_devices_label.hide()
+
+        self.layout_widgets()
 
         self.type_manager = QNetworkAccessManager()
         self.type_manager.finished.connect(self.create_widget)
@@ -91,7 +102,7 @@ class DeviceGroupHost(QLabel):
             logging.exception(e)
 
     def add_device(self, device: dict):
-        request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/get_type/{device}"))
+        request = QNetworkRequest(QUrl(f"http://{self.host}/get_type/{device}"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.type_manager.get(request)
 
@@ -101,6 +112,11 @@ class DeviceGroupHost(QLabel):
 
     def layout_widgets(self):
         # Lay widgets out left to right wrapping around when they reach the right edge
+        if len(self.device_widgets) == 0:
+            self.no_devices_label.show()
+            return
+        else:
+            self.no_devices_label.hide()
         y_offset = 20
         x_offset = 10
         first_row_x_offset = 0

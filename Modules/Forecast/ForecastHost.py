@@ -36,6 +36,9 @@ class ForecastHost(QLabel):
 
         self.lines = []
 
+        with open("Config/auth.json", "r") as f:
+            self.auth = json.load(f)
+
         # Put the forecast focus on top of the forecast widgets and hide it
         self.forecast_focus.move(20, 20)
         self.forecast_focus.hide()
@@ -65,7 +68,7 @@ class ForecastHost(QLabel):
         self.make_request()
 
     def make_request(self):
-        request = QNetworkRequest(QUrl("http://moldy.mug.loafclan.org/weather/available_forecast"))
+        request = QNetworkRequest(QUrl(f"http://{self.auth['host']}/weather/available_forecast"))
         self.forecast_manager.get(request)
 
     def handle_forecast_response(self, reply):

@@ -16,9 +16,9 @@ class ToggleDevice(RoomDevice):
     def __init__(self, parent=None, device=None):
         super().__init__(parent.auth, parent, device, False)
 
-        self.device_label.setFont(parent.font)
-        self.device_label.setFixedSize(135, 20)
-        self.device_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
+        # self.device_label.setFont(parent.font)
+        # self.device_label.setFixedSize(135, 20)
+        # self.device_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
         self.device_label.setText(f"{device}")
 

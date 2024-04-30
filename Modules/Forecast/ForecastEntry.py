@@ -48,7 +48,7 @@ class ForecastEntry(QLabel):
         if reference_time is None:
             raise ValueError("reference_time must be set")
         self.setFixedSize(75, 275)
-
+        self.parent = parent
         self.placeholder = placeholder
         self.loaded = False
         self.reference_time = reference_time
@@ -118,7 +118,7 @@ class ForecastEntry(QLabel):
         self.make_request(self.reference_time)
 
     def make_request(self, reference_time):
-        request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/weather/forecast/{reference_time}"))
+        request = QNetworkRequest(QUrl(f"http://{self.parent.auth['host']}/weather/forecast/{reference_time}"))
         self.network_manager.get(request)
 
     def handle_icon_response(self, response):

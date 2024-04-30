@@ -1,7 +1,7 @@
 import json
 import random
 
-from PyQt6.QtCore import QUrl, QTimer
+from PyQt6.QtCore import QUrl, QTimer, Qt
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel
 from loguru import logger as logging
@@ -19,6 +19,7 @@ class RoomDevice(QLabel):
         super().__init__(parent)
         self.parent = parent
         self.device = device
+        self.host = parent.host
         self.auth = auth
         if large:
             self.setFixedSize(300, 75)
@@ -29,6 +30,9 @@ class RoomDevice(QLabel):
         self.toggle_button = None
 
         self.device_label = QLabel(self)
+        self.device_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+        self.device_label.setFixedSize(self.width(), 20)
+        self.device_label.setFont(parent.font)
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_response)
@@ -44,7 +48,7 @@ class RoomDevice(QLabel):
         self.refresh_timer.setSingleShot(True)
 
     def update_human_name(self, name):
-        print(f"Updating name to {name}")
+        # print(f"Updating name to {name}")
         self.has_names = True
         self.device_label.setText(name)
 
@@ -61,12 +65,12 @@ class RoomDevice(QLabel):
         super().showEvent(a0)
 
     def get_data(self):
-        request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/get/{self.device}"))
+        request = QNetworkRequest(QUrl(f"http://{self.host}/get/{self.device}"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.network_manager.get(request)
 
     def send_command(self, command):
-        request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/set/{self.device}"))
+        request = QNetworkRequest(QUrl(f"http://{self.host}/set/{self.device}"))
         # Add a json payload to the post request
         request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
