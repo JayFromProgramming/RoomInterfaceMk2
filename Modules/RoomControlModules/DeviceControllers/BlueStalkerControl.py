@@ -85,3 +85,9 @@ class BlueStalkerControl(RoomDevice):
         command = {"on": not self.state["on"]}
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: blue;")
         self.send_command(command)
+
+    def handle_failure(self, response):
+        error_string = str(response.error()).split(".")
+        self.info_text.setText(f"<pre>Server Error\n{error_string[0]}\n{error_string[1]}</pre>")
+        self.toggle_button.setText("?????")
+        self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")

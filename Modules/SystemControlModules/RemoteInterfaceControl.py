@@ -69,18 +69,21 @@ class RemoteInterfaceControl(InterfaceControl):
     def parse_interface_stats(self, data):
         try:
             self.title_label.setText(f"{data['name']} Info")
-            # self.action_title_label.setText(f"{data['name']} Actions")
-            cpu_temp = str(data["temperature"]).rjust(3, " ")
-            cpu_percent = str(round(data["cpu_usage"], 2)).rjust(5, " ")
-            ram_percent = str(round(data["memory_usage"], 2)).rjust(5, " ")
-            disk_percent = str(round(data["disk_usage"], 2)).rjust(5, " ")
+
+            cpu_temp = str(data["temperature"]).rjust(3, " ") if data["temperature"] else "N/A"
+            cpu_percent = str(round(data["cpu_usage"], 2)).rjust(5, " ") if data["cpu_usage"] else "N/A"
+            ram_percent = str(round(data["memory_usage"], 2)).rjust(5, " ") if data["memory_usage"] else "N/A"
+            disk_percent = str(round(data["disk_usage"], 2)).rjust(5, " ") if data["disk_usage"] else "N/A"
             network_usage = data["network_usage"]
-            network_usage = humanize.naturalsize(network_usage, binary=True)
-            sys_uptime = self.format_uptime(data["uptime_system"])
-            prog_uptime = self.format_uptime(data["uptime_controller"])
+            network_usage = humanize.naturalsize(network_usage, binary=True) if network_usage else "N/A"
+            sys_uptime = self.format_uptime(data["uptime_system"]) if data["uptime_system"] \
+                else "No Response"
+            prog_uptime = self.format_uptime(data["uptime_controller"]) if data["uptime_controller"] \
+                else "No Response"
             version = "Latest Commit" if data["update_available"] else "Behind" \
                 if data["update_available"] is not None else "Git Error"
-            network_address = str(data["address"]).rjust(15, " ")
+            network_address = str(data["address"]).rjust(15, " ") if data["address"] else \
+                "Host Unreachable"
             text = f"CPU:  {cpu_percent}% | Temp: {cpu_temp}°C | RAM: {ram_percent}%\n"
             text += f"Disk: {disk_percent}% | Net: {network_usage}\n"
             text += f"S.Uptime: {sys_uptime} | Version: {version}\n"
@@ -89,6 +92,8 @@ class RemoteInterfaceControl(InterfaceControl):
             self.interface_stats.setText(f"<pre>{text}</pre>")
         except Exception as e:
             self.interface_stats.setText(f"<pre>Error: {e}</pre>")
+            logging.error(f"Error parsing interface stats: {e}")
+            logging.exception(e)
 
     @staticmethod
     def get_confirmation(message, sub_message=None):

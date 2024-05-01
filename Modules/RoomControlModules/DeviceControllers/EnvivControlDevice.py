@@ -74,6 +74,8 @@ class EnvivControlDevice(RoomDevice):
 
     def parse_data(self, data):
         self.unit = data["info"]["units"]
+        if self.unit is None:
+            self.unit = "°?"
         button_color = "#4080FF" if self.state["on"] else "grey"
 
         self.toggle_button.setStyleSheet(f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
