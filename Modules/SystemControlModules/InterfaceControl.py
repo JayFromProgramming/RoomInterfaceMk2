@@ -86,6 +86,33 @@ class InterfaceControl(QLabel):
 
         # self.move(0, parent.height() - self.height())
 
+    def set_button_strike_through(self, strike_through: bool):
+        """
+        Set the strike through for the buttons
+        :param strike_through: bool
+        :return:
+        """
+        if strike_through:
+            self.reboot_button.setStyleSheet("color: white; font-size: 14px; font-weight: bold; background-color: grey;"
+                                             "border: none; border-radius: 10px; text-decoration: line-through")
+            self.restart_button.setStyleSheet("color: white; font-size: 14px; font-weight: bold; background-color: grey;"
+                                              "border: none; border-radius: 10px; text-decoration: line-through")
+            self.update_button.setStyleSheet("color: white; font-size: 14px; font-weight: bold; background-color: grey;"
+                                             "border: none; border-radius: 10px; text-decoration: line-through")
+            self.shutdown_button.setStyleSheet("color: red; font-size: 14px; font-weight: bold; background-color: grey;"
+                                               "border: none; border-radius: 10px; text-decoration: line-through")
+        else:
+            self.reboot_button.setStyleSheet("color: white; font-size: 14px; font-weight: bold; background-color: grey;"
+                                             "border: none; border-radius: 10px")
+            self.restart_button.setStyleSheet("color: white; font-size: 14px; font-weight: bold; background-color: grey;"
+                                              "border: none; border-radius: 10px")
+            self.update_button.setStyleSheet("color: white; font-size: 14px; font-weight: bold; background-color: grey;"
+                                             "border: none; border-radius: 10px")
+            self.shutdown_button.setStyleSheet("color: red; font-size: 14px; font-weight: bold; background-color: grey;"
+                                               "border: none; border-radius: 10px")
+
+
+
     def get_confirmation(self, message, sub_message=None):
         # Open a dialog box to confirm the action
         diag = QMessageBox()

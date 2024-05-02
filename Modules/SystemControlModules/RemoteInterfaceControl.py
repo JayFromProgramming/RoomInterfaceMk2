@@ -90,6 +90,11 @@ class RemoteInterfaceControl(InterfaceControl):
             text += f"P.Uptime: {prog_uptime} | Addr: {network_address}\n"
 
             self.interface_stats.setText(f"<pre>{text}</pre>")
+            if data["address"] is None:
+                # Set strike through on all the buttons if the host is unreachable
+                self.set_button_strike_through(True)
+            else:
+                self.set_button_strike_through(False)
         except Exception as e:
             self.interface_stats.setText(f"<pre>Error: {e}</pre>")
             logging.error(f"Error parsing interface stats: {e}")

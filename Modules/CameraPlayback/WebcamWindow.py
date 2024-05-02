@@ -53,7 +53,7 @@ class WebcamWindow(QLabel):
     def handle_thumbnail_response(self, reply):
         try:
             if str(reply.error()) != "NetworkError.NoError":
-                logging.error(f"Cam {self.name} Network Error: {reply.error()}")
+                logging.error(f"Cam [{self.name}] Network Error: {reply.error()}")
                 return
             data = reply.readAll()
             data = data.data()

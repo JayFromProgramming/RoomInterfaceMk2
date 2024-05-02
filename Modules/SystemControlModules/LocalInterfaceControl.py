@@ -94,12 +94,13 @@ class LocalInterfaceControl(InterfaceControl):
             prog_uptime = self.format_uptime(prog_uptime)
             version = "Latest Commit" if self.latest else "Behind" \
                 if self.latest is not None else "Git Error"
+            host_name = socket.gethostname().rjust(15, " ")
 
             network_address = network_address.rjust(15, " ")
 
             text = f"CPU:  {cpu_percent}% | Temp: {cpu_temp}°C | RAM: {ram_percent}%\n"
             text += f"Disk: {disk_usage}% | Net: {network_usage}\n"
-            text += f"S.Uptime: {sys_uptime} | Version: {version}\n"
+            text += f"S.Uptime: {sys_uptime} | Name: {host_name}\n"
             text += f"P.Uptime: {prog_uptime} | Addr: {network_address}\n"
 
             self.interface_stats.setText(f"<pre>{text}</pre>")
