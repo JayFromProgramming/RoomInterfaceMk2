@@ -22,22 +22,13 @@ class NotInitalizedDevice(RoomDevice):
         self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
         self.device_label.setText(f"{device}")
 
-        # self.toggle_button = QPushButton(self)
-        # self.toggle_button.setFont(parent.font)
-        # self.toggle_button.setFixedSize(135, 30)
-        # self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
-        # self.toggle_button.setText("Turn ???")
-        # self.toggle_button.setCheckable(True)
-        # self.toggle_button.clicked.connect(self.toggle_device)
-        # self.toggle_button.move(5, 40)
-
         self.device_text = QLabel(self)
         self.device_text.setFont(parent.font)
         self.device_text.setFixedSize(135, 60)
-        self.device_text.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom)
+        self.device_text.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.device_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
         self.device_text.setText("<pre>Status: ???</pre>")
-        self.device_text.move(5, 20)
+        self.device_text.move(5, 15)
 
     def update_human_name(self, name):
         super().update_human_name(name)
@@ -46,24 +37,10 @@ class NotInitalizedDevice(RoomDevice):
     def update_status(self):
         health = self.data["health"]
         if not health:
-            self.device_text.setText(f"<pre>NO DATA\nDevice Host\nOffline</pre>")
+            self.device_text.setText(f"<pre>NO DATA\nHost Device\nOffline</pre>")
             return
-        if not health["online"]:
-            self.device_text.setText(f"<pre>OFFLINE</pre>")
-            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
-        elif health["fault"]:
-            self.device_text.setText(f"<pre>Online: FAULT</pre>")
-            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: orange;")
-        else:
-            if self.data["auto_state"]["is_auto"]:
-                self.device_text.setText(f"<pre>Online: AUTO</pre>")
-            else:
-                self.device_text.setText(f"<pre>Online: MANUAL</pre>")
 
     def parse_data(self, data):
-        # self.toggle_button.setText(f"Turn {['On', 'Off'][self.state['on']]}")
-        # button_color = "#4080FF" if self.state["on"] else "grey"
-        # self.toggle_button.setStyleSheet(f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
         self.update_status()
 
     def handle_failure(self, response):

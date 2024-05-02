@@ -122,8 +122,8 @@ class MainWindow(QMainWindow):
         self.system_control = SystemControlHost(self)
         self.system_control.move(0, 90)
 
-        # self.webcam_layout = WebcamLayout(self)
-        # self.webcam_layout.move(0, 90)
+        self.webcam_layout = WebcamLayout(self)
+        self.webcam_layout.move(0, 90)
         # self.webcam_layout.show()
 
         self.menu_bar = MenuBar(self)
@@ -196,6 +196,21 @@ class MainWindow(QMainWindow):
             self.forecast.hide()
             self.refocus_timer.start(120000)
 
+    def focus_webcam_layout(self, force_close=False):
+        if self.webcam_layout.focused or force_close:
+            self.webcam_layout.set_focus(False)
+            self.webcam_layout.hide()
+            # self.menu_bar.webcam_expand.setText("↑Webcams↑")
+            self.forecast.show()
+            self.refocus_timer.stop()
+        else:
+            self.webcam_layout.set_focus(True)
+            self.webcam_layout.show()
+            # self.menu_bar.webcam_expand.setText("↓Webcams↓")
+            self.webcam_layout.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
+            self.forecast.hide()
+            self.refocus_timer.start(120000)
+
     def get_font(self, name: str):
         # Load the custom font from a file
         if name in self.cached_fonts:
@@ -213,13 +228,27 @@ class MainWindow(QMainWindow):
             print(f"Failed to load the font: {name}.ttf")
             return QFont()
 
+    def keyReleaseEvent(self, a0) -> None:
+        try:
+            if a0.key() == 16777220:  # Enter key
+                self.focus_room_control()
+            elif a0.key() == 16777221:  # Shift key
+                self.focus_scene_control()
+            elif a0.key() == 16777222:  # Ctrl key
+                self.focus_system_control()
+            elif a0.key() == 87:
+                self.focus_webcam_layout()
+            super().keyReleaseEvent(a0)
+        except Exception as e:
+            logging.exception(e)
+
     def resizeEvent(self, event):
         try:
             self.menu_bar.setFixedSize(self.width(), self.menu_bar.height())
             self.menu_bar.move(0, self.height() - self.menu_bar.height())
             self.clock.move(self.width() - self.clock.width(), 0)
-            # self.webcam_layout.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
-            # self.webcam_layout.resizeEvent(event)
+            self.webcam_layout.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
+            self.webcam_layout.resizeEvent(event)
             self.forecast.setFixedSize(self.width(), self.forecast.height())
             self.forecast.layout_widgets()
             self.room_control.resizeEvent(event)

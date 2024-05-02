@@ -54,7 +54,7 @@ class LightController(RoomDevice):
 
     def parse_data(self, data):
         if not data['health']['online']:
-            self.info_text.setText(f"<pre>Server Reports\nDevice Offline\n{data['health']['reason']}</pre>")
+            self.info_text.setText(f"<pre>SERVER REPORTS\nDEVICE OFFLINE\n{data['health']['reason']}</pre>")
             self.toggle_button.setText("Turn ???")
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
             self.color_picker_button.setStyleSheet("color: black; font-size: 14px; "

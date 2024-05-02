@@ -13,21 +13,22 @@ class WebcamWindow(QLabel):
     def __init__(self, parent, source_url, thumbnail_url, name, size=None):
         try:
             super().__init__(parent)
+            self.source_url = source_url
             self.media_player = QMediaPlayer()
             self.media_player.setVideoOutput(self)
-            self.media_player.setSource(QUrl(source_url))
             self.video_widget = QVideoWidget(self)
-            self.video_widget.move(0, 0)
             self.thumbnail_label = QLabel(self)
-            self.thumbnail_label.move(0, 0)
+            self.thumbnail_label.move(0, 10)
             self.thumbnail_label.setFixedSize(self.width(), self.height())
             self.video_widget.setFixedSize(self.width(), self.height() - 15)
             self.video_widget.move(0, 15)
             self.media_player.setVideoOutput(self.video_widget)
             self.setFixedSize(round(size[0]), round(size[1]))
+            self.name = name
             self.name_label = QLabel(self)
             self.name_label.setText(name)
-            self.name_label.setStyleSheet("color: #ffcd00; font-size: 10px; font-weight: bold; border: none; background-color: black")
+            self.name_label.setStyleSheet("color: #ffcd00; font-size: 10px; font-weight: bold;"
+                                          " border: none; background-color: black")
             self.name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.name_label.setFixedSize(self.width(), 14)
             # Center the name label
@@ -52,7 +53,7 @@ class WebcamWindow(QLabel):
     def handle_thumbnail_response(self, reply):
         try:
             if str(reply.error()) != "NetworkError.NoError":
-                logging.error(f"Network Error: {reply.error()}")
+                logging.error(f"Cam {self.name} Network Error: {reply.error()}")
                 return
             data = reply.readAll()
             data = data.data()
@@ -61,7 +62,7 @@ class WebcamWindow(QLabel):
             pixmap = QPixmap()
             pixmap.loadFromData(data)
             # Resize the pixmap to fit the label
-            pixmap = pixmap.scaled(self.thumbnail_label.width(), self.thumbnail_label.height(),
+            pixmap = pixmap.scaled(self.thumbnail_label.width(), self.thumbnail_label.height() - 15,
                                    Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.thumbnail_label.setPixmap(pixmap)
         except Exception as e:
@@ -85,6 +86,7 @@ class WebcamWindow(QLabel):
                 self.media_player.stop()
                 self.video_widget.hide()
             else:
+                self.media_player.setSource(QUrl(self.source_url))
                 self.media_player.play()
                 self.video_widget.show()
         except Exception as e:
@@ -97,7 +99,7 @@ class WebcamWindow(QLabel):
         # Resize the thumbnail to fit the label
         pixmap = QPixmap()
         pixmap.loadFromData(self.current_thumbnail_data)
-        pixmap = pixmap.scaled(self.thumbnail_label.width(), self.thumbnail_label.height(),
+        pixmap = pixmap.scaled(self.thumbnail_label.width(), self.thumbnail_label.height() - 15,
                                Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
         self.thumbnail_label.setPixmap(pixmap)
         self.name_label.setFixedSize(self.width(), 15)

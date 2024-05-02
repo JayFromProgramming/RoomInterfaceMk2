@@ -13,13 +13,23 @@ class WebcamLayout(QLabel):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
+        self.focused = False
 
         self.webcams = []
 
         with open("Config/webcams.json", "r") as f:
             self.webcam_file = json.load(f)
 
-        self.create_layout()
+        self.hide()
+
+    def set_focus(self, focus) -> None:
+        self.focused = focus
+        if focus:
+            self.create_layout()
+            self.show()
+        else:
+            self.clear_layout()
+            self.hide()
 
     def create_layout(self):
         self.clear_layout()
@@ -36,6 +46,7 @@ class WebcamLayout(QLabel):
     def update_layout(self):
         for i, webcam in enumerate(self.webcams):
             webcam.setFixedSize(round(self.width() / self.target_layout[0]), round(self.height() / self.target_layout[1]))
+            webcam.resizeEvent(None)
             webcam.move((i % self.target_layout[0]) * webcam.width(), (i // self.target_layout[0]) * webcam.height())
 
     def clear_layout(self):

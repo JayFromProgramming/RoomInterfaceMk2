@@ -46,7 +46,7 @@ class ToggleDevice(RoomDevice):
     def update_status(self):
         health = self.data["health"]
         if not health["online"]:
-            self.device_text.setText(f"<pre>OFFLINE</pre>")
+            self.device_text.setText(f"<pre>DEVICE OFFLINE</pre>")
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
         elif health["fault"]:
             self.device_text.setText(f"<pre>Online: FAULT</pre>")
