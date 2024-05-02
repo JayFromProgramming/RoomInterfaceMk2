@@ -32,7 +32,7 @@ class WebcamLayout(QLabel):
             self.hide()
 
     def create_layout(self):
-        self.clear_layout()
+        # self.clear_layout()
         self.webcams = []
         for i, webcam in enumerate(self.webcam_file):
             if "thumb" not in webcam:
@@ -52,7 +52,7 @@ class WebcamLayout(QLabel):
     def clear_layout(self):
         for webcam in self.webcams:
             webcam.hide()
-            # webcam.deleteLater()
+            webcam.deleteLater()
         # self.webcams = []
 
     def resizeEvent(self, a0):

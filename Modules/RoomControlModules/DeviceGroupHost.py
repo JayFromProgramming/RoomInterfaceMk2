@@ -81,6 +81,16 @@ class DeviceGroupHost(QLabel):
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
 
+    def widget_add(self, widget):
+        # Make a widget of the same device name isn't already in the list
+        for w in self.device_widgets:
+            if w.device == widget.device:
+                widget.hide()
+                widget.deleteLater()
+                return
+        self.device_widgets.append(widget)
+        self.layout_widgets()
+
     def create_widget(self, response):
         try:
             original_query = response.request().url().toString()
@@ -93,12 +103,12 @@ class DeviceGroupHost(QLabel):
                 # Find a widget class that supports the device type
                 if widget_class.supports_type(device_type):
                     widget = widget_class(self, device)
-                    self.device_widgets.append(widget)
+                    self.widget_add(widget)
                     found = True
                     break
             if not found:
                 widget = NotInitalizedDevice(self, device)
-                self.device_widgets.append(widget)
+                self.widget_add(widget)
                 logging.warning(f"Device ({device}) of type [{device_type}] not supported")
             self.layout_widgets()
         except Exception as e:

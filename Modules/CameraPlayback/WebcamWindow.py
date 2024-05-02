@@ -69,15 +69,12 @@ class WebcamWindow(QLabel):
             logging.error(f"Error handling thumbnail response: {e}")
             logging.exception(e)
 
-    # def hideEvent(self, event):
-    #     # self.media_player.stop()
-    #     self.name_label.hide()
-    #     super().hideEvent(event)
-    #
-    # def showEvent(self, event):
-    #     # self.media_player.play()
-    #     self.name_label.show()
-    #     super().showEvent(event)
+    def hideEvent(self, event):
+        self.thumbnail_update_timer.stop()
+
+    def showEvent(self, event):
+        # self.media_player.play()
+        self.thumbnail_update_timer.start(60000)
 
     def mousePressEvent(self, event):
         try:
