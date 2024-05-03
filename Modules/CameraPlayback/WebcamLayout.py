@@ -44,6 +44,7 @@ class WebcamLayout(QLabel):
             self.webcams.append(webcam_window)
 
     def update_layout(self):
+        # Check if the webcam
         for i, webcam in enumerate(self.webcams):
             webcam.setFixedSize(round(self.width() / self.target_layout[0]), round(self.height() / self.target_layout[1]))
             webcam.resizeEvent(None)
