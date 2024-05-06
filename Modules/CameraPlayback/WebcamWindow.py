@@ -1,11 +1,9 @@
 
 from PyQt6.QtCore import QUrl, QTimer, Qt
 from PyQt6.QtGui import QPixmap
-try:
-    from PyQt6.QtMultimedia import QMediaPlayer, QMediaMetaData
-    from PyQt6.QtMultimediaWidgets import QVideoWidget
-except ModuleNotFoundError:
-    raise ImportError("PyQt6.QtMultimedia and PyQt6.QtMultimediaWidgets are required for this module")
+
+from PyQt6.QtMultimedia import QMediaPlayer, QMediaMetaData
+from PyQt6.QtMultimediaWidgets import QVideoWidget
 
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel
