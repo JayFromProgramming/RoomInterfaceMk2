@@ -81,14 +81,17 @@ class WebcamWindow(QLabel):
 
     def mousePressEvent(self, event):
         try:
+            self.media_player.setSource(QUrl(self.source_url))
+            self.media_player.play()
+            self.video_widget.show()
             # If playback is paused, resume playback
-            if self.media_player.isPlaying():
-                self.media_player.stop()
-                self.video_widget.hide()
-            else:
-                self.media_player.setSource(QUrl(self.source_url))
-                self.media_player.play()
-                self.video_widget.show()
+            # if self.media_player.isPlaying():
+            #     self.media_player.stop()
+            #     self.video_widget.hide()
+            # else:
+            #     self.media_player.setSource(QUrl(self.source_url))
+            #     self.media_player.play()
+            #     self.video_widget.show()
         except Exception as e:
             logging.error(f"Error pausing playback: {e}")
             logging.exception(e)
