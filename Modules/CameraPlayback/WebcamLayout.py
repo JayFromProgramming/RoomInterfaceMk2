@@ -1,4 +1,5 @@
 import json
+import os
 
 from PyQt6.QtWidgets import QLabel
 from loguru import logger as logging
@@ -16,7 +17,10 @@ class WebcamLayout(QLabel):
         self.focused = False
 
         self.webcams = []
-
+        if not os.path.exists("Config/webcams.json"):
+            with open("Config/webcams.json", "w") as f:
+                json.dump([], f)
+                logging.warning("Please fill out the webcams.json file with the proper information")
         with open("Config/webcams.json", "r") as f:
             self.webcam_file = json.load(f)
 
