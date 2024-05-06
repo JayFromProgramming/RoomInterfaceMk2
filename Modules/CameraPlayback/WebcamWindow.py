@@ -49,6 +49,8 @@ class WebcamWindow(QLabel):
             self.thumbnail_update_timer.timeout.connect(lambda: self.thumbnail_grabber.get(QNetworkRequest(QUrl(thumbnail_url))))
             self.thumbnail_update_timer.start(60000)  # Update the thumbnail every minute
 
+            self.is_playing = False
+
         except Exception as e:
             logging.error(f"Failed to initialize webcam window: {e}")
             logging.exception(e)
@@ -81,17 +83,14 @@ class WebcamWindow(QLabel):
 
     def mousePressEvent(self, event):
         try:
-            self.media_player.setSource(QUrl(self.source_url))
-            self.media_player.play()
-            self.video_widget.show()
             # If playback is paused, resume playback
-            # if self.media_player.isPlaying():
-            #     self.media_player.stop()
-            #     self.video_widget.hide()
-            # else:
-            #     self.media_player.setSource(QUrl(self.source_url))
-            #     self.media_player.play()
-            #     self.video_widget.show()
+            if self.is_playing:
+                self.media_player.stop()
+                self.video_widget.hide()
+            else:
+                self.media_player.setSource(QUrl(self.source_url))
+                self.media_player.play()
+                self.video_widget.show()
         except Exception as e:
             logging.error(f"Error pausing playback: {e}")
             logging.exception(e)
