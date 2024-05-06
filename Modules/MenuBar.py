@@ -1,5 +1,43 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QLabel, QPushButton
+from loguru import logger as logging
+
+class FlyoutButton(QPushButton):
+
+    def __init__(self, parent=None, text="", flyout=None, idle_timeout=5000):
+        super().__init__(parent)
+        self.parent = parent
+        self.setFixedSize(140, 30)
+        self.expanded = False
+        self.idle_timeout = idle_timeout
+        self.button_text = text
+        self.setText(f"↑{text}↑")
+        self.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
+                           "border: none; border-radius: 10px")
+        self.setFont(parent.font)
+        self.clicked.connect(self.fly_out)
+        self.flyout = flyout
+
+    def fly_out(self):
+        try:
+            self.expanded = not self.expanded
+            self.parent.current_focus = self
+            self.parent.collapse_not_focused()
+            if self.expanded:
+                self.setText(f"↓{self.button_text}↓")
+                self.flyout.set_focus(True)
+            else:
+                self.setText(f"↑{self.button_text}↑")
+                self.parent.current_focus = None
+                self.flyout.set_focus(False)
+        except Exception as e:
+            logging.error(f"Failed to expand/collapse flyout: {e}")
+            logging.exception(e)
+
+    def collapse(self):
+        self.expanded = False
+        self.flyout.set_focus(False)
+        self.setText(f"↑{self.button_text}↑")
 
 
 class MenuBar(QLabel):
@@ -14,53 +52,58 @@ class MenuBar(QLabel):
         self.font.setPointSize(14)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.room_control_expand = QPushButton(self)
-        self.room_control_expand.setFixedSize(140, 30)
-        self.room_control_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
-                                               "border: none; border-radius: 10px")
-        self.room_control_expand.setText("↑Device Control↑")
-        # Move the button to the exact center of the menu bar
-        self.room_control_expand.move(round((self.width() - self.room_control_expand.width()) / 2), 5)
-        self.room_control_expand.clicked.connect(self.focus_room_control)
-        self.room_control_expand.setFont(self.font)
+        self.buttons = []
 
-        self.scenes_expand = QPushButton(self)
-        self.scenes_expand.setFixedSize(140, 30)
-        self.scenes_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
-                                         "border: none; border-radius: 10px")
-        self.scenes_expand.setText("↑Scene Control↑")
-        # Have this buttons position mirror the system control button
-        self.scenes_expand.move(round(self.width() / 5 * 4 - self.scenes_expand.width() / 2), 5)
-        self.scenes_expand.setFont(self.font)
-        self.scenes_expand.clicked.connect(self.focus_scene_control)
+        self.refocus_timer = QTimer(self)
+        self.refocus_timer.timeout.connect(self.collapse_all)
+        self.refocus_timer.setSingleShot(True)
 
-        # self.font.setStrikeOut(True)
-        self.system_control_expand = QPushButton(self)
-        self.system_control_expand.setFixedSize(140, 30)
-        self.system_control_expand.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
-                                                 "border: none; border-radius: 10px")
-        self.system_control_expand.setText("↑System Control↑")
-        self.system_control_expand.move(round(self.width() / 5 - self.system_control_expand.width() / 2), 5)
-        self.system_control_expand.setFont(self.font)
-        self.system_control_expand.clicked.connect(self.focus_system_control)
+        self.current_focus = None
+
+        self.calculate_button_positions()
+
+    def calculate_button_positions(self):
+        # All buttons should have equal spacing between them and the edges of the menu bar
+        # This method should be dynamic and work for any number of buttons
+        button_spacing = (self.width() - (140 * len(self.buttons))) / (len(self.buttons) + 1)
+        for i, button in enumerate(self.buttons):
+            button.move(round(button_spacing * (i + 1) + button.width() * i), 5)
+
+    def add_flyout_button(self, text, flyout, idle_timeout=5000):
+        button = FlyoutButton(self, text, flyout, idle_timeout)
+        self.buttons.append(button)
+        self.calculate_button_positions()
 
     def resizeEvent(self, a0):
-        self.room_control_expand.move(round((self.width() - self.room_control_expand.width()) / 2), 5)
-        self.system_control_expand.move(round(self.width() / 5 - self.system_control_expand.width() / 2), 5)
-        self.scenes_expand.move(round(self.width() / 5 * 4 - self.scenes_expand.width() / 2), 5)
         super().resizeEvent(a0)
+        self.calculate_button_positions()
 
-    def focus_room_control(self):
-        self.parent.focus_scene_control(True)
-        self.parent.focus_system_control(True)
-        self.parent.focus_room_control(False)
+    def collapse_not_focused(self):
+        for button in self.buttons:
+            if button is not self.current_focus:
+                button.collapse()
 
-    def focus_scene_control(self):
-        self.parent.focus_room_control(True)
-        self.parent.focus_system_control(True)
-        self.parent.focus_scene_control(False)
+    def collapse_all(self):
+        for button in self.buttons:
+            button.collapse()
+        self.current_focus = None
 
-    def focus_system_control(self):
-        self.parent.focus_room_control(True)
-        self.parent.focus_scene_control(True)
-        self.parent.focus_system_control(False)
+    def reset_focus_timer(self):
+        self.refocus_timer.stop()
+        if self.current_focus is not None:
+            self.refocus_timer.start(self.current_focus.idle_timeout)
+
+    # def focus_room_control(self):
+    #     self.parent.focus_scene_control(True)
+    #     self.parent.focus_system_control(True)
+    #     self.parent.focus_room_control(False)
+    #
+    # def focus_scene_control(self):
+    #     self.parent.focus_room_control(True)
+    #     self.parent.focus_system_control(True)
+    #     self.parent.focus_scene_control(False)
+    #
+    # def focus_system_control(self):
+    #     self.parent.focus_room_control(True)
+    #     self.parent.focus_scene_control(True)
+    #     self.parent.focus_system_control(False)

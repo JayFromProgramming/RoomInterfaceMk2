@@ -4,7 +4,7 @@ import time
 import threading
 
 from PyQt6.QtCore import QTimer, QElapsedTimer, QEvent
-from PyQt6.QtWidgets import QMainWindow, QApplication, QPushButton
+from PyQt6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QLabel, QVBoxLayout
 from PyQt6.QtGui import QFont, QFontDatabase
 
 from Modules.CameraPlayback.WebcamLayout import WebcamLayout
@@ -89,6 +89,27 @@ class RoomInterface(QApplication):
         logging.error("Restarting application")
         exit(-1)
 
+class PopupDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # Set the dialog to be modal
+        self.setModal(True)
+
+        # Create a layout for the dialog
+        layout = QVBoxLayout()
+
+        # Add a label to the layout
+        label = QLabel("This is a popup dialog", self)
+        layout.addWidget(label)
+
+        # Add a close button to the layout
+        close_button = QPushButton("Close", self)
+        close_button.clicked.connect(self.close)
+        layout.addWidget(close_button)
+
+        # Set the layout on the dialog
+        self.setLayout(layout)
 
 class MainWindow(QMainWindow):
 
@@ -130,86 +151,84 @@ class MainWindow(QMainWindow):
         # Move the menu bar to the very bottom of the window
         self.menu_bar.move(0, self.height() - self.menu_bar.height())
 
-        self.refocus_timer = QTimer(self)
-        self.refocus_timer.timeout.connect(self.refocus_timer_timeout)
+        self.menu_bar.add_flyout_button("System Control", self.system_control, 5000)
+        self.menu_bar.add_flyout_button("Room Control", self.room_control, 5000)
+        self.menu_bar.add_flyout_button("Scene Control", self.scene_control, 5000)
+        self.menu_bar.add_flyout_button("Webcams", self.webcam_layout, 5000)
+        self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
+        self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
 
         self.show()
         # If running on a linux system, use this to make the window full screen
         if os.name == "posix":
             self.showFullScreen()
 
-    def refocus_timer_timeout(self):
-        self.focus_room_control(force_close=True)
-        self.focus_scene_control(force_close=True)
-        self.focus_system_control(force_close=True)
-        self.refocus_timer.stop()
-
     def mousePressEvent(self, a0) -> None:
-        self.refocus_timer.start(15000)  # Reset refocus timer to 15 seconds
+        self.menu_bar.reset_focus_timer()
         super().mousePressEvent(a0)
 
-    def focus_room_control(self, force_close=False):
-        if self.room_control.focused or force_close:
-            self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
-            self.room_control.set_focus(False)
-            self.menu_bar.room_control_expand.setText("↑Room Control↑")
-            self.forecast.show()
-            self.refocus_timer.stop()
-        else:
-            self.room_control.move(0, 90)
-            self.room_control.set_focus(True)
-            self.menu_bar.room_control_expand.setText("↓Room Control↓")
-            self.refocus_timer.start(60000)  # 15 seconds
-            self.forecast.hide()
+    # def focus_room_control(self, force_close=False):
+    #     if self.room_control.focused or force_close:
+    #         self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
+    #         self.room_control.set_focus(False)
+    #         self.menu_bar.room_control_expand.setText("↑Room Control↑")
+    #         self.forecast.show()
+    #         self.refocus_timer.stop()
+    #     else:
+    #         self.room_control.move(0, 90)
+    #         self.room_control.set_focus(True)
+    #         self.menu_bar.room_control_expand.setText("↓Room Control↓")
+    #         self.refocus_timer.start(60000)  # 15 seconds
+    #         self.forecast.hide()
 
-    def focus_system_control(self, force_close=False):
-        try:
-            if self.system_control.focused or force_close:
-                self.system_control.set_focus(False)
-                self.system_control.hide()
-                self.menu_bar.system_control_expand.setText("↑System Control↑")
-                self.forecast.show()
-                self.refocus_timer.stop()
-            else:
-                self.system_control.set_focus(True)
-                self.system_control.show()
-                self.menu_bar.system_control_expand.setText("↓System Control↓")
-                self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
-                self.refocus_timer.start(60000)  # 15 seconds
-                self.forecast.hide()
-        except Exception as e:
-            logging.exception(e)
+    # def focus_system_control(self, force_close=False):
+    #     try:
+    #         if self.system_control.focused or force_close:
+    #             self.system_control.set_focus(False)
+    #             self.system_control.hide()
+    #             self.menu_bar.system_control_expand.setText("↑System Control↑")
+    #             self.forecast.show()
+    #             self.refocus_timer.stop()
+    #         else:
+    #             self.system_control.set_focus(True)
+    #             self.system_control.show()
+    #             self.menu_bar.system_control_expand.setText("↓System Control↓")
+    #             self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
+    #             self.refocus_timer.start(60000)  # 15 seconds
+    #             self.forecast.hide()
+    #     except Exception as e:
+    #         logging.exception(e)
 
-    def focus_scene_control(self, force_close=False):
-        if self.scene_control.focused or force_close:
-            self.scene_control.set_focus(False)
-            self.scene_control.hide()
-            self.menu_bar.scenes_expand.setText("↑Scene Control↑")
-            self.forecast.show()
-            self.refocus_timer.stop()
-        else:
-            self.scene_control.set_focus(True)
-            self.scene_control.show()
-            # The scene controls max height is the distance from 90 pixels to the top of room control
-            self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
-            self.menu_bar.scenes_expand.setText("↓Scene Control↓")
-            self.forecast.hide()
-            self.refocus_timer.start(120000)
+    # def focus_scene_control(self, force_close=False):
+    #     if self.scene_control.focused or force_close:
+    #         self.scene_control.set_focus(False)
+    #         self.scene_control.hide()
+    #         self.menu_bar.scenes_expand.setText("↑Scene Control↑")
+    #         self.forecast.show()
+    #         self.refocus_timer.stop()
+    #     else:
+    #         self.scene_control.set_focus(True)
+    #         self.scene_control.show()
+    #         # The scene controls max height is the distance from 90 pixels to the top of room control
+    #         self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
+    #         self.menu_bar.scenes_expand.setText("↓Scene Control↓")
+    #         self.forecast.hide()
+    #         self.refocus_timer.start(120000)
 
-    def focus_webcam_layout(self, force_close=False):
-        if self.webcam_layout.focused or force_close:
-            self.webcam_layout.set_focus(False)
-            self.webcam_layout.hide()
-            # self.menu_bar.webcam_expand.setText("↑Webcams↑")
-            self.forecast.show()
-            self.refocus_timer.stop()
-        else:
-            self.webcam_layout.set_focus(True)
-            self.webcam_layout.show()
-            # self.menu_bar.webcam_expand.setText("↓Webcams↓")
-            self.webcam_layout.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
-            self.forecast.hide()
-            self.refocus_timer.start(120000)
+    # def focus_webcam_layout(self, force_close=False):
+    #     if self.webcam_layout.focused or force_close:
+    #         self.webcam_layout.set_focus(False)
+    #         self.webcam_layout.hide()
+    #         # self.menu_bar.webcam_expand.setText("↑Webcams↑")
+    #         self.forecast.show()
+    #         self.refocus_timer.stop()
+    #     else:
+    #         self.webcam_layout.set_focus(True)
+    #         self.webcam_layout.show()
+    #         # self.menu_bar.webcam_expand.setText("↓Webcams↓")
+    #         self.webcam_layout.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
+    #         self.forecast.hide()
+    #         self.refocus_timer.start(120000)
 
     def get_font(self, name: str):
         # Load the custom font from a file
@@ -228,19 +247,19 @@ class MainWindow(QMainWindow):
             print(f"Failed to load the font: {name}.ttf")
             return QFont()
 
-    def keyReleaseEvent(self, a0) -> None:
-        try:
-            if a0.key() == 16777220:  # Enter key
-                self.focus_room_control()
-            elif a0.key() == 16777221:  # Shift key
-                self.focus_scene_control()
-            elif a0.key() == 16777222:  # Ctrl key
-                self.focus_system_control()
-            elif a0.key() == 87:
-                self.focus_webcam_layout()
-            super().keyReleaseEvent(a0)
-        except Exception as e:
-            logging.exception(e)
+    # def keyReleaseEvent(self, a0) -> None:
+    #     try:
+    #         if a0.key() == 16777220:  # Enter key
+    #             self.focus_room_control()
+    #         elif a0.key() == 16777221:  # Shift key
+    #             self.focus_scene_control()
+    #         elif a0.key() == 16777222:  # Ctrl key
+    #             self.focus_system_control()
+    #         elif a0.key() == 87:
+    #             self.focus_webcam_layout()
+    #         super().keyReleaseEvent(a0)
+    #     except Exception as e:
+    #         logging.exception(e)
 
     def resizeEvent(self, event):
         try:

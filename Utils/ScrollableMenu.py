@@ -35,6 +35,10 @@ class ScrollableMenu(QLabel):
         self.focused = focus
         self.resizeEvent(None)
         self.layout_widgets()
+        if focus:
+            self.show()
+        else:
+            self.hide()
         # logging.debug(f"Setting focus to {focus} took {timer.elapsed()}ms")
 
     def mousePressEvent(self, event):

@@ -63,10 +63,11 @@ class WebcamLayout(QLabel):
             webcam.move((i % self.target_layout[0]) * webcam.width(), (i // self.target_layout[0]) * webcam.height())
 
     def clear_layout(self):
+        # Check that none of the webcams were deleteLater'd
         for webcam in self.webcams:
             webcam.hide()
             webcam.deleteLater()
-        # self.webcams = []
+        self.webcams = []
 
     def resizeEvent(self, a0):
         self.update_layout()

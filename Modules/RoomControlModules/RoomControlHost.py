@@ -114,6 +114,21 @@ class RoomControlHost(ScrollableMenu):
         self.ungrouped_device_host.layout_widgets()
         self.layout_widgets()
 
+    def set_focus(self, focus):
+        # Move this widget when it is focused
+        try:
+            self.focused = focus
+            if focus:
+                self.move(0, 90)
+                self.setFixedSize(self.parent.width(), self.parent.height() - self.y() - 30)
+            else:
+                self.move(0, self.parent.forecast.height() + self.parent.forecast.y() + 10)
+                self.setFixedSize(self.parent.width(), self.parent.height() - self.y() - 30)
+            # self.layout_widgets()
+        except Exception as e:
+            logging.error(f"Error setting focus: {e}")
+            logging.exception(e)
+
     def move_widgets(self, y):
         y = round(y)
         # Determine if this movement would cause the ungrouped device host to go off the top of the screen
@@ -139,6 +154,7 @@ class RoomControlHost(ScrollableMenu):
         # If we are not focused only show the starred device host
         if not self.focused:
             self.starred_device_host.center = True
+            self.starred_device_host.layout_widgets()
             self.starred_device_host.show()
             self.starred_device_host.move(20, 0)
             # self.starred_device_host.setFixedSize(self.width(), self.height() - self.y())
@@ -150,6 +166,7 @@ class RoomControlHost(ScrollableMenu):
             # Layout each device group host out in a vertical line
             y = 0
             self.starred_device_host.center = False
+            self.starred_device_host.layout_widgets()
             self.starred_device_host.show()
             self.starred_device_host.move(20, y)
             y += self.starred_device_host.height() + 10
