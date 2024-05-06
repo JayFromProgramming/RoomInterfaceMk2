@@ -132,8 +132,8 @@ class RoomControlHost(ScrollableMenu):
     def move_widgets(self, y):
         y = round(y)
         # Determine if this movement would cause the ungrouped device host to go off the top of the screen
-        if self.ungrouped_device_host.y() + y < -80:
-            y = -self.ungrouped_device_host.y() - 80
+        if self.ungrouped_device_host.y() + y < -self.ungrouped_device_host.height() - 200:
+            y = -self.ungrouped_device_host.y() - self.ungrouped_device_host.height() - 200
             self.scroll_velocity = 0
             self.scroll_offset = y
         # Determine if this movement would cause the starred device host to go below its original position

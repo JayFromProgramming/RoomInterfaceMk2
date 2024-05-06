@@ -4,12 +4,12 @@ from loguru import logger as logging
 
 class FlyoutButton(QPushButton):
 
-    def __init__(self, parent=None, text="", flyout=None, idle_timeout=5000):
+    def __init__(self, parent=None, text="", flyout=None, idle_timeout=30):
         super().__init__(parent)
         self.parent = parent
         self.setFixedSize(140, 30)
         self.expanded = False
-        self.idle_timeout = idle_timeout
+        self.idle_timeout = idle_timeout * 1000
         self.button_text = text
         self.setText(f"↑{text}↑")
         self.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
@@ -26,6 +26,7 @@ class FlyoutButton(QPushButton):
             if self.expanded:
                 self.setText(f"↓{self.button_text}↓")
                 self.flyout.set_focus(True)
+                self.parent.start_focus_timer()
             else:
                 self.setText(f"↑{self.button_text}↑")
                 self.parent.current_focus = None
@@ -69,7 +70,7 @@ class MenuBar(QLabel):
         for i, button in enumerate(self.buttons):
             button.move(round(button_spacing * (i + 1) + button.width() * i), 5)
 
-    def add_flyout_button(self, text, flyout, idle_timeout=5000):
+    def add_flyout_button(self, text, flyout, idle_timeout=30):
         button = FlyoutButton(self, text, flyout, idle_timeout)
         self.buttons.append(button)
         self.calculate_button_positions()
@@ -92,6 +93,9 @@ class MenuBar(QLabel):
         self.refocus_timer.stop()
         if self.current_focus is not None:
             self.refocus_timer.start(self.current_focus.idle_timeout)
+
+    def start_focus_timer(self):
+        self.refocus_timer.start(self.current_focus.idle_timeout)
 
     # def focus_room_control(self):
     #     self.parent.focus_scene_control(True)
