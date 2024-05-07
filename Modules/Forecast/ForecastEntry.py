@@ -17,6 +17,7 @@ class ForecastValue(QLabel):
         super().__init__(parent)
         self.setFixedSize(75, 45)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setStyleSheet("border: none; background-color: transparent")
         self.upper_label = QLabel(self)
         self.upper_label.setFixedSize(75, 22)
         self.upper_label.setStyleSheet("color: #ffcd00; font-size: 20px; font-weight: bold;"
@@ -25,7 +26,8 @@ class ForecastValue(QLabel):
 
         self.lower_label = QLabel(self)
         self.lower_label.setFixedSize(75, 22)
-        self.lower_label.setStyleSheet("color: white; font-size: 20px; font-weight: regular; border: none; border-radius: none")
+        self.lower_label.setStyleSheet("color: white; font-size: 20px; font-weight: regular;"
+                                       " border: none; border-radius: none")
         self.lower_label.setFont(font)
 
         self.upper_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -55,6 +57,8 @@ class ForecastEntry(QLabel):
         self.setObjectName(f"forecast_entry_{reference_time}")
 
         font = parent.parent.get_font("JetBrainsMono-Bold")
+
+        # self.setStyleSheet("border: 2px solid #ffcd00; border-radius: 10px; background-color: transparent")
 
         # self.setStyleSheet("border: 2px solid #ffcd00")
 

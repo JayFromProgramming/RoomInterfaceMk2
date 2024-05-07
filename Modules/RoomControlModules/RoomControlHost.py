@@ -137,7 +137,7 @@ class RoomControlHost(ScrollableMenu):
             self.scroll_velocity = 0
             self.scroll_offset = y
         # Determine if this movement would cause the starred device host to go below its original position
-        if self.starred_device_host.y() + y > 0:
+        if self.starred_device_host.y() + y > -10:
             y = -self.starred_device_host.y()
             self.scroll_velocity = 0
             self.scroll_offset = y

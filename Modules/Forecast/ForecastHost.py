@@ -104,6 +104,7 @@ class ForecastHost(QLabel):
             widget.hide()
 
         for line in self.lines:
+            line.hide()
             line.deleteLater()
 
         self.lines.clear()
@@ -114,6 +115,7 @@ class ForecastHost(QLabel):
         # Determine the current scroll offset
         if self.scroll_offset < 0:
             self.scroll_offset = 0
+            self.scroll_reset_timer.stop()
         elif self.scroll_offset > len(self.forecast_widgets) - 1:
             self.scroll_offset = len(self.forecast_widgets) - 1
 
@@ -152,6 +154,8 @@ class ForecastHost(QLabel):
             line.show()
             # line.deleteLater()
 
+        # print(f"Drew {len(self.lines)} lines")
+
         # self.lines.clear()
         self.forecast_focus.raise_()
 
@@ -167,11 +171,13 @@ class ForecastHost(QLabel):
             self.scroll_offset += 1
         self.layout_widgets()
         self.last_scroll = time.time()
+        self.scroll_reset_timer.start(500)
 
     def mousePressEvent(self, ev):
         self.dragging = True
         self.scroll_start = ev.pos().x()
         self.scroll_begin = ev.pos().x()
+        self.scroll_reset_timer.start(500)
 
     def mouseMoveEvent(self, ev):
         """
