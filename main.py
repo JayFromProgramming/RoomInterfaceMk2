@@ -130,13 +130,12 @@ class MainWindow(QMainWindow):
         self.weather = CurrentWeather(self)
         self.weather.move(0, 0)
 
-        # self.forecast = ForecastHost(self)
-        # self.forecast.move(0, 90)
+        self.forecast = ForecastHost(self)
+        self.forecast.move(0, 90)
         # self.forecast.hide()
 
         self.room_control = RoomControlHost(self)
-        # self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
-        self.room_control.move(0, 90)
+        self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
 
         self.scene_control = RoomSceneHost(self)
         self.scene_control.move(0, 90)
@@ -269,8 +268,8 @@ class MainWindow(QMainWindow):
             self.clock.move(self.width() - self.clock.width(), 0)
             self.webcam_layout.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
             self.webcam_layout.resizeEvent(event)
-            # self.forecast.setFixedSize(self.width(), self.forecast.height())
-            # self.forecast.layout_widgets()
+            self.forecast.setFixedSize(self.width(), self.forecast.height())
+            self.forecast.layout_widgets()
             self.room_control.resizeEvent(event)
             self.scene_control.resizeEvent(event)
         except Exception as e:
