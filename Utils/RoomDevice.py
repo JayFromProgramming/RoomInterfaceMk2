@@ -15,10 +15,11 @@ class RoomDevice(QLabel):
     def supports_type(cls, device_type):
         return device_type in cls.supported_types
 
-    def __init__(self, auth, parent=None, device=None, large=False):
+    def __init__(self, auth, parent=None, device=None, large=False, priority=0):
         super().__init__(parent)
         self.parent = parent
         self.device = device
+        self.priority = priority
         self.host = parent.host
         self.auth = auth
         if large:

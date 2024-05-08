@@ -65,23 +65,24 @@ class RoomControlHost(ScrollableMenu):
 
     def process_schema_response(self, data):
         for device_name, values in data.items():
+            priority = values.get("priority", 0)
             # Check if the device is in a group
             if values["starred"] is True:
-                self.starred_device_host.add_device(device_name)
+                self.starred_device_host.add_device(device_name, priority)
             if values["group"] is not None:
                 found = False
                 for widget in self.device_group_hosts:
                     if widget.group_name == values["group"]:
-                        widget.add_device(device_name)
+                        widget.add_device(device_name, priority)
                         found = True
                         break
                 if not found:
                     self.device_group_hosts.append(DeviceGroupHost(self, values["group"]))
-                    self.device_group_hosts[-1].add_device(device_name)
+                    self.device_group_hosts[-1].add_device(device_name, priority)
             else:
-                self.ungrouped_device_host.add_device(device_name)
+                self.ungrouped_device_host.add_device(device_name, priority)
 
-    def handle_network_response(self, reply):
+    def handle_network_response(self, reply):  # Schema response handler
         try:
             data = reply.readAll()
             if str(reply.error()) != "NetworkError.NoError":

@@ -173,6 +173,8 @@ class ForecastFocus(QLabel):
         except Exception as e:
             logging.error(f"Error handling forecast response: {e}")
             logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def handle_icon_response(self, response):
         try:
@@ -186,4 +188,6 @@ class ForecastFocus(QLabel):
         except Exception as e:
             logging.error(f"Error handling icon response: {e}")
             logging.exception(e)
+        finally:
+            response.deleteLater()
 

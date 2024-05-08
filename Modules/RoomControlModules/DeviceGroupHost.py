@@ -99,6 +99,7 @@ class DeviceGroupHost(QLabel):
     def create_widget(self, response):
         try:
             original_query = response.request().url().toString()
+            priority = response.request().rawHeader(b"Priority").data().decode("utf-8")
             # Get the device name from the query
             device = original_query.split("/")[-1]
             data = response.readAll()
@@ -107,12 +108,12 @@ class DeviceGroupHost(QLabel):
             for widget_class in RoomDevice.__subclasses__():
                 # Find a widget class that supports the device type
                 if widget_class.supports_type(device_type):
-                    widget = widget_class(self, device)
+                    widget = widget_class(self, device, priority)
                     self.widget_add(widget)
                     found = True
                     break
             if not found:
-                widget = NotInitalizedDevice(self, device)
+                widget = NotInitalizedDevice(self, device, priority)
                 self.widget_add(widget)
                 logging.warning(f"Device ({device}) of type [{device_type}] not supported")
             self.layout_widgets()
@@ -122,14 +123,15 @@ class DeviceGroupHost(QLabel):
         finally:
             response.deleteLater()
 
-    def add_device(self, device: dict):
+    def add_device(self, device: str, priority: int = 0):
         request = QNetworkRequest(QUrl(f"http://{self.host}/get_type/{device}"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        request.setRawHeader(b"Priority", bytes(str(priority), 'utf-8'))
         self.type_manager.get(request)
 
     def sort_widgets(self):
         # Sort devices first by size, then type, then name (so the order is consistent independent of the load order)
-        self.device_widgets.sort(key=lambda x: (x.width(), x.__class__.__name__, x.device), reverse=True)
+        self.device_widgets.sort(key=lambda x: (x.width(), x.priority, x.__class__.__name__, x.device), reverse=True)
 
     def layout_widgets(self):
         # Lay widgets out left to right wrapping around when they reach the right edge

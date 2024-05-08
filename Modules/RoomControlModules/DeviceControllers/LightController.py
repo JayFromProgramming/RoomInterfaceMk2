@@ -14,8 +14,8 @@ class LightController(RoomDevice):
 
     supported_types = ["abstract_rgb"]
 
-    def __init__(self, parent=None, device=None):
-        super().__init__(parent.auth, parent, device, True)
+    def __init__(self, parent=None, device=None, priority=0):
+        super().__init__(parent.auth, parent, device, True, priority)
 
         # This is one of many widgets that will be placed on the RoomControlHost so they shouldn't use too much space
         self.device_label.setFont(parent.font)
