@@ -18,6 +18,8 @@ class RoomControlHost(ScrollableMenu):
         super().__init__(parent)
         self.setFixedSize(parent.width(), parent.height() - self.y())
 
+        self.schema_data = {}
+
         self.loading_label = QLabel(self)
         self.loading_label.setFont(self.font)
         self.loading_label.setFixedSize(600, 60)
@@ -61,6 +63,24 @@ class RoomControlHost(ScrollableMenu):
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.network_manager.get(request)
 
+    def process_schema_response(self, data):
+        for device_name, values in data.items():
+            # Check if the device is in a group
+            if values["starred"] is True:
+                self.starred_device_host.add_device(device_name)
+            if values["group"] is not None:
+                found = False
+                for widget in self.device_group_hosts:
+                    if widget.group_name == values["group"]:
+                        widget.add_device(device_name)
+                        found = True
+                        break
+                if not found:
+                    self.device_group_hosts.append(DeviceGroupHost(self, values["group"]))
+                    self.device_group_hosts[-1].add_device(device_name)
+            else:
+                self.ungrouped_device_host.add_device(device_name)
+
     def handle_network_response(self, reply):
         try:
             data = reply.readAll()
@@ -76,22 +96,7 @@ class RoomControlHost(ScrollableMenu):
                 logging.error(f"Data: {data}")
                 self.loading_label.setText(f"Error Loading Room Control Schema, Retrying...\n{e}")
                 return
-            for device_name, values in data.items():
-                # Check if the device is in a group
-                if values["starred"] is True:
-                    self.starred_device_host.add_device(device_name)
-                if values["group"] is not None:
-                    found = False
-                    for widget in self.device_group_hosts:
-                        if widget.group_name == values["group"]:
-                            widget.add_device(device_name)
-                            found = True
-                            break
-                    if not found:
-                        self.device_group_hosts.append(DeviceGroupHost(self, values["group"]))
-                        self.device_group_hosts[-1].add_device(device_name)
-                else:
-                    self.ungrouped_device_host.add_device(device_name)
+            self.process_schema_response(data)
             self.layout_widgets()
             self.loading_label.hide()
             self.retry_timer.stop()  # Stop retrying if we got a response

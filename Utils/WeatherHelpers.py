@@ -8,6 +8,9 @@ def kelvin_to_fahrenheit(kelvin):
 def meters_to_miles(meters):
     return meters * 0.000621371
 
+def mm_to_inches(mm, round_to=2):
+    return round(mm * 0.0393701, round_to)
+
 
 def visibility_to_text(visibility):
     visibility = meters_to_miles(visibility)

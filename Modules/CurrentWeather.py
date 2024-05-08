@@ -103,6 +103,8 @@ class CurrentWeather(QLabel):
         except Exception as e:
             logging.error(f"Error handling weather response: {e}")
             logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def handle_icon_response(self, reply):
         try:
@@ -116,6 +118,8 @@ class CurrentWeather(QLabel):
         except Exception as e:
             logging.error(f"Error handling icon response: {e}")
             logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def parse_data(self, data):
         """Parses the data from the server"""

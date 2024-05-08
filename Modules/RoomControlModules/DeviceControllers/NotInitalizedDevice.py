@@ -35,6 +35,9 @@ class NotInitalizedDevice(RoomDevice):
         self.device_label.setText(name)
 
     def update_status(self):
+        if self.not_found:
+            self.device_text.setText(f"<pre>DEVICE NOT FOUND</pre>")
+            return
         health = self.data["health"]
         if not health:
             self.device_text.setText(f"<pre>NO DATA\nDevice Type\nUnknown</pre>")

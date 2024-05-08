@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import QLabel
 from loguru import logger as logging
 
 from Utils.WeatherHelpers import kelvin_to_fahrenheit, mps_to_mph, wind_direction_arrow, convert_relative_humidity, \
-    visibility_to_text
+    visibility_to_text, mm_to_inches
 
 
 def ordinal(n):
@@ -139,8 +139,17 @@ class ForecastFocus(QLabel):
             visibility = data["visibility_distance"]
             output += f"The expected visibility will be {visibility_to_text(visibility)}.\n"
 
+            rain, snow, percip = data["rain"].get("1h", 0), data["snow"].get("1h", 0), ""
+            if rain > 0:
+                percip = f"{mm_to_inches(rain)}in of rain"
+            elif snow > 0:
+                percip = f"{mm_to_inches(snow)}in of snow"
+            else:
+                percip = "precipitation"
+
             if data['precipitation_probability'] > 0:
-                output += f"There is a {round(data['precipitation_probability'] * 100)}% chance of precipitation.\n"
+                output += f"There is a {round(data['precipitation_probability'] * 100)}% chance of " \
+                          f"{percip}\n"
             else:
                 output += "There is no chance of precipitation.\n"
 

@@ -26,7 +26,7 @@ class RoomDevice(QLabel):
         else:
             self.setFixedSize(145, 75)
         self.setStyleSheet("background-color: #ffcd00; border: 2px solid #ffcd00; border-radius: 10px")
-
+        self.not_found = False
         self.toggle_button = None
 
         self.device_label = QLabel(self)
@@ -93,6 +93,10 @@ class RoomDevice(QLabel):
                 self.handle_failure(response)
                 return
             data = response.readAll()
+            if data == b'Device not found':
+                self.not_found = True
+                self.parse_data(None)
+                return
             data = json.loads(str(data, 'utf-8'))
             self.data = data
             self.state = data["state"]
@@ -102,6 +106,7 @@ class RoomDevice(QLabel):
             logging.exception(e)
         finally:
             self.refresh_timer.start(5000 + random.randint(0, 1000))
+            response.deleteLater()
 
     def handle_command(self, response):
         try:
@@ -114,6 +119,8 @@ class RoomDevice(QLabel):
         except Exception as e:
             logging.error(f"Error handling command response: {e}")
             logging.exception(e)
+        finally:
+            response.deleteLater()
 
     def handle_failure(self, response):
         raise NotImplementedError("This method must be implemented by the child class")

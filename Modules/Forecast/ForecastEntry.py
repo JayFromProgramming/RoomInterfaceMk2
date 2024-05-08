@@ -139,6 +139,8 @@ class ForecastEntry(QLabel):
         except Exception as e:
             logging.error(f"Error handling icon response: {e}")
             logging.exception(e)
+        finally:
+            response.deleteLater()
 
     def handle_forecast_response(self, response):
         try:
@@ -153,6 +155,8 @@ class ForecastEntry(QLabel):
         except Exception as e:
             logging.error(f"Error handling forecast response: {e}")
             logging.exception(e)
+        finally:
+            response.deleteLater()
 
     def parse_data(self, data):
         """

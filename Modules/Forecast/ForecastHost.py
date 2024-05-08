@@ -94,6 +94,8 @@ class ForecastHost(QLabel):
             self.refresh_timer.start(5000)  # Retry in 5 seconds
         else:
             self.refresh_timer.start(300000)
+        finally:
+            reply.deleteLater()
 
     def layout_widgets(self):
         """

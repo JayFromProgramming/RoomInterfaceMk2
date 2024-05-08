@@ -68,6 +68,9 @@ class DeviceGroupHost(QLabel):
 
     def handle_name_response(self, reply):
         try:
+            if str(reply.error()) != "NetworkError.NoError":
+                logging.error(f"Name Error: {reply.error()}")
+                return
             # Get the original query
             original_query = reply.request().url().toString()
             # Get the device name from the query
