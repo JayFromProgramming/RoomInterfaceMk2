@@ -157,6 +157,9 @@ class DeviceGroupHost(QLabel):
                 x_offset = 10
                 y_offset += widget.height() + 10
 
+        if self.center and first_row_x_offset == 0:
+            first_row_x_offset = round((self.width() - x_offset - 10) / 2)
+
         # If centering is enabled, move all widgets to the right by the remaining space of the first row
         if self.center:
             for widget in self.device_widgets:
