@@ -66,6 +66,8 @@ class RoomSceneHost(ScrollableMenu):
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
             self.retry_timer.start(5000)
+        finally:
+            reply.deleteLater()
 
     def reload(self):
         for widget in self.scene_widgets:

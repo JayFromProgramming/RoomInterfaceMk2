@@ -83,6 +83,8 @@ class DeviceGroupHost(QLabel):
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def widget_add(self, widget):
         # Make a widget of the same device name isn't already in the list
@@ -117,6 +119,8 @@ class DeviceGroupHost(QLabel):
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
+        finally:
+            response.deleteLater()
 
     def add_device(self, device: dict):
         request = QNetworkRequest(QUrl(f"http://{self.host}/get_type/{device}"))

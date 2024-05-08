@@ -65,6 +65,8 @@ class SystemControlHost(ScrollableMenu):
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
             self.retry_timer.start(5000)
+        finally:
+            reply.deleteLater()
 
     def handle_system_data(self, data):
         pass

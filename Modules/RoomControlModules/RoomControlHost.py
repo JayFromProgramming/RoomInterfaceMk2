@@ -104,6 +104,8 @@ class RoomControlHost(ScrollableMenu):
             logging.error(f"Error handling network response: {e}")
             self.loading_label.setText(f"Error Loading Room Control Schema, Retrying...\n{e}")
             logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def resizeEvent(self, event):
         # Our height is the height from our x position to the bottom of the window

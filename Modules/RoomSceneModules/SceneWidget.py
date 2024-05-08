@@ -129,6 +129,8 @@ class SceneWidget(QLabel):
                 "background-color: grey; color: white; font-size: 14px; font-weight: bold;")
         except Exception as e:
             pass
+        finally:
+            reply.deleteLater()
 
     def mousePressEvent(self, a0) -> None:
         # Manually check for double click events

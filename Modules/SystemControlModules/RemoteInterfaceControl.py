@@ -65,6 +65,9 @@ class RemoteInterfaceControl(InterfaceControl):
             self.parse_interface_stats(data["state"])
         except Exception as e:
             logging.error(f"Parsing Error: {e}")
+            logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def parse_interface_stats(self, data):
         try:

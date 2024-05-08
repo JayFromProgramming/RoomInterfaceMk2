@@ -73,6 +73,8 @@ class WebcamWindow(QLabel):
         except Exception as e:
             logging.error(f"Error handling thumbnail response: {e}")
             logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def hideEvent(self, event):
         self.thumbnail_update_timer.stop()
