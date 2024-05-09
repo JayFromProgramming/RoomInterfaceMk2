@@ -142,28 +142,33 @@ class DeviceGroupHost(QLabel):
             self.no_devices_label.hide()
         y_offset = 20
         x_offset = 10
-        first_row_x_offset = 0
+        center_offset = []
+        row_num = 0
         # Sort the device widgets dict by size (largest to smallest)
         self.sort_widgets()
         for widget in self.device_widgets:
             widget.move(x_offset, y_offset)
             widget.show()
             x_offset += widget.width() + 7
+            widget.row_num = row_num
             # If this is the last widget don't make a new row
             if x_offset + widget.width() > self.width() and widget != self.device_widgets[-1]:
-                if self.center and first_row_x_offset == 0:
+                if self.center:
                     # If centering is enabled, calculate the remaining space of the first row from the boarder
-                    first_row_x_offset = round((self.width() - x_offset - 10) / 2)
+                    center_offset.append(round((self.width() - x_offset - 10) / 2))
+                    row_num += 1
                 x_offset = 10
                 y_offset += widget.height() + 10
 
-        if self.center and first_row_x_offset == 0:
-            first_row_x_offset = round((self.width() - x_offset - 10) / 2)
+        if self.center:
+            # If centering is enabled, calculate the remaining space of the first row from the boarder
+            center_offset.append(round((self.width() - x_offset - 10) / 2))
+            row_num += 1
 
         # If centering is enabled, move all widgets to the right by the remaining space of the first row
         if self.center:
             for widget in self.device_widgets:
-                widget.move(widget.x() + first_row_x_offset, widget.y())
+                widget.move(widget.x() + center_offset[widget.row_num], widget.y())
 
         self.group_label.setFixedSize(self.width() - 10, 20)
         self.group_label.move(round((self.width() - self.group_label.width()) / 2), 0)

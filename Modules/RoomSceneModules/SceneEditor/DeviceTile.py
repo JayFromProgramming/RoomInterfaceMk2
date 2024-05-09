@@ -121,6 +121,11 @@ class DeviceTile(QLabel):
             if key in self.valid_actions:
                 self.action_data[key] = value
 
+        # If any of the action data is null it should be removed
+        for key in list(self.action_data.keys()):
+            if self.action_data[key] is None:
+                del self.action_data[key]
+
         # Temporary fix until server code updated to handle
         # Color, White, and Brightness are mutually exclusive and should not be sent together
         # Prioritize white != 0, then color, then brightness

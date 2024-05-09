@@ -162,6 +162,7 @@ class RoomControlHost(ScrollableMenu):
         # If we are not focused only show the starred device host
         if not self.focused:
             self.starred_device_host.center = True
+            self.starred_device_host.allow_scroll = False
             self.starred_device_host.layout_widgets()
             self.starred_device_host.show()
             self.starred_device_host.move(20, 0)
@@ -174,6 +175,7 @@ class RoomControlHost(ScrollableMenu):
             # Layout each device group host out in a vertical line
             y = 0
             self.starred_device_host.center = False
+            self.starred_device_host.allow_scroll = True
             self.starred_device_host.layout_widgets()
             self.starred_device_host.show()
             self.starred_device_host.move(20, y)

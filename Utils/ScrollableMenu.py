@@ -26,6 +26,8 @@ class ScrollableMenu(QLabel):
         self.scroll_total_offset = 0
         self.last_scroll = time.time()
 
+        self.allow_scroll = True
+
         self.scroll_motion_timer = QTimer(self)
         self.scroll_motion_timer.timeout.connect(self.scroll_motion)
 
@@ -45,6 +47,8 @@ class ScrollableMenu(QLabel):
         try:
             if not self.focused:
                 return
+            if not self.allow_scroll:
+                return
             self.dragging = True
             self.scroll_start = event.pos().y()
             self.last_scroll = time.time()
@@ -56,6 +60,8 @@ class ScrollableMenu(QLabel):
 
     def mouseMoveEvent(self, ev):
         try:
+            if not self.allow_scroll:
+                return
             if self.dragging:
                 # Offset the entire room control host by the difference in the y position
                 self.scroll_offset += ev.pos().y() - self.scroll_start
@@ -73,6 +79,8 @@ class ScrollableMenu(QLabel):
 
     def mouseReleaseEvent(self, ev):
         try:
+            if not self.allow_scroll:
+                return
             self.dragging = False
             # Start the scroll motion timer to decay the scroll velocity and move the widgets
             self.last_scroll = time.time()
@@ -91,6 +99,8 @@ class ScrollableMenu(QLabel):
 
     def wheelEvent(self, a0) -> None:
         try:
+            if not self.allow_scroll:
+                return
             if not self.focused:
                 return
             self.scroll_offset += a0.angleDelta().y() / 5
@@ -101,6 +111,8 @@ class ScrollableMenu(QLabel):
 
     def scroll_motion(self):
         try:
+            if not self.allow_scroll:
+                return
             # Decay the scroll velocity
             self.scroll_velocity = max(-self.scroll_max_velocity, min(self.scroll_max_velocity, self.scroll_velocity))
             self.scroll_velocity *= self.scroll_velocity_decay
