@@ -48,6 +48,7 @@ from Modules.SystemControlModules.SystemControlHost import SystemControlHost
 #
 #     def feed(self):
 #         self.last_feed = time.time()
+from Utils.PopupManager import PopupManager
 
 
 class RoomInterface(QApplication):
@@ -89,27 +90,6 @@ class RoomInterface(QApplication):
     #     logging.error("Restarting application")
     #     exit(-1)
 
-class PopupDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        # Set the dialog to be modal
-        self.setModal(True)
-
-        # Create a layout for the dialog
-        layout = QVBoxLayout()
-
-        # Add a label to the layout
-        label = QLabel("This is a popup dialog", self)
-        layout.addWidget(label)
-
-        # Add a close button to the layout
-        close_button = QPushButton("Close", self)
-        close_button.clicked.connect(self.close)
-        layout.addWidget(close_button)
-
-        # Set the layout on the dialog
-        self.setLayout(layout)
 
 class MainWindow(QMainWindow):
 
@@ -122,6 +102,12 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, 1024, 600)
         # Set the background color to black
         self.setStyleSheet("background-color: black;")
+
+        PopupManager.instance()
+        PopupManager.instance().add_parent(self)
+        PopupManager.instance().show()
+        # Set the popup manager to be the top layer
+
 
         self.clock = DisplayClock(self)
         # Move the clock to the upper right corner (dynamic, so it will always be in the upper right corner)
@@ -162,6 +148,8 @@ class MainWindow(QMainWindow):
         # If running on a linux system, use this to make the window full screen
         if os.name == "posix":
             self.showFullScreen()
+
+        PopupManager.instance().raise_()
 
     def mousePressEvent(self, a0) -> None:
         self.menu_bar.reset_focus_timer()

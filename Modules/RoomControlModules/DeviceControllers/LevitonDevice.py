@@ -2,15 +2,83 @@ import json
 
 from PyQt6.QtCore import Qt, QTimer, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel, QPushButton
+from PyQt6.QtWidgets import QLabel, QPushButton, QSlider
 
 from loguru import logger as logging
 
+from Utils.PopupManager import PopupManager
 from Utils.RoomDevice import RoomDevice
 
 
-class LevitonDevice(RoomDevice):
+class BrightnessSliderPopup(QLabel):
 
+    def __init__(self, parent, device=None):
+        super().__init__(parent)
+        self.parent = parent
+        self.device = device
+        self.setFixedSize(200, 200)
+
+        self.setStyleSheet("background-color: black; border: 2px solid #ffcd00; border-radius: 10px")
+
+        self.title = QLabel(self)
+        self.title.setFixedSize(200, 70)
+        self.title.setFont(device.font)
+        self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.title.setStyleSheet("color: white; font-size: 16px; font-weight: bold; border: none;"
+                                 " background-color: transparent")
+        self.title.setText(f"Set Brightness\nof\n{device.name}")
+
+        self.slider = QSlider(self)
+        self.slider.setOrientation(Qt.Orientation.Horizontal)
+        self.slider.setFixedSize(150, 30)
+        self.slider.move(25, 75)
+        self.slider.setRange(0, 100)
+        self.slider.setValue(device.data["state"]["brightness"])
+        self.slider.valueChanged.connect(self.update_brightness)
+        self.slider.setStyleSheet("background-color: white; border: none")
+        self.slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.slider.setTickInterval(10)
+        self.slider.setSingleStep(1)
+
+        self.slide_label = QLabel(self)
+        self.slide_label.setFixedSize(150, 20)
+        self.slide_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.slide_label.setStyleSheet("color: white; font-size: 14px; font-weight: bold; border: none;"
+                                        " background-color: transparent")
+        self.slide_label.setText(f"{self.slider.value()}%")
+        self.slide_label.move(25, 110)
+
+        self.cancel_button = QPushButton(self)
+        self.cancel_button.setFixedSize(75, 30)
+        self.cancel_button.move(25, 160)
+        self.cancel_button.setText("Cancel")
+        self.cancel_button.clicked.connect(self.close_popup)
+        self.cancel_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
+
+        self.submit_button = QPushButton(self)
+        self.submit_button.setFixedSize(75, 30)
+        self.submit_button.move(100, 160)
+        self.submit_button.setText("Submit")
+        self.submit_button.clicked.connect(self.submit_brightness)
+        self.submit_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
+        self.parent.add_popup(self)
+
+    def update_brightness(self):
+        self.slide_label.setText(f"{self.slider.value()}%")
+
+    def close_popup(self):
+        try:
+            self.parent.remove_popup(self)
+        except Exception as e:
+            logging.error(f"Failed to close popup: {e}")
+            logging.exception(e)
+
+    def submit_brightness(self):
+        self.device.set_brightness(self.slider.value())
+        self.close_popup()
+
+
+class LevitonDevice(RoomDevice):
     supported_types = ["LevitonDevice"]
 
     def __init__(self, parent=None, device=None, priority=0):
@@ -19,6 +87,8 @@ class LevitonDevice(RoomDevice):
         # self.device_label.setFont(parent.font)
         # self.device_label.setFixedSize(135, 20)
         # self.device_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
+        self.font = parent.font
+        self.name = device
         self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
         self.device_label.setText(f"{device}")
 
@@ -39,9 +109,14 @@ class LevitonDevice(RoomDevice):
         self.device_text.setText("<pre>Status: ???</pre>")
         self.device_text.move(5, 20)
 
+        self.double_click_primed = False
+        self.double_click_timer = QTimer(self)
+        self.double_click_timer.timeout.connect(self.resetDoubleClick)
+
     def update_human_name(self, name):
         super().update_human_name(name)
         self.device_label.setText(name)
+        self.name = name
 
     def update_status(self):
         health = self.data["health"]
@@ -50,7 +125,8 @@ class LevitonDevice(RoomDevice):
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
         elif health["fault"]:
             self.device_text.setText(f"<pre>Online: FAULT</pre>")
-            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: orange;")
+            self.toggle_button.setStyleSheet(
+                "color: black; font-size: 14px; font-weight: bold; background-color: orange;")
         else:
             if self.data["info"]["dimmable"]:
                 if self.state["on"]:
@@ -63,7 +139,8 @@ class LevitonDevice(RoomDevice):
     def parse_data(self, data):
         self.toggle_button.setText(f"Turn {['On', 'Off'][self.state['on']]}")
         button_color = "#4080FF" if self.state["on"] else "grey"
-        self.toggle_button.setStyleSheet(f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
+        self.toggle_button.setStyleSheet(
+            f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
         self.update_status()
 
     def handle_failure(self, response):
@@ -71,3 +148,28 @@ class LevitonDevice(RoomDevice):
         self.toggle_button.setText("Turn ???")
         self.device_text.setText(f"<pre>Network Error</pre>")
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
+
+    def set_brightness(self, brightness):
+        logging.info(f"Setting brightness of light: {self.device} to {brightness}")
+        payload = json.dumps({"brightness": brightness})
+        self.send_command(payload)
+
+    def mousePressEvent(self, a0) -> None:
+        # Manually check for double click events
+        try:
+            if self.double_click_primed:
+                self.double_click_primed = False
+                self.double_click_timer.stop()
+                if self.data["info"]["dimmable"]:
+                    popup_manager = PopupManager.instance()
+                    BrightnessSliderPopup(popup_manager, self)
+            else:
+                self.double_click_primed = True
+                self.double_click_timer.start(500)
+
+        except Exception as e:
+            logging.error(f"Error in SceneWidget.mousePressEvent: {e}")
+            logging.exception(e)
+
+    def resetDoubleClick(self):
+        self.double_click_primed = False
