@@ -15,7 +15,8 @@ class BrightnessSliderPopup(QWidget):
 
     def __init__(self, device=None):
         super().__init__()
-        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.X11BypassWindowManagerHint)
+        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowCloseButtonHint |
+                            Qt.WindowType.X11BypassWindowManagerHint)
         self.device = device
         self.move(250, 250)
 
