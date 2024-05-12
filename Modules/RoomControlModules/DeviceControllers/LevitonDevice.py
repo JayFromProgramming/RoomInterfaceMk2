@@ -17,7 +17,7 @@ class BrightnessSliderPopup(QWidget):
         super().__init__()
         self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.X11BypassWindowManagerHint)
         self.device = device
-        # self.setFixedSize(200, 200)
+        self.move(250, 250)
 
         self.setStyleSheet("background-color: black;")
 
