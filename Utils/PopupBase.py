@@ -15,7 +15,7 @@ class PopupBase(QWidget):
                             Qt.WindowType.X11BypassWindowManagerHint)
         self.setStyleSheet("background-color: black;")
         self.setFixedSize(size[0], size[1] + 30)
-        self.move(512, 300)
+        self.move(round(512 - self.height() / 2), round(300 - self.width() / 2))
         self.title_label = QLabel(self)
         self.title_label.setFixedSize(size[0], 30)
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
