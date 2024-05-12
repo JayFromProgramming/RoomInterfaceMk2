@@ -11,16 +11,11 @@ from Utils.PopupManager import PopupManager
 from Utils.RoomDevice import RoomDevice
 
 
-class BrightnessSliderPopup(QWidget):
+class BrightnessSliderPopup(PopupBase):
 
     def __init__(self, device=None):
-        super().__init__()
-        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowCloseButtonHint |
-                            Qt.WindowType.X11BypassWindowManagerHint)
+        super().__init__(f"Brightness Control", (200, 100))
         self.device = device
-        self.move(250, 250)
-
-        self.setStyleSheet("background-color: black;")
 
         self.title = QLabel(self)
         self.title.setFixedSize(200, 20)
@@ -29,11 +24,12 @@ class BrightnessSliderPopup(QWidget):
         self.title.setStyleSheet("color: white; font-size: 16px; font-weight: bold; border: none;"
                                  " background-color: transparent")
         self.title.setText(f"{device.name}")
+        self.title.move(0, 30)
 
         self.slider = QSlider(self)
         self.slider.setOrientation(Qt.Orientation.Horizontal)
         self.slider.setFixedSize(150, 30)
-        self.slider.move(25, 25)
+        self.slider.move(25, 55)
         self.slider.setRange(0, 100)
         self.slider.setValue(device.data["state"]["brightness"])
         self.slider.valueChanged.connect(self.update_brightness)
@@ -48,11 +44,11 @@ class BrightnessSliderPopup(QWidget):
         self.slide_label.setStyleSheet("color: white; font-size: 14px; font-weight: bold; border: none;"
                                         " background-color: transparent")
         self.slide_label.setText(f"{self.slider.value()}%")
-        self.slide_label.move(25, 70)
+        self.slide_label.move(25, 100)
 
         self.submit_button = QPushButton(self)
         self.submit_button.setFixedSize(75, 30)
-        self.submit_button.move(100, 65)
+        self.submit_button.move(100, 95)
         self.submit_button.setText("Submit")
         self.submit_button.clicked.connect(self.submit_brightness)
         self.submit_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
