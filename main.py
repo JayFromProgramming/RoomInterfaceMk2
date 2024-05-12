@@ -24,7 +24,6 @@ from loguru import logger as logging
 from Modules.RoomSceneModules.RoomSceneHost import RoomSceneHost
 from Modules.SystemControlModules.SystemControlHost import SystemControlHost
 
-
 # class WatchdogThread(threading.Thread):
 #
 #     def __init__(self, timeout=60, fail_callback=None):
@@ -103,12 +102,6 @@ class MainWindow(QMainWindow):
         # Set the background color to black
         self.setStyleSheet("background-color: black;")
 
-        PopupManager.instance()
-        PopupManager.instance().add_parent(self)
-        PopupManager.instance().show()
-        # Set the popup manager to be the top layer
-
-
         self.clock = DisplayClock(self)
         # Move the clock to the upper right corner (dynamic, so it will always be in the upper right corner)
         self.clock.move(self.width() - self.clock.width(), 0)
@@ -140,7 +133,7 @@ class MainWindow(QMainWindow):
         self.menu_bar.add_flyout_button("System Control", self.system_control, 60)
         self.menu_bar.add_flyout_button("Room Control", self.room_control, 60)
         self.menu_bar.add_flyout_button("Scene Control", self.scene_control)
-        self.menu_bar.add_flyout_button("Webcams", self.webcam_layout)
+        self.menu_bar.add_flyout_button("Webcams", self.webcam_layout, 60)
         self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
         self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
 
