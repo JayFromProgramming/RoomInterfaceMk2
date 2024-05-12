@@ -2,36 +2,37 @@ import json
 
 from PyQt6.QtCore import Qt, QTimer, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel, QPushButton, QSlider
+from PyQt6.QtWidgets import QLabel, QPushButton, QSlider, QWidget
 
 from loguru import logger as logging
 
+from Utils.PopupBase import PopupBase
 from Utils.PopupManager import PopupManager
 from Utils.RoomDevice import RoomDevice
 
 
-class BrightnessSliderPopup(QLabel):
+class BrightnessSliderPopup(QWidget):
 
-    def __init__(self, parent, device=None):
-        super().__init__(parent)
-        self.parent = parent
+    def __init__(self, device=None):
+        super().__init__()
+        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.X11BypassWindowManagerHint)
         self.device = device
-        self.setFixedSize(200, 200)
+        # self.setFixedSize(200, 200)
 
-        self.setStyleSheet("background-color: black; border: 2px solid #ffcd00; border-radius: 10px")
+        self.setStyleSheet("background-color: black;")
 
         self.title = QLabel(self)
-        self.title.setFixedSize(200, 70)
+        self.title.setFixedSize(200, 20)
         self.title.setFont(device.font)
         self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.title.setStyleSheet("color: white; font-size: 16px; font-weight: bold; border: none;"
                                  " background-color: transparent")
-        self.title.setText(f"Set Brightness\nof\n{device.name}")
+        self.title.setText(f"{device.name}")
 
         self.slider = QSlider(self)
         self.slider.setOrientation(Qt.Orientation.Horizontal)
         self.slider.setFixedSize(150, 30)
-        self.slider.move(25, 75)
+        self.slider.move(25, 25)
         self.slider.setRange(0, 100)
         self.slider.setValue(device.data["state"]["brightness"])
         self.slider.valueChanged.connect(self.update_brightness)
@@ -41,41 +42,29 @@ class BrightnessSliderPopup(QLabel):
         self.slider.setSingleStep(1)
 
         self.slide_label = QLabel(self)
-        self.slide_label.setFixedSize(150, 20)
-        self.slide_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.slide_label.setFixedSize(50, 20)
+        self.slide_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.slide_label.setStyleSheet("color: white; font-size: 14px; font-weight: bold; border: none;"
                                         " background-color: transparent")
         self.slide_label.setText(f"{self.slider.value()}%")
-        self.slide_label.move(25, 110)
-
-        self.cancel_button = QPushButton(self)
-        self.cancel_button.setFixedSize(75, 30)
-        self.cancel_button.move(25, 160)
-        self.cancel_button.setText("Cancel")
-        self.cancel_button.clicked.connect(self.close_popup)
-        self.cancel_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
+        self.slide_label.move(25, 70)
 
         self.submit_button = QPushButton(self)
         self.submit_button.setFixedSize(75, 30)
-        self.submit_button.move(100, 160)
+        self.submit_button.move(100, 65)
         self.submit_button.setText("Submit")
         self.submit_button.clicked.connect(self.submit_brightness)
         self.submit_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
-        self.parent.add_popup(self)
+
+        self.show()
+
 
     def update_brightness(self):
         self.slide_label.setText(f"{self.slider.value()}%")
 
-    def close_popup(self):
-        try:
-            self.parent.remove_popup(self)
-        except Exception as e:
-            logging.error(f"Failed to close popup: {e}")
-            logging.exception(e)
-
     def submit_brightness(self):
         self.device.set_brightness(self.slider.value())
-        self.close_popup()
+
 
 
 class LevitonDevice(RoomDevice):
@@ -112,6 +101,8 @@ class LevitonDevice(RoomDevice):
         self.double_click_primed = False
         self.double_click_timer = QTimer(self)
         self.double_click_timer.timeout.connect(self.resetDoubleClick)
+
+        self.popup = None
 
     def update_human_name(self, name):
         super().update_human_name(name)
@@ -161,8 +152,7 @@ class LevitonDevice(RoomDevice):
                 self.double_click_primed = False
                 self.double_click_timer.stop()
                 if self.data["info"]["dimmable"]:
-                    popup_manager = PopupManager.instance()
-                    BrightnessSliderPopup(popup_manager, self)
+                    self.popup = BrightnessSliderPopup(self)
             else:
                 self.double_click_primed = True
                 self.double_click_timer.start(500)
