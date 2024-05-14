@@ -1,7 +1,7 @@
 import json
 
 from PyQt6.QtCore import Qt, QTimer, QUrl
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
+from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from PyQt6.QtWidgets import QLabel, QPushButton
 
 from loguru import logger as logging
@@ -10,7 +10,6 @@ from Utils.RoomDevice import RoomDevice
 
 
 class ToggleDevice(RoomDevice):
-
     supported_types = ["VoiceMonkeyDevice", "abstract_toggle_device"]
 
     def __init__(self, parent=None, device=None, priority=0):
@@ -20,7 +19,7 @@ class ToggleDevice(RoomDevice):
         # self.device_label.setFixedSize(135, 20)
         # self.device_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
-        self.device_label.setText(f"{device}")
+        self.device_label.setText(f"[{device}]")
 
         self.toggle_button = QPushButton(self)
         self.toggle_button.setFont(parent.font)
@@ -50,7 +49,8 @@ class ToggleDevice(RoomDevice):
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
         elif health["fault"]:
             self.device_text.setText(f"<pre>Online: FAULT</pre>")
-            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: orange;")
+            self.toggle_button.setStyleSheet(
+                "color: black; font-size: 14px; font-weight: bold; background-color: orange;")
         else:
             if self.data["auto_state"]["is_auto"]:
                 self.device_text.setText(f"<pre>Online: AUTO</pre>")
@@ -60,11 +60,16 @@ class ToggleDevice(RoomDevice):
     def parse_data(self, data):
         self.toggle_button.setText(f"Turn {['On', 'Off'][self.state['on']]}")
         button_color = "#4080FF" if self.state["on"] else "grey"
-        self.toggle_button.setStyleSheet(f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
+        self.toggle_button.setStyleSheet(
+            f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
         self.update_status()
 
     def handle_failure(self, response):
-        self.device_text.setText(f"<pre>Server Error</pre>")
+        if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
+            self.device_text.setText(f"<pre>SERVER DOWN</pre>")
+        elif response.error() == QNetworkReply.NetworkError.InternalServerError:
+            self.device_text.setText(f"<pre>SERVER ERROR</pre>")
+        else:
+            self.device_text.setText(f"<pre>NETWORK ERROR</pre>")
         self.toggle_button.setText("Turn ???")
-        self.device_text.setText(f"<pre>Network Error</pre>")
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")

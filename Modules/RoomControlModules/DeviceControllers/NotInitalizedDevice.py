@@ -20,7 +20,7 @@ class NotInitalizedDevice(RoomDevice):
         # self.device_label.setFixedSize(135, 20)
         # self.device_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
-        self.device_label.setText(f"{device}")
+        self.device_label.setText(f"[{device}]")
 
         self.device_text = QLabel(self)
         self.device_text.setFont(parent.font)

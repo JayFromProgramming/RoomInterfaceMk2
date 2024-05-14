@@ -47,7 +47,6 @@ from Modules.SystemControlModules.SystemControlHost import SystemControlHost
 #
 #     def feed(self):
 #         self.last_feed = time.time()
-from Utils.PopupManager import PopupManager
 
 
 class RoomInterface(QApplication):
@@ -141,8 +140,6 @@ class MainWindow(QMainWindow):
         # If running on a linux system, use this to make the window full screen
         if os.name == "posix":
             self.showFullScreen()
-
-        PopupManager.instance().raise_()
 
     def mousePressEvent(self, a0) -> None:
         self.menu_bar.reset_focus_timer()

@@ -1,13 +1,18 @@
 import os
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QLabel, QPushButton, QWidget
+from PyQt6.QtWidgets import QLabel, QPushButton, QWidget, QApplication, QMainWindow
 
-from Utils.PopupManager import PopupManager
 from loguru import logger as logging
 
 
 class PopupBase(QWidget):
+
+    def get_main_window(self):
+        for widget in QApplication.topLevelWidgets():
+            if isinstance(widget, QMainWindow):
+                return widget
+        return None
 
     def __init__(self, window_name, size):
         super().__init__()
@@ -15,7 +20,11 @@ class PopupBase(QWidget):
                             Qt.WindowType.X11BypassWindowManagerHint)
         self.setStyleSheet("background-color: black;")
         self.setFixedSize(size[0], size[1] + 30)
-        self.move(round(512 - self.height() / 2), round(300 - self.width() / 2))
+        # Get the parent windows X and Y coordinates on the screen so we can center the popup on it
+        main_window_x, main_window_y = self.get_main_window().x(), self.get_main_window().y()
+        main_window_width, main_window_height = self.get_main_window().width(), self.get_main_window().height()
+        self.move(round(main_window_x + (main_window_width - size[0]) // 2),
+                  round(main_window_y + (main_window_height - size[1]) // 2))
         self.title_label = QLabel(self)
         self.title_label.setFixedSize(size[0], 30)
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)

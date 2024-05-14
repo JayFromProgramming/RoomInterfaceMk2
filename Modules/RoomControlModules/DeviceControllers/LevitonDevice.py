@@ -1,13 +1,12 @@
 import json
 
 from PyQt6.QtCore import Qt, QTimer, QUrl
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
+from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from PyQt6.QtWidgets import QLabel, QPushButton, QSlider, QWidget
 
 from loguru import logger as logging
 
 from Utils.PopupBase import PopupBase
-from Utils.PopupManager import PopupManager
 from Utils.RoomDevice import RoomDevice
 
 
@@ -42,7 +41,7 @@ class BrightnessSliderPopup(PopupBase):
         self.slide_label.setFixedSize(50, 20)
         self.slide_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.slide_label.setStyleSheet("color: white; font-size: 14px; font-weight: bold; border: none;"
-                                        " background-color: transparent")
+                                       " background-color: transparent")
         self.slide_label.setText(f"{self.slider.value()}%")
         self.slide_label.move(25, 100)
 
@@ -55,13 +54,11 @@ class BrightnessSliderPopup(PopupBase):
 
         self.show()
 
-
     def update_brightness(self):
         self.slide_label.setText(f"{self.slider.value()}%")
 
     def submit_brightness(self):
         self.device.set_brightness(self.slider.value())
-
 
 
 class LevitonDevice(RoomDevice):
@@ -76,7 +73,7 @@ class LevitonDevice(RoomDevice):
         self.font = parent.font
         self.name = device
         self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
-        self.device_label.setText(f"{device}")
+        self.device_label.setText(f"[{device}]")
 
         self.toggle_button = QPushButton(self)
         self.toggle_button.setFont(parent.font)
@@ -132,9 +129,13 @@ class LevitonDevice(RoomDevice):
         self.update_status()
 
     def handle_failure(self, response):
-        self.device_text.setText(f"<pre>Server Error</pre>")
+        if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
+            self.device_text.setText(f"<pre>SERVER DOWN</pre>")
+        elif response.error() == QNetworkReply.NetworkError.InternalServerError:
+            self.device_text.setText(f"<pre>SERVER ERROR</pre>")
+        else:
+            self.device_text.setText(f"<pre>NETWORK ERROR</pre>")
         self.toggle_button.setText("Turn ???")
-        self.device_text.setText(f"<pre>Network Error</pre>")
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
 
     def set_brightness(self, brightness):

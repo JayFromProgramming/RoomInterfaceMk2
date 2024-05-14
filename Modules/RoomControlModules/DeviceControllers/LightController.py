@@ -22,7 +22,7 @@ class LightController(RoomDevice):
         self.device_label.setFixedSize(300, 20)
         self.device_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.device_label.setStyleSheet("color: black; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
-        self.device_label.setText(f"Light: {device}")
+        self.device_label.setText(f"Light: [{device}]")
         self.device_label.move(10, 0)
 
         self.info_text = QLabel(self)
