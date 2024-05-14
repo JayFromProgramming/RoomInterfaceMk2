@@ -13,11 +13,11 @@ from Utils.RoomDevice import RoomDevice
 class BrightnessSliderPopup(PopupBase):
 
     def __init__(self, device=None):
-        super().__init__(f"Brightness Control", (200, 100))
+        super().__init__(f"Brightness Control", (225, 100))
         self.device = device
 
         self.title = QLabel(self)
-        self.title.setFixedSize(200, 20)
+        self.title.setFixedSize(self.width(), 20)
         self.title.setFont(device.font)
         self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.title.setStyleSheet("color: white; font-size: 16px; font-weight: bold; border: none;"
@@ -28,7 +28,7 @@ class BrightnessSliderPopup(PopupBase):
         self.slider = QSlider(self)
         self.slider.setOrientation(Qt.Orientation.Horizontal)
         self.slider.setFixedSize(150, 30)
-        self.slider.move(25, 55)
+        self.slider.move(self.width() // 2 - self.slider.width() // 2, 55)
         self.slider.setRange(0, 100)
         self.slider.setValue(device.data["state"]["brightness"])
         self.slider.valueChanged.connect(self.update_brightness)
@@ -43,11 +43,11 @@ class BrightnessSliderPopup(PopupBase):
         self.slide_label.setStyleSheet("color: white; font-size: 14px; font-weight: bold; border: none;"
                                        " background-color: transparent")
         self.slide_label.setText(f"{self.slider.value()}%")
-        self.slide_label.move(25, 100)
+        self.slide_label.move(50, 100)
 
         self.submit_button = QPushButton(self)
         self.submit_button.setFixedSize(75, 30)
-        self.submit_button.move(100, 95)
+        self.submit_button.move(125, 95)
         self.submit_button.setText("Submit")
         self.submit_button.clicked.connect(self.submit_brightness)
         self.submit_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
@@ -59,6 +59,7 @@ class BrightnessSliderPopup(PopupBase):
 
     def submit_brightness(self):
         self.device.set_brightness(self.slider.value())
+        self.close()
 
 
 class LevitonDevice(RoomDevice):
