@@ -32,7 +32,7 @@ class MapTile(QLabel):
     def load_radar_overlays(self, timestamps):
         for timestamp in timestamps:
             self.network_manager.get(
-                QNetworkRequest(QUrl(f"http://localhost/weather/radar/{timestamp}/{self.x}/{self.y}/4")))
+                QNetworkRequest(QUrl(f"http://{self.host}/weather/radar/{timestamp}/{self.x}/{self.y}/4")))
 
     def set_radar_overlay(self, timestamp):
         self.displayed_radar_image = timestamp
@@ -93,6 +93,7 @@ class RadarHost(QLabel):
         self.timestamp_label.move(0, 0)
         self.timestamp_label.setStyleSheet("background-color: black; color: white; font-size: 14px;"
                                            " font-weight: bold;")
+        self.timestamp_label.setFont(self.parent.get_font("JetBrainsMono-Regular"))
         self.timestamp_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         self.timestamp_list = []
