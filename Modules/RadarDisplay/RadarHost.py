@@ -10,9 +10,10 @@ from loguru import logger as logging
 
 class MapTile(QLabel):
 
-    def __init__(self, parent=None, x=0, y=0):
+    def __init__(self, host, parent=None, x=0, y=0):
         super().__init__(parent)
         self.parent = parent
+        self.host = host
         self.setFixedSize(256, 256)
         self.x = x
         self.y = y
@@ -73,6 +74,11 @@ class RadarHost(QLabel):
         self.maptile_surface.setFixedSize(256 * 4, 256 * 3)
         self.map_tiles = []
 
+        with open("Config/auth.json", "r") as f:
+            self.auth = json.load(f)
+
+        self.host = self.auth['host']
+
         self.focused = False
 
         # Map drag variables
@@ -94,7 +100,6 @@ class RadarHost(QLabel):
 
         self.playback_timer = QTimer(self)
         self.playback_timer.timeout.connect(self.next_frame)
-
 
     def set_focus(self, focus) -> None:
         self.focused = focus
@@ -179,9 +184,9 @@ class RadarHost(QLabel):
         # The map is 4 tiles wide and 3 tiles tall (15-18, 22-24)
         for y in range(22, 25):
             for x in range(15, 19):
-                self.map_tiles.append(MapTile(self.maptile_surface, x, y))
+                self.map_tiles.append(MapTile(self.host, self.maptile_surface, x, y))
         for i, map_tile in enumerate(self.map_tiles):
             map_tile.move((i % 4) * 256,
                           (i // 4) * 256)
         self.maptile_surface.move(0, -100)
-        self.network_manager.get(QNetworkRequest(QUrl("http://localhost/weather/available_radars")))
+        self.network_manager.get(QNetworkRequest(QUrl(f"http://{self.host}/weather/available_radars")))
