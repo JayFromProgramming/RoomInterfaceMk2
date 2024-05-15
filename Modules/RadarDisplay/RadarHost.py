@@ -89,19 +89,44 @@ class RadarHost(QLabel):
         self.network_manager.finished.connect(self.handle_response)
 
         self.timestamp_label = QLabel(self)
-        self.timestamp_label.setFixedSize(210, 20)
+        self.timestamp_label.setFixedSize(212, 20)
         self.timestamp_label.move(0, 0)
         self.timestamp_label.setStyleSheet("background-color: black; color: white; font-size: 14px;")
         self.timestamp_label.setFont(self.parent.get_font("JetBrainsMono-Regular"))
-        self.timestamp_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.timestamp_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.timestamp_label.setText("Loading...")
 
         self.play_pause_button = QPushButton(self)
-        self.play_pause_button.setFixedSize(50, 20)
+        self.play_pause_button.setFixedSize(53, 20)
         self.play_pause_button.move(0, 20)
         self.play_pause_button.setText("Play")
         self.play_pause_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
         self.play_pause_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
         self.play_pause_button.clicked.connect(self.play_button_clicked)
+
+        self.next_frame_button = QPushButton(self)
+        self.next_frame_button.setFixedSize(53, 20)
+        self.next_frame_button.move(53, 20)
+        self.next_frame_button.setText("Next")
+        self.next_frame_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
+        self.next_frame_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
+        self.next_frame_button.clicked.connect(self.next_frame)
+
+        self.now_button = QPushButton(self)
+        self.now_button.setFixedSize(53, 20)
+        self.now_button.move(106, 20)
+        self.now_button.setText("Now")
+        self.now_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
+        self.now_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
+        self.now_button.clicked.connect(self.now_button_clicked)
+
+        self.center_button = QPushButton(self)
+        self.center_button.setFixedSize(53, 20)
+        self.center_button.move(159, 20)
+        self.center_button.setText("Center")
+        self.center_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
+        self.center_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
+        self.center_button.clicked.connect(lambda: self.maptile_surface.move(0, -100))
 
         self.timestamp_list = []
         self.current_frame = 0
@@ -114,11 +139,15 @@ class RadarHost(QLabel):
     def set_activity_timer_callback(self, callback):
         self.activity_timer_callback = callback
 
+    def now_button_clicked(self):
+        self.current_frame = len(self.timestamp_list) - 2
+        self.next_frame()
+
     def play_button_clicked(self):
         self.playing = not self.playing
         if self.playing:
             self.play_pause_button.setText("Pause")
-            self.playback_timer.start(1000)
+            self.playback_timer.start(500)
         else:
             self.play_pause_button.setText("Play")
             self.playback_timer.stop()
@@ -127,7 +156,8 @@ class RadarHost(QLabel):
         self.focused = focus
         if focus:
             self.load_maptiles()
-            # self.playback_timer.start(1000)
+            self.playing = False
+            self.play_pause_button.setText("Play")
             self.show()
         else:
             self.unload_maptiles()
@@ -138,14 +168,6 @@ class RadarHost(QLabel):
         for map_tile in self.map_tiles:
             map_tile.deleteLater()
         self.map_tiles.clear()
-
-    def keyPressEvent(self, ev) -> None:
-        if ev.key() == Qt.Key.Key_Space:
-            self.playback_timer.stop() if self.playback_timer.isActive() else self.playback_timer.start(1000)
-        elif ev.key() == Qt.Key.Key_Right:
-            self.next_frame()
-        else:
-            super().keyPressEvent(ev)
 
     # Setup mouse events to allow the user to drag the radar map around
     def mousePressEvent(self, event):
@@ -198,7 +220,8 @@ class RadarHost(QLabel):
             for map_tile in self.map_tiles:
                 map_tile.set_radar_overlay(self.timestamp_list[self.current_frame])
 
-            time_str = datetime.datetime.fromtimestamp(self.timestamp_list[self.current_frame]).strftime("%Y-%m-%d %H:%M:%S")
+            time_str = datetime.datetime.fromtimestamp(self.timestamp_list[self.current_frame]).strftime(
+                "%Y-%m-%d %H:%M:%S")
             self.timestamp_label.setText(f"{time_str} {str(self.current_frame + 1).zfill(2)}"
                                          f"/{len(self.timestamp_list)}")
 
