@@ -110,6 +110,7 @@ class RadarHost(QLabel):
             self.show()
         else:
             self.unload_maptiles()
+            self.playback_timer.stop()
             self.hide()
 
     def unload_maptiles(self):
