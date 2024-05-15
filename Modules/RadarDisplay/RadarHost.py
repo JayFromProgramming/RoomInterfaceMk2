@@ -72,11 +72,8 @@ class RadarHost(QLabel):
         self.maptile_surface = QLabel(self)
         self.maptile_surface.setFixedSize(256 * 4, 256 * 3)
         self.map_tiles = []
-        self.load_maptiles()
-        for i, map_tile in enumerate(self.map_tiles):
-            map_tile.move((i % 4) * 256,
-                          (i // 4) * 256)
-        self.maptile_surface.move(0, -100)
+
+        self.focused = False
 
         # Map drag variables
         self.dragging = False
@@ -84,7 +81,6 @@ class RadarHost(QLabel):
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_response)
-        self.network_manager.get(QNetworkRequest(QUrl("http://localhost/weather/available_radars")))
 
         self.timestamp_label = QLabel(self)
         self.timestamp_label.setFixedSize(200, 20)
@@ -98,7 +94,22 @@ class RadarHost(QLabel):
 
         self.playback_timer = QTimer(self)
         self.playback_timer.timeout.connect(self.next_frame)
-        self.playback_timer.start(1000)
+
+
+    def set_focus(self, focus) -> None:
+        self.focused = focus
+        if focus:
+            self.load_maptiles()
+            self.playback_timer.start(1000)
+            self.show()
+        else:
+            self.unload_maptiles()
+            self.hide()
+
+    def unload_maptiles(self):
+        for map_tile in self.map_tiles:
+            map_tile.deleteLater()
+        self.map_tiles.clear()
 
     def keyPressEvent(self, ev) -> None:
         if ev.key() == Qt.Key.Key_Space:
@@ -169,3 +180,8 @@ class RadarHost(QLabel):
         for y in range(22, 25):
             for x in range(15, 19):
                 self.map_tiles.append(MapTile(self.maptile_surface, x, y))
+        for i, map_tile in enumerate(self.map_tiles):
+            map_tile.move((i % 4) * 256,
+                          (i // 4) * 256)
+        self.maptile_surface.move(0, -100)
+        self.network_manager.get(QNetworkRequest(QUrl("http://localhost/weather/available_radars")))

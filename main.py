@@ -127,6 +127,7 @@ class MainWindow(QMainWindow):
 
         self.radar_host = RadarHost(self)
         self.radar_host.move(0, 90)
+        self.radar_host.hide()
 
         self.menu_bar = MenuBar(self)
         # Move the menu bar to the very bottom of the window
@@ -137,6 +138,7 @@ class MainWindow(QMainWindow):
         self.menu_bar.add_flyout_button("Room Control", self.room_control, 60)
         self.menu_bar.add_flyout_button("Scene Control", self.scene_control)
         self.menu_bar.add_flyout_button("Webcams", self.webcam_layout, 60)
+        self.menu_bar.add_flyout_button("Radar", self.radar_host, 60)
         self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
         self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
 
