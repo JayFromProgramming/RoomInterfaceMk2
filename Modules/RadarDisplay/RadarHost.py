@@ -3,7 +3,7 @@ import json
 
 from PyQt6.QtCore import QUrl, QTimer, Qt
 from PyQt6.QtGui import QPixmap, QImage
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QLabel, QPushButton
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from loguru import logger as logging
 
@@ -79,6 +79,7 @@ class RadarHost(QLabel):
         self.host = self.auth['host']
 
         self.focused = False
+        self.playing = False
 
         # Map drag variables
         self.dragging = False
@@ -88,11 +89,19 @@ class RadarHost(QLabel):
         self.network_manager.finished.connect(self.handle_response)
 
         self.timestamp_label = QLabel(self)
-        self.timestamp_label.setFixedSize(200, 20)
+        self.timestamp_label.setFixedSize(210, 20)
         self.timestamp_label.move(0, 0)
         self.timestamp_label.setStyleSheet("background-color: black; color: white; font-size: 14px;")
         self.timestamp_label.setFont(self.parent.get_font("JetBrainsMono-Regular"))
         self.timestamp_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        self.play_pause_button = QPushButton(self)
+        self.play_pause_button.setFixedSize(50, 20)
+        self.play_pause_button.move(0, 20)
+        self.play_pause_button.setText("Play")
+        self.play_pause_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
+        self.play_pause_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
+        self.play_pause_button.clicked.connect(self.play_button_clicked)
 
         self.timestamp_list = []
         self.current_frame = 0
@@ -104,6 +113,15 @@ class RadarHost(QLabel):
 
     def set_activity_timer_callback(self, callback):
         self.activity_timer_callback = callback
+
+    def play_button_clicked(self):
+        self.playing = not self.playing
+        if self.playing:
+            self.play_pause_button.setText("Pause")
+            self.playback_timer.start(1000)
+        else:
+            self.play_pause_button.setText("Play")
+            self.playback_timer.stop()
 
     def set_focus(self, focus) -> None:
         self.focused = focus
@@ -181,7 +199,8 @@ class RadarHost(QLabel):
                 map_tile.set_radar_overlay(self.timestamp_list[self.current_frame])
 
             time_str = datetime.datetime.fromtimestamp(self.timestamp_list[self.current_frame]).strftime("%Y-%m-%d %H:%M:%S")
-            self.timestamp_label.setText(f"{time_str} {self.current_frame + 1}/{len(self.timestamp_list)}")
+            self.timestamp_label.setText(f"{time_str} {str(self.current_frame + 1).zfill(2)}"
+                                         f"/{len(self.timestamp_list)}")
 
         except Exception as e:
             logging.error(f"Failed to load next frame: {e}")
