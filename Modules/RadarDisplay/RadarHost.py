@@ -90,8 +90,7 @@ class RadarHost(QLabel):
         self.timestamp_label = QLabel(self)
         self.timestamp_label.setFixedSize(200, 20)
         self.timestamp_label.move(0, 0)
-        self.timestamp_label.setStyleSheet("background-color: black; color: white; font-size: 14px;"
-                                           " font-weight: bold;")
+        self.timestamp_label.setStyleSheet("background-color: black; color: white; font-size: 14px;")
         self.timestamp_label.setFont(self.parent.get_font("JetBrainsMono-Regular"))
         self.timestamp_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
