@@ -26,10 +26,15 @@ class ScrollableMenu(QLabel):
         self.scroll_total_offset = 0
         self.last_scroll = time.time()
 
+        self.activity_timer_callback = None
+
         self.allow_scroll = True
 
         self.scroll_motion_timer = QTimer(self)
         self.scroll_motion_timer.timeout.connect(self.scroll_motion)
+
+    def set_activity_timer_callback(self, callback):
+        self.activity_timer_callback = callback
 
     def set_focus(self, focus):
         # timer = QElapsedTimer()
@@ -49,6 +54,8 @@ class ScrollableMenu(QLabel):
                 return
             if not self.allow_scroll:
                 return
+            if self.activity_timer_callback is not None:
+                self.activity_timer_callback()
             self.dragging = True
             self.scroll_start = event.pos().y()
             self.last_scroll = time.time()
@@ -63,6 +70,8 @@ class ScrollableMenu(QLabel):
             if not self.allow_scroll:
                 return
             if self.dragging:
+                if self.activity_timer_callback is not None:
+                    self.activity_timer_callback()
                 # Offset the entire room control host by the difference in the y position
                 self.scroll_offset += ev.pos().y() - self.scroll_start
                 self.scroll_total_offset += self.scroll_offset
@@ -103,6 +112,8 @@ class ScrollableMenu(QLabel):
                 return
             if not self.focused:
                 return
+            if self.activity_timer_callback is not None:
+                self.activity_timer_callback()
             self.scroll_offset += a0.angleDelta().y() / 5
             self.move_widgets(self.scroll_offset)
         except Exception as e:

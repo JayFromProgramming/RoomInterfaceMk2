@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QLabel
 
 
 def ordinal(n):
+    # This adds the ordinal suffix to a number (1st, 2nd, 3rd, 4th, etc.)
     return str(n) + ('th' if 4 <= n <= 20 or 24 <= n <= 30 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th'))
 
 

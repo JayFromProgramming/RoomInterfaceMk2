@@ -14,6 +14,7 @@ from Modules.DisplayClock import DisplayClock
 from Modules.CurrentWeather import CurrentWeather
 from Modules.Forecast.ForecastHost import ForecastHost
 from Modules.MenuBar import MenuBar
+from Modules.RadarDisplay.RadarHost import RadarHost
 
 from Modules.RoomControlModules.RoomControlHost import RoomControlHost
 
@@ -105,12 +106,12 @@ class MainWindow(QMainWindow):
         # Move the clock to the upper right corner (dynamic, so it will always be in the upper right corner)
         self.clock.move(self.width() - self.clock.width(), 0)
 
+        # Setup all main modules of the interface
         self.weather = CurrentWeather(self)
         self.weather.move(0, 0)
 
         self.forecast = ForecastHost(self)
         self.forecast.move(0, 90)
-        # self.forecast.hide()
 
         self.room_control = RoomControlHost(self)
         self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
@@ -123,18 +124,23 @@ class MainWindow(QMainWindow):
 
         self.webcam_layout = WebcamLayout(self)
         self.webcam_layout.move(0, 90)
-        # self.webcam_layout.show()
+
+        self.radar_host = RadarHost(self)
+        self.radar_host.move(0, 90)
 
         self.menu_bar = MenuBar(self)
         # Move the menu bar to the very bottom of the window
         self.menu_bar.move(0, self.height() - self.menu_bar.height())
 
+        # Add the menu bar buttons and link them to the appropriate modules
         self.menu_bar.add_flyout_button("System Control", self.system_control, 60)
         self.menu_bar.add_flyout_button("Room Control", self.room_control, 60)
         self.menu_bar.add_flyout_button("Scene Control", self.scene_control)
         self.menu_bar.add_flyout_button("Webcams", self.webcam_layout, 60)
         self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
         self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
+
+        self.room_control.set_activity_timer_callback(self.menu_bar.reset_focus_timer)
 
         self.show()
         # If running on a linux system, use this to make the window full screen
@@ -145,68 +151,9 @@ class MainWindow(QMainWindow):
         self.menu_bar.reset_focus_timer()
         super().mousePressEvent(a0)
 
-    # def focus_room_control(self, force_close=False):
-    #     if self.room_control.focused or force_close:
-    #         self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
-    #         self.room_control.set_focus(False)
-    #         self.menu_bar.room_control_expand.setText("↑Room Control↑")
-    #         self.forecast.show()
-    #         self.refocus_timer.stop()
-    #     else:
-    #         self.room_control.move(0, 90)
-    #         self.room_control.set_focus(True)
-    #         self.menu_bar.room_control_expand.setText("↓Room Control↓")
-    #         self.refocus_timer.start(60000)  # 15 seconds
-    #         self.forecast.hide()
-
-    # def focus_system_control(self, force_close=False):
-    #     try:
-    #         if self.system_control.focused or force_close:
-    #             self.system_control.set_focus(False)
-    #             self.system_control.hide()
-    #             self.menu_bar.system_control_expand.setText("↑System Control↑")
-    #             self.forecast.show()
-    #             self.refocus_timer.stop()
-    #         else:
-    #             self.system_control.set_focus(True)
-    #             self.system_control.show()
-    #             self.menu_bar.system_control_expand.setText("↓System Control↓")
-    #             self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
-    #             self.refocus_timer.start(60000)  # 15 seconds
-    #             self.forecast.hide()
-    #     except Exception as e:
-    #         logging.exception(e)
-
-    # def focus_scene_control(self, force_close=False):
-    #     if self.scene_control.focused or force_close:
-    #         self.scene_control.set_focus(False)
-    #         self.scene_control.hide()
-    #         self.menu_bar.scenes_expand.setText("↑Scene Control↑")
-    #         self.forecast.show()
-    #         self.refocus_timer.stop()
-    #     else:
-    #         self.scene_control.set_focus(True)
-    #         self.scene_control.show()
-    #         # The scene controls max height is the distance from 90 pixels to the top of room control
-    #         self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
-    #         self.menu_bar.scenes_expand.setText("↓Scene Control↓")
-    #         self.forecast.hide()
-    #         self.refocus_timer.start(120000)
-
-    # def focus_webcam_layout(self, force_close=False):
-    #     if self.webcam_layout.focused or force_close:
-    #         self.webcam_layout.set_focus(False)
-    #         self.webcam_layout.hide()
-    #         # self.menu_bar.webcam_expand.setText("↑Webcams↑")
-    #         self.forecast.show()
-    #         self.refocus_timer.stop()
-    #     else:
-    #         self.webcam_layout.set_focus(True)
-    #         self.webcam_layout.show()
-    #         # self.menu_bar.webcam_expand.setText("↓Webcams↓")
-    #         self.webcam_layout.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
-    #         self.forecast.hide()
-    #         self.refocus_timer.start(120000)
+    def wheelEvent(self, a0) -> None:
+        self.menu_bar.reset_focus_timer()
+        super().wheelEvent(a0)
 
     def get_font(self, name: str):
         # Load the custom font from a file
@@ -225,19 +172,15 @@ class MainWindow(QMainWindow):
             print(f"Failed to load the font: {name}.ttf")
             return QFont()
 
-    # def keyReleaseEvent(self, a0) -> None:
-    #     try:
-    #         if a0.key() == 16777220:  # Enter key
-    #             self.focus_room_control()
-    #         elif a0.key() == 16777221:  # Shift key
-    #             self.focus_scene_control()
-    #         elif a0.key() == 16777222:  # Ctrl key
-    #             self.focus_system_control()
-    #         elif a0.key() == 87:
-    #             self.focus_webcam_layout()
-    #         super().keyReleaseEvent(a0)
-    #     except Exception as e:
-    #         logging.exception(e)
+    def keyReleaseEvent(self, a0) -> None:
+        try:
+            # On 'R' key press, refresh all data from the server
+            if a0.key() == 82:
+                self.room_control.reload_schema()
+                self.forecast.refresh_forecast()
+            super().keyReleaseEvent(a0)
+        except Exception as e:
+            logging.exception(e)
 
     def resizeEvent(self, event):
         try:

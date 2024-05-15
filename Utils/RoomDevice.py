@@ -106,7 +106,7 @@ class RoomDevice(QLabel):
             logging.error(f"Error handling response: {e}")
             logging.exception(e)
         finally:
-            self.refresh_timer.start(5000 + random.randint(0, 1000))
+            self.refresh_timer.start(4000 + random.randint(0, 1500))
             response.deleteLater()
 
     def handle_command(self, response):

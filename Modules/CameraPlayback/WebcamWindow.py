@@ -59,6 +59,7 @@ class WebcamWindow(QLabel):
         try:
             if str(reply.error()) != "NetworkError.NoError":
                 logging.error(f"Cam [{self.name}] Network Error: {reply.error()}")
+                self.thumbnail_update_timer.start(1000)
                 return
             data = reply.readAll()
             data = data.data()
@@ -74,6 +75,7 @@ class WebcamWindow(QLabel):
             logging.error(f"Error handling thumbnail response: {e}")
             logging.exception(e)
         finally:
+            self.thumbnail_update_timer.start(60000)
             reply.deleteLater()
 
     def hideEvent(self, event):

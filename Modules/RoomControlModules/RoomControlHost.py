@@ -23,7 +23,8 @@ class RoomControlHost(ScrollableMenu):
         self.loading_label.setFont(self.font)
         self.loading_label.setFixedSize(600, 60)
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
-        self.loading_label.setStyleSheet("color: white; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
+        self.loading_label.setStyleSheet("color: white; font-size: 15px; font-weight: bold; border: none;"
+                                         " background-color: transparent")
         self.loading_label.setText("Loading Room Control Schema, Please Wait...")
         self.loading_label.move(round((self.width() - self.loading_label.width()) / 2), 20)
 
@@ -55,6 +56,18 @@ class RoomControlHost(ScrollableMenu):
         self.retry_timer.timeout.connect(self.make_request)
         self.retry_timer.start(5000)
 
+        self.make_request()
+
+    def reload_schema(self):
+        self.loading_label.show()
+        self.starred_device_host.deleteLater()
+        self.ungrouped_device_host.deleteLater()
+        for widget in self.device_group_hosts:
+            widget.deleteLater()
+        self.device_group_hosts.clear()
+        self.starred_device_host = DeviceGroupHost(self, "Starred Devices", center=True)
+        self.device_group_hosts = []
+        self.ungrouped_device_host = DeviceGroupHost(self, "Ungrouped Devices")
         self.make_request()
 
     def make_request(self):
@@ -111,14 +124,6 @@ class RoomControlHost(ScrollableMenu):
         # Our height is the height from our x position to the bottom of the window
         self.setFixedSize(self.parent.width(), self.parent.height() - self.y() - 30)
         # Calculate the width of the device group hosts while allowing for a 20 pixel margin on each side
-        width = self.width() - 40
-        self.starred_device_host.setFixedSize(width, 0)
-        self.ungrouped_device_host.setFixedSize(width, 0)
-        for widget in self.device_group_hosts:
-            widget.setFixedSize(width, 0)
-            widget.layout_widgets()
-        self.starred_device_host.layout_widgets()
-        self.ungrouped_device_host.layout_widgets()
         self.layout_widgets()
 
     def set_focus(self, focus):
@@ -158,6 +163,14 @@ class RoomControlHost(ScrollableMenu):
         self.ungrouped_device_host.move(20, y)
 
     def layout_widgets(self):
+        width = self.width() - 40
+        self.starred_device_host.setFixedSize(width, 0)
+        self.starred_device_host.layout_widgets()
+        self.ungrouped_device_host.setFixedSize(width, 0)
+        self.ungrouped_device_host.layout_widgets()
+        for widget in self.device_group_hosts:
+            widget.setFixedSize(width, 0)
+            widget.layout_widgets()
         # If we are not focused only show the starred device host
         if not self.focused:
             self.starred_device_host.center = True
