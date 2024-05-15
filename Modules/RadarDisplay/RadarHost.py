@@ -182,7 +182,7 @@ class RadarHost(QLabel):
                 map_tile.set_radar_overlay(self.timestamp_list[self.current_frame])
 
             time_str = datetime.datetime.fromtimestamp(self.timestamp_list[self.current_frame]).strftime("%Y-%m-%d %H:%M:%S")
-            self.timestamp_label.setText(f"<pre>{time_str} {self.current_frame + 1}/{len(self.timestamp_list)}</pre>")
+            self.timestamp_label.setText(f"{time_str} {self.current_frame + 1}/{len(self.timestamp_list)}")
 
         except Exception as e:
             logging.error(f"Failed to load next frame: {e}")
