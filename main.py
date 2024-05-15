@@ -143,6 +143,7 @@ class MainWindow(QMainWindow):
         self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
 
         self.room_control.set_activity_timer_callback(self.menu_bar.reset_focus_timer)
+        self.radar_host.set_activity_timer_callback(self.menu_bar.reset_focus_timer)
 
         self.show()
         # If running on a linux system, use this to make the window full screen

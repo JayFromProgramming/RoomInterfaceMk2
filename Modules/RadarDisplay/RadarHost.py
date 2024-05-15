@@ -55,7 +55,6 @@ class MapTile(QLabel):
                                  Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.radar_images.append({"timestamp": timestamp, "image": image})
             if timestamp == self.displayed_radar_image:
-                print(f"Setting radar overlay for {self.x}-{self.y} at {timestamp}")
                 self.radar_overlay.setPixmap(QPixmap.fromImage(image))
         except Exception as e:
             logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {e}")
@@ -102,11 +101,16 @@ class RadarHost(QLabel):
         self.playback_timer = QTimer(self)
         self.playback_timer.timeout.connect(self.next_frame)
 
+        self.activity_timer_callback = None
+
+    def set_activity_timer_callback(self, callback):
+        self.activity_timer_callback = callback
+
     def set_focus(self, focus) -> None:
         self.focused = focus
         if focus:
             self.load_maptiles()
-            self.playback_timer.start(1000)
+            # self.playback_timer.start(1000)
             self.show()
         else:
             self.unload_maptiles()
@@ -130,6 +134,8 @@ class RadarHost(QLabel):
     def mousePressEvent(self, event):
         try:
             self.dragging = True
+            if self.activity_timer_callback is not None:
+                self.activity_timer_callback()
             self.drag_start = (event.pos().x(), event.pos().y())
         except Exception as e:
             logging.error(f"Failed to handle mouse press event: {e}")
@@ -138,6 +144,8 @@ class RadarHost(QLabel):
     def mouseMoveEvent(self, event):
         try:
             if self.dragging:
+                if self.activity_timer_callback is not None:
+                    self.activity_timer_callback()
                 dx, dy = event.pos().x() - self.drag_start[0], event.pos().y() - self.drag_start[1]
                 self.maptile_surface.move(self.maptile_surface.x() + dx, self.maptile_surface.y() + dy)
                 self.drag_start = (event.pos().x(), event.pos().y())
@@ -156,11 +164,10 @@ class RadarHost(QLabel):
             data = reply.readAll()
             data = json.loads(str(data, 'utf-8'))
             self.timestamp_list = data['weather_radar_list'][-50:]
-
+            self.current_frame = len(self.timestamp_list) - 2
             for map_tile in self.map_tiles:
                 map_tile.load_radar_overlays(self.timestamp_list)
-            for map_tile in self.map_tiles:
-                map_tile.set_radar_overlay(self.timestamp_list[-1])
+            self.next_frame()
         except Exception as e:
             logging.error(f"Failed to load radar data: {e}")
             logging.exception(e)
@@ -175,7 +182,7 @@ class RadarHost(QLabel):
                 map_tile.set_radar_overlay(self.timestamp_list[self.current_frame])
 
             time_str = datetime.datetime.fromtimestamp(self.timestamp_list[self.current_frame]).strftime("%Y-%m-%d %H:%M:%S")
-            self.timestamp_label.setText(f"{time_str} {self.current_frame + 1}/{len(self.timestamp_list)}")
+            self.timestamp_label.setText(f"<pre>{time_str} {self.current_frame + 1}/{len(self.timestamp_list)}</pre>")
 
         except Exception as e:
             logging.error(f"Failed to load next frame: {e}")
