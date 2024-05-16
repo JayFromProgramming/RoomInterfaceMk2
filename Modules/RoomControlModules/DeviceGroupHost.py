@@ -155,14 +155,14 @@ class DeviceGroupHost(QLabel):
             if x_offset + widget.width() > self.width() and widget != self.device_widgets[-1]:
                 if self.center:
                     # If centering is enabled, calculate the remaining space of the first row from the boarder
-                    center_offset.append(round((self.width() - x_offset - 10) / 2))
+                    center_offset.append(round((self.width() - x_offset - 5) / 2))
                     row_num += 1
                 x_offset = 10
                 y_offset += widget.height() + 10
 
         if self.center:
             # If centering is enabled, calculate the remaining space of the first row from the boarder
-            center_offset.append(round((self.width() - x_offset - 10) / 2))
+            center_offset.append(round((self.width() - x_offset - 5) / 2))
             row_num += 1
 
         # If centering is enabled, move all widgets to the right by the remaining space of the first row

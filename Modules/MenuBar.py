@@ -2,6 +2,7 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QLabel, QPushButton
 from loguru import logger as logging
 
+
 class FlyoutButton(QPushButton):
 
     def __init__(self, parent=None, text="", flyout=None, idle_timeout=30):
@@ -11,7 +12,7 @@ class FlyoutButton(QPushButton):
         self.expanded = False
         self.idle_timeout = idle_timeout * 1000
         self.button_text = text
-        self.setText(f"↑{text}↑")
+        self.setText(f"↓{text}↓")
         self.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #ffcd00;"
                            "border: none; border-radius: 10px")
         self.setFont(parent.font)
@@ -24,11 +25,11 @@ class FlyoutButton(QPushButton):
             self.parent.current_focus = self
             self.parent.collapse_not_focused()
             if self.expanded:
-                self.setText(f"↓{self.button_text}↓")
+                self.setText(f"↑{self.button_text}↑")
                 self.flyout.set_focus(True)
                 self.parent.start_focus_timer()
             else:
-                self.setText(f"↑{self.button_text}↑")
+                self.setText(f"↓{self.button_text}↓")
                 self.parent.current_focus = None
                 self.flyout.set_focus(False)
         except Exception as e:
@@ -38,7 +39,7 @@ class FlyoutButton(QPushButton):
     def collapse(self):
         self.expanded = False
         self.flyout.set_focus(False)
-        self.setText(f"↑{self.button_text}↑")
+        self.setText(f"↓{self.button_text}↓")
 
 
 class MenuBar(QLabel):
@@ -61,12 +62,12 @@ class MenuBar(QLabel):
 
         self.current_focus = None
 
-        self.calculate_button_positions()
+        # self.calculate_button_positions()
 
     def calculate_button_positions(self):
         # All buttons should have equal spacing between them and the edges of the menu bar
         # This method should be dynamic and work for any number of buttons
-        button_spacing = (self.width() - (140 * len(self.buttons))) / (len(self.buttons) + 1)
+        button_spacing = (self.width() - (self.buttons[0].width() * len(self.buttons))) / (len(self.buttons) + 1)
         for i, button in enumerate(self.buttons):
             button.move(round(button_spacing * (i + 1) + button.width() * i), 5)
 
@@ -77,7 +78,8 @@ class MenuBar(QLabel):
 
     def resizeEvent(self, a0):
         super().resizeEvent(a0)
-        self.calculate_button_positions()
+        if len(self.buttons) > 0:
+            self.calculate_button_positions()
 
     def collapse_not_focused(self):
         for button in self.buttons:

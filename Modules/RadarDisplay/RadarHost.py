@@ -46,7 +46,7 @@ class MapTile(QLabel):
         self.radar_overlay.setPixmap(QPixmap())
 
     def handle_response(self, reply):
-        timestamp = int(reply.url().toString().split('/')[-4])
+        timestamp = int(reply.url().toString().split('/')[-4])  # Extract the timestamp from the URL
         try:
             if str(reply.error()) != "NetworkError.NoError":
                 logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {reply.error()}")
@@ -158,6 +158,7 @@ class RadarHost(QLabel):
         self.activity_timer_callback = callback
 
     def check_loading(self):
+        # Compare the number of frames still loading to the total number of frames to be loaded
         total_tiles = len(self.map_tiles) * len(self.timestamp_list)
         loaded_frames = total_tiles - sum([map_tile.outstanding_requests for map_tile in self.map_tiles])
         self.loading_label.setText(f"Loading Radar Data [{loaded_frames}/{total_tiles}]")
@@ -226,7 +227,7 @@ class RadarHost(QLabel):
             if str(reply.error()) != "NetworkError.NoError":
                 logging.error(f"Failed to load radar data: {reply.error()}")
                 return
-            self.loading_check_timer.start(250)
+            self.loading_check_timer.start(100)
             data = reply.readAll()
             data = json.loads(str(data, 'utf-8'))
             self.timestamp_list = data['weather_radar_list'][-self.max_frames:]
