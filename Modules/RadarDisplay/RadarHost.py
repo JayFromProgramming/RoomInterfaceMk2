@@ -1,5 +1,6 @@
 import datetime
 import json
+import time
 
 from PyQt6.QtCore import QUrl, QTimer, Qt
 from PyQt6.QtGui import QPixmap, QImage
@@ -131,7 +132,7 @@ class RadarHost(QLabel):
         self.center_button.setText("Center")
         self.center_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
         self.center_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
-        self.center_button.clicked.connect(lambda: self.maptile_surface.move(0, -100))
+        self.center_button.clicked.connect(self.center_clicked)
 
         self.loading_label = QLabel(self)
         self.loading_label.setFont(self.parent.get_font("JetBrainsMono-Regular"))
@@ -166,8 +167,16 @@ class RadarHost(QLabel):
             self.loading_check_timer.stop()
             self.loading_label.hide()
 
+    def center_clicked(self):
+        # Reset zoom and position of the radar map
+        self.maptile_surface.setFixedSize(256 * 4, 256 * 3)
+        self.maptile_surface.move(0, -100)
+
     def now_button_clicked(self):
-        self.current_frame = len(self.timestamp_list) - 2
+        for i, timestamp in enumerate(self.timestamp_list.__reversed__()):
+            if timestamp < time.time():
+                self.current_frame = len(self.timestamp_list) - i - 2
+                break
         self.next_frame()
 
     def play_button_clicked(self):
@@ -195,6 +204,9 @@ class RadarHost(QLabel):
         for map_tile in self.map_tiles:
             map_tile.deleteLater()
         self.map_tiles.clear()
+
+    def wheelEvent(self, a0) -> None:
+        pass
 
     # Setup mouse events to allow the user to drag the radar map around
     def mousePressEvent(self, event):
@@ -231,7 +243,11 @@ class RadarHost(QLabel):
             data = reply.readAll()
             data = json.loads(str(data, 'utf-8'))
             self.timestamp_list = data['weather_radar_list'][-self.max_frames:]
-            self.current_frame = len(self.timestamp_list) - 2
+            # Find the last timestamp that is less than the current time
+            for i, timestamp in enumerate(self.timestamp_list.__reversed__()):
+                if timestamp < time.time():
+                    self.current_frame = len(self.timestamp_list) - i - 2
+                    break
             for map_tile in self.map_tiles:
                 map_tile.load_radar_overlays(self.timestamp_list.__reversed__())
             self.next_frame()
