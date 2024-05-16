@@ -140,8 +140,7 @@ class RadarHost(QLabel):
         self.loading_label.setStyleSheet("color: #ffcd00; font-size: 15px; font-weight: bold; border: none;"
                                          " background-color: black")
         self.loading_label.setText("Loading Radar Frames [??/??]")
-        self.loading_label.move(round((self.width() - self.loading_label.width()) / 2),
-                                round((self.height() - self.loading_label.height()) / 2))
+        self.loading_label.move(round((self.width() - self.loading_label.width()) / 2), 0)
         self.loading_label.hide()
 
         self.timestamp_list = []
