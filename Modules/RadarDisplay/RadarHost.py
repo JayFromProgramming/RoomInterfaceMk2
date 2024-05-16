@@ -29,8 +29,11 @@ class MapTile(QLabel):
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_response)
 
+        self.outstanding_requests = 0
+
     def load_radar_overlays(self, timestamps):
         for timestamp in timestamps:
+            self.outstanding_requests += 1
             self.network_manager.get(
                 QNetworkRequest(QUrl(f"http://{self.host}/weather/radar/{timestamp}/{self.x}/{self.y}/4")))
 
@@ -44,6 +47,7 @@ class MapTile(QLabel):
 
     def handle_response(self, reply):
         timestamp = int(reply.url().toString().split('/')[-4])
+        self.outstanding_requests -= 1
         try:
             if str(reply.error()) != "NetworkError.NoError":
                 logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {reply.error()}")
@@ -64,6 +68,7 @@ class MapTile(QLabel):
 
 
 class RadarHost(QLabel):
+    max_frames = 50
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -91,7 +96,7 @@ class RadarHost(QLabel):
         self.timestamp_label = QLabel(self)
         self.timestamp_label.setFixedSize(212, 20)
         self.timestamp_label.move(0, 0)
-        self.timestamp_label.setStyleSheet("background-color: black; color: white; font-size: 14px;")
+        self.timestamp_label.setStyleSheet("background-color: black; color: #ffcd00; font-size: 14px;")
         self.timestamp_label.setFont(self.parent.get_font("JetBrainsMono-Regular"))
         self.timestamp_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.timestamp_label.setText("Loading...")
@@ -120,8 +125,6 @@ class RadarHost(QLabel):
         self.next_frame_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
         self.next_frame_button.clicked.connect(self.next_frame)
 
-
-
         self.center_button = QPushButton(self)
         self.center_button.setFixedSize(53, 20)
         self.center_button.move(159, 20)
@@ -130,16 +133,38 @@ class RadarHost(QLabel):
         self.center_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
         self.center_button.clicked.connect(lambda: self.maptile_surface.move(0, -100))
 
+        self.loading_label = QLabel(self)
+        self.loading_label.setFont(self.parent.get_font("JetBrainsMono-Regular"))
+        self.loading_label.setFixedSize(300, 30)
+        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.loading_label.setStyleSheet("color: #ffcd00; font-size: 15px; font-weight: bold; border: none;"
+                                         " background-color: black")
+        self.loading_label.setText("Loading Radar Frames [??/??]")
+        self.loading_label.move(round((self.width() - self.loading_label.width()) / 2),
+                                round((self.height() - self.loading_label.height()) / 2))
+        self.loading_label.hide()
+
         self.timestamp_list = []
         self.current_frame = 0
 
         self.playback_timer = QTimer(self)
         self.playback_timer.timeout.connect(self.next_frame)
 
+        self.loading_check_timer = QTimer(self)
+        self.loading_check_timer.timeout.connect(self.check_loading)
+
         self.activity_timer_callback = None
 
     def set_activity_timer_callback(self, callback):
         self.activity_timer_callback = callback
+
+    def check_loading(self):
+        total_tiles = len(self.map_tiles) * len(self.timestamp_list)
+        loaded_frames = total_tiles - sum([map_tile.outstanding_requests for map_tile in self.map_tiles])
+        self.loading_label.setText(f"Loading Radar Data [{loaded_frames}/{total_tiles}]")
+        if all([map_tile.outstanding_requests == 0 for map_tile in self.map_tiles]):
+            self.loading_check_timer.stop()
+            self.loading_label.hide()
 
     def now_button_clicked(self):
         self.current_frame = len(self.timestamp_list) - 2
@@ -204,10 +229,10 @@ class RadarHost(QLabel):
                 return
             data = reply.readAll()
             data = json.loads(str(data, 'utf-8'))
-            self.timestamp_list = data['weather_radar_list'][-50:]
+            self.timestamp_list = data['weather_radar_list'][-self.max_frames:]
             self.current_frame = len(self.timestamp_list) - 2
             for map_tile in self.map_tiles:
-                map_tile.load_radar_overlays(self.timestamp_list)
+                map_tile.load_radar_overlays(self.timestamp_list.__reversed__())
             self.next_frame()
         except Exception as e:
             logging.error(f"Failed to load radar data: {e}")
@@ -223,7 +248,7 @@ class RadarHost(QLabel):
                 map_tile.set_radar_overlay(self.timestamp_list[self.current_frame])
 
             time_str = datetime.datetime.fromtimestamp(self.timestamp_list[self.current_frame]).strftime(
-                "%Y-%m-%d %H:%M:%S")
+                "%Y-%m-%d %I:%M%p")
             self.timestamp_label.setText(f"{time_str} {str(self.current_frame + 1).zfill(2)}"
                                          f"/{len(self.timestamp_list)}")
 
@@ -241,4 +266,6 @@ class RadarHost(QLabel):
             map_tile.move((i % 4) * 256,
                           (i // 4) * 256)
         self.maptile_surface.move(0, -100)
+        self.loading_check_timer.start(250)
+        self.loading_label.show()
         self.network_manager.get(QNetworkRequest(QUrl(f"http://{self.host}/weather/available_radars")))
