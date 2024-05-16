@@ -47,7 +47,6 @@ class MapTile(QLabel):
 
     def handle_response(self, reply):
         timestamp = int(reply.url().toString().split('/')[-4])
-        self.outstanding_requests -= 1
         try:
             if str(reply.error()) != "NetworkError.NoError":
                 logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {reply.error()}")
@@ -64,6 +63,7 @@ class MapTile(QLabel):
             logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {e}")
             logging.exception(e)
         finally:
+            self.outstanding_requests -= 1
             reply.deleteLater()
 
 
@@ -227,6 +227,7 @@ class RadarHost(QLabel):
             if str(reply.error()) != "NetworkError.NoError":
                 logging.error(f"Failed to load radar data: {reply.error()}")
                 return
+            self.loading_check_timer.start(250)
             data = reply.readAll()
             data = json.loads(str(data, 'utf-8'))
             self.timestamp_list = data['weather_radar_list'][-self.max_frames:]
@@ -266,6 +267,6 @@ class RadarHost(QLabel):
             map_tile.move((i % 4) * 256,
                           (i // 4) * 256)
         self.maptile_surface.move(0, -100)
-        self.loading_check_timer.start(250)
+        self.loading_label.setText("Acquiring Radar Frame List")
         self.loading_label.show()
         self.network_manager.get(QNetworkRequest(QUrl(f"http://{self.host}/weather/available_radars")))
