@@ -96,9 +96,17 @@ class RadarHost(QLabel):
         self.timestamp_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.timestamp_label.setText("Loading...")
 
+        self.now_button = QPushButton(self)
+        self.now_button.setFixedSize(53, 20)
+        self.now_button.move(0, 20)
+        self.now_button.setText("Now")
+        self.now_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
+        self.now_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
+        self.now_button.clicked.connect(self.now_button_clicked)
+
         self.play_pause_button = QPushButton(self)
         self.play_pause_button.setFixedSize(53, 20)
-        self.play_pause_button.move(0, 20)
+        self.play_pause_button.move(53, 20)
         self.play_pause_button.setText("Play")
         self.play_pause_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
         self.play_pause_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
@@ -106,19 +114,13 @@ class RadarHost(QLabel):
 
         self.next_frame_button = QPushButton(self)
         self.next_frame_button.setFixedSize(53, 20)
-        self.next_frame_button.move(53, 20)
+        self.next_frame_button.move(106, 20)
         self.next_frame_button.setText("Next")
         self.next_frame_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
         self.next_frame_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
         self.next_frame_button.clicked.connect(self.next_frame)
 
-        self.now_button = QPushButton(self)
-        self.now_button.setFixedSize(53, 20)
-        self.now_button.move(106, 20)
-        self.now_button.setText("Now")
-        self.now_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
-        self.now_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
-        self.now_button.clicked.connect(self.now_button_clicked)
+
 
         self.center_button = QPushButton(self)
         self.center_button.setFixedSize(53, 20)
