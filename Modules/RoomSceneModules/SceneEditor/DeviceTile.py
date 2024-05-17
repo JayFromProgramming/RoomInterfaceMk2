@@ -18,6 +18,7 @@ class DeviceTile(QLabel):
         "abstract_toggle_device": "Toggleable",
         "abstract_rgb": "Light",
         "environment_controller": "Environment",
+        "LevitonDevice": "Switch",
     }
 
     def __init__(self, parent, device, group, action_data=None):

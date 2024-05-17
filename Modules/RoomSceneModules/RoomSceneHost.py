@@ -101,22 +101,26 @@ class RoomSceneHost(ScrollableMenu):
         # Lay the widgets out row by row with a 10 pixel margin
         y_offset = 20
         x_offset = 5
-        first_row_x_offset = 0
+        center_offset = []
+        row_num = 0
         # Start a new row when the widgets won't fit on the current row
         for widget in self.scene_widgets:
             widget.move(x_offset, y_offset)
+            widget.row_num = row_num
             widget.show()
             x_offset += widget.width() + 7
             # Wrap around to the next row if the widget won't fit on the current row
             if x_offset + widget.width() > self.width():
-                if first_row_x_offset == 0:
-                    # If centering is enabled, calculate the remaining space of the first row from the boarder
-                    first_row_x_offset = round((self.width() - x_offset) / 2)
+                center_offset.append(round((self.width() - x_offset - 5) / 2))
+                row_num += 1
                 x_offset = 5
                 y_offset += widget.height() + 10
 
+        center_offset.append(round((self.width() - x_offset - 5) / 2))
+        row_num += 1
+
         # Center the widgets
         for widget in self.scene_widgets:
-            widget.move(widget.x() + first_row_x_offset, widget.y())
+            widget.move(widget.x() + center_offset[widget.row_num], widget.y())
 
 

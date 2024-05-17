@@ -55,7 +55,7 @@ class MapTile(QLabel):
             data = reply.readAll()
             image = QImage.fromData(data)
             # Resize the image to 256x256 pixels
-            image = image.scaled(256, 256,
+            image = image.scaled(self.width(), self.height(),
                                  Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.radar_images.append({"timestamp": timestamp, "image": image})
             if timestamp == self.displayed_radar_image:
@@ -66,6 +66,17 @@ class MapTile(QLabel):
         finally:
             self.outstanding_requests -= 1
             reply.deleteLater()
+
+    def change_size(self, factor):
+        self.setFixedSize(round(self.width() * factor),
+                          round(self.height() * factor))
+        self.radar_overlay.setFixedSize(round(self.radar_overlay.width() * factor),
+                                        round(self.radar_overlay.height() * factor))
+        # Resize the map tile image to match the new size
+        self.setPixmap(QPixmap(f"Assets/MapTiles/{self.x}-{self.y}.png").scaled(self.width(), self.height(),
+                                                                               Qt.AspectRatioMode.KeepAspectRatio,
+                                                                                 Qt.TransformationMode.SmoothTransformation))
+        self.radar_images.clear()
 
 
 class RadarHost(QLabel):
@@ -118,21 +129,21 @@ class RadarHost(QLabel):
         self.play_pause_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
         self.play_pause_button.clicked.connect(self.play_button_clicked)
 
+        self.back_button = QPushButton(self)
+        self.back_button.setFixedSize(53, 20)
+        self.back_button.move(106, 20)
+        self.back_button.setText("Back")
+        self.back_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
+        self.back_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
+        self.back_button.clicked.connect(self.last_frame)
+
         self.next_frame_button = QPushButton(self)
         self.next_frame_button.setFixedSize(53, 20)
-        self.next_frame_button.move(106, 20)
+        self.next_frame_button.move(159, 20)
         self.next_frame_button.setText("Next")
         self.next_frame_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
         self.next_frame_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
         self.next_frame_button.clicked.connect(self.next_frame)
-
-        self.center_button = QPushButton(self)
-        self.center_button.setFixedSize(53, 20)
-        self.center_button.move(159, 20)
-        self.center_button.setText("Center")
-        self.center_button.setStyleSheet("background-color: grey; color: white; font-size: 14px;")
-        self.center_button.setFont(self.parent.get_font("JetBrainsMono-Regular"))
-        self.center_button.clicked.connect(self.center_clicked)
 
         self.loading_label = QLabel(self)
         self.loading_label.setFont(self.parent.get_font("JetBrainsMono-Regular"))
@@ -146,6 +157,7 @@ class RadarHost(QLabel):
 
         self.timestamp_list = []
         self.current_frame = 0
+        self.zoom_level = 1
 
         self.playback_timer = QTimer(self)
         self.playback_timer.timeout.connect(self.next_frame)
@@ -167,10 +179,11 @@ class RadarHost(QLabel):
             self.loading_check_timer.stop()
             self.loading_label.hide()
 
-    def center_clicked(self):
-        # Reset zoom and position of the radar map
-        self.maptile_surface.setFixedSize(256 * 4, 256 * 3)
-        self.maptile_surface.move(0, -100)
+    def last_frame(self):
+        self.current_frame -= 2
+        if self.current_frame < 0:
+            self.current_frame = len(self.timestamp_list) - 2
+        self.next_frame()
 
     def now_button_clicked(self):
         for i, timestamp in enumerate(self.timestamp_list.__reversed__()):
@@ -206,7 +219,30 @@ class RadarHost(QLabel):
         self.map_tiles.clear()
 
     def wheelEvent(self, a0) -> None:
-        pass
+        current_x, current_y = self.maptile_surface.x(), self.maptile_surface.y()
+        if a0.angleDelta().y() > 0 and self.zoom_level < 2:
+            self.zoom_level += 1
+            self.maptile_surface.setFixedSize(self.maptile_surface.width() * 2, self.maptile_surface.height() * 2)
+            for map_tile in self.map_tiles:
+                map_tile.change_size(2)
+            # Re layout the map tiles
+            for i, map_tile in enumerate(self.map_tiles):
+                map_tile.move((i % 4) * self.map_tiles[0].width(),
+                              (i // 4) * self.map_tiles[0].height())
+            self.load_radartiles()
+            # Adjust the position of the map tiles to keep the same point in the center
+            self.maptile_surface.move(current_x * 2, current_y * 2)
+        elif a0.angleDelta().y() < 0 and self.zoom_level > 1:
+            self.zoom_level -= 1
+            self.maptile_surface.setFixedSize(self.maptile_surface.width() // 2, self.maptile_surface.height() // 2)
+            for map_tile in self.map_tiles:
+                map_tile.change_size(0.5)
+            # Re layout the map tiles
+            for i, map_tile in enumerate(self.map_tiles):
+                map_tile.move((i % 4) * self.map_tiles[0].width(),
+                              (i // 4) * self.map_tiles[0].height())
+            self.load_radartiles()
+            self.maptile_surface.move(current_x // 2, current_y // 2)
 
     # Setup mouse events to allow the user to drag the radar map around
     def mousePressEvent(self, event):
@@ -273,6 +309,11 @@ class RadarHost(QLabel):
             logging.error(f"Failed to load next frame: {e}")
             logging.exception(e)
 
+    def load_radartiles(self):
+        self.loading_label.setText("Acquiring Radar Frame List")
+        self.loading_label.show()
+        self.network_manager.get(QNetworkRequest(QUrl(f"http://{self.host}/weather/available_radars")))
+
     def load_maptiles(self):
         # All map tiles are 256x256 pixels in size and are stored in 'Assets/MapTiles/{x}-{y}.png'
         # The map is 4 tiles wide and 3 tiles tall (15-18, 22-24)
@@ -283,6 +324,4 @@ class RadarHost(QLabel):
             map_tile.move((i % 4) * 256,
                           (i // 4) * 256)
         self.maptile_surface.move(0, -100)
-        self.loading_label.setText("Acquiring Radar Frame List")
-        self.loading_label.show()
-        self.network_manager.get(QNetworkRequest(QUrl(f"http://{self.host}/weather/available_radars")))
+        self.load_radartiles()
