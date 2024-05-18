@@ -42,6 +42,10 @@ class RoomDevice(QLabel):
         self.state = None
         self.data = None
         self.has_names = False
+
+        self.toggling = False
+        self.last_toggle_state = None
+
         # self.get_data()
         self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self.get_data)
@@ -86,7 +90,8 @@ class RoomDevice(QLabel):
         if self.toggle_button is not None:
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold;"
                                              " background-color: blue;")
-            self.toggle_button.setText("Toggling")
+            self.toggling = True
+            self.last_toggle_state = self.state["on"]
         self.send_command(command)
 
     def handle_response(self, response):
@@ -103,6 +108,8 @@ class RoomDevice(QLabel):
             data = json.loads(str(data, 'utf-8'))
             self.data = data
             self.state = data["state"]
+            if self.toggling and self.state["on"] != self.last_toggle_state:
+                self.toggling = False
             self.parse_data(data)
         except Exception as e:
             logging.error(f"Error handling response: {e}")

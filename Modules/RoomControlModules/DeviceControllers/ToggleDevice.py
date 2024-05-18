@@ -58,11 +58,15 @@ class ToggleDevice(RoomDevice):
                 self.device_text.setText(f"<pre>Online: MANUAL</pre>")
 
     def parse_data(self, data):
-        self.toggle_button.setText(f"Turn {['On', 'Off'][self.state['on']]}")
-        button_color = "#4080FF" if self.state["on"] else "grey"
-        self.toggle_button.setStyleSheet(
-            f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
-        self.update_status()
+        if not self.toggling:
+            self.toggle_button.setText(f"Turn {['On', 'Off'][self.state['on']]}")
+            button_color = "#4080FF" if self.state["on"] else "grey"
+            self.toggle_button.setStyleSheet(
+                f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
+            self.update_status()
+        else:
+            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold;"
+                                             " background-color: blue;")
 
     def handle_failure(self, response):
         if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
