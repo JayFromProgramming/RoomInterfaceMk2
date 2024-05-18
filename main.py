@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QLa
 from PyQt6.QtGui import QFont, QFontDatabase
 
 from Modules.CameraPlayback.WebcamLayout import WebcamLayout
-from Modules.CameraPlayback.WebcamWindow import WebcamWindow
+
 # Replace this with auto-import later
 from Modules.DisplayClock import DisplayClock
 from Modules.CurrentWeather import CurrentWeather
@@ -24,30 +24,6 @@ from loguru import logger as logging
 
 from Modules.RoomSceneModules.RoomSceneHost import RoomSceneHost
 from Modules.SystemControlModules.SystemControlHost import SystemControlHost
-
-# class WatchdogThread(threading.Thread):
-#
-#     def __init__(self, timeout=60, fail_callback=None):
-#         super().__init__(name="WatchdogThread", daemon=True)
-#         self.running = True
-#         self.last_feed = time.time()
-#         self.timeout = timeout
-#         self.fail_callback = fail_callback
-#
-#     def run(self):
-#         logging.info("Watchdog thread started")
-#         while self.running:
-#             if time.time() - self.last_feed > self.timeout:
-#                 if self.fail_callback is not None:
-#                     self.fail_callback()
-#                     time.sleep(self.timeout)
-#             time.sleep(1)
-#
-#     def stop(self):
-#         self.running = False
-#
-#     def feed(self):
-#         self.last_feed = time.time()
 
 
 class RoomInterface(QApplication):
@@ -68,26 +44,6 @@ class RoomInterface(QApplication):
         # self.feed_timer.start(1000)
         # self.watchdog.start()
         self.exec()
-
-    # def feed_watchdog(self):
-    #     self.watchdog.feed()
-    #
-    # def watchdog_failed(self):
-    #     # If the watchdog fails that means that an event in the qt event loop has locked up the main thread
-    #     # We need to log what the current event is and then restart the application
-    #     logging.error("Watchdog failed, attempting to find root cause before restarting")
-    #     try:
-    #         main_thread_id = threading.main_thread()
-    #         logging.error(f"At time of failure there were {len(sys._current_frames())} threads running"
-    #                         f" and the main thread id is {main_thread_id.ident}")
-    #         for thread_id, frame in sys._current_frames().items():
-    #             if thread_id == main_thread_id.ident:
-    #                 logging.error("Main thread stack trace:")
-    #                 traceback.print_stack(frame)
-    #     except Exception as e:
-    #         logging.error(f"Error logging stack: {e}")
-    #     logging.error("Restarting application")
-    #     exit(-1)
 
 
 class MainWindow(QMainWindow):

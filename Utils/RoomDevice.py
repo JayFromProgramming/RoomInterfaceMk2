@@ -84,7 +84,9 @@ class RoomDevice(QLabel):
     def toggle_device(self):
         command = {"on": not self.state["on"]}
         if self.toggle_button is not None:
-            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: blue;")
+            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold;"
+                                             " background-color: blue;")
+            self.toggle_button.setText("Toggling")
         self.send_command(command)
 
     def handle_response(self, response):
