@@ -1,5 +1,6 @@
 import json
 import random
+import time
 
 from PyQt6.QtCore import QUrl, QTimer, Qt
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
@@ -45,6 +46,7 @@ class RoomDevice(QLabel):
 
         self.toggling = False
         self.last_toggle_state = None
+        self.toggle_time = 0
 
         # self.get_data()
         self.refresh_timer = QTimer(self)
@@ -92,6 +94,7 @@ class RoomDevice(QLabel):
                                              " background-color: blue;")
             self.toggling = True
             self.last_toggle_state = self.state["on"]
+            self.toggle_time = time.time()
         self.send_command(command)
 
     def handle_response(self, response):

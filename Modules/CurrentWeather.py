@@ -130,7 +130,7 @@ class CurrentWeather(QLabel):
             wind_direction = wind_direction_arrow(data["wind"]["deg"])
             visibility = visibility_to_text(data["visibility_distance"])
             status = str(data["detailed_status"]).capitalize()
-            status = status.replace("intensity", "")
+            status = status.replace("intensity ", "")
             last_updated = time.strftime("%I:%M%p", time.localtime(data["reference_time"]))
             sunrise = datetime.datetime.fromtimestamp(data["sunrise_time"])
             sunset = datetime.datetime.fromtimestamp(data["sunset_time"])

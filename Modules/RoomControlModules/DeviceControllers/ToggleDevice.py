@@ -1,4 +1,5 @@
 import json
+import time
 
 from PyQt6.QtCore import Qt, QTimer, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
@@ -64,6 +65,8 @@ class ToggleDevice(RoomDevice):
             self.toggle_button.setStyleSheet(
                 f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
             self.update_status()
+        elif self.toggle_time < time.time() - 5:  # If the toggle has
+            self.toggling = False
         else:
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold;"
                                              " background-color: blue;")
