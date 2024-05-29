@@ -9,6 +9,7 @@ from loguru import logger as logging
 
 import json
 
+from Utils.UtilMethods import load_no_image
 from Utils.WeatherHelpers import wind_direction_arrow, kelvin_to_fahrenheit, visibility_to_text, mps_to_mph
 
 
@@ -27,9 +28,10 @@ class CurrentWeather(QLabel):
         # Setup the 3 labels for the rows
         self.weather_label_icon = QLabel(self)
         self.weather_label_icon.setFixedSize(100, 100)
-        self.weather_label_icon.move(-15, -15)
         self.weather_label_icon.setAlignment(Qt.AlignmentFlag.AlignLeft)
         # self.weather_label_icon.setStyleSheet("background-color: white;")
+        self.weather_label_icon.move(10, 10)
+        self.weather_label_icon.setPixmap(load_no_image((50, 50)))
 
         self.weather_header = QLabel(self)
         self.weather_header.setStyleSheet("color: #ffcd00; font-size: 42px; "
@@ -113,6 +115,7 @@ class CurrentWeather(QLabel):
                 return
             pixmap = QPixmap()
             pixmap.loadFromData(reply.readAll())
+            self.weather_label_icon.move(-15, -15)
             self.weather_label_icon.setPixmap(pixmap)
             reply.deleteLater()
         except Exception as e:

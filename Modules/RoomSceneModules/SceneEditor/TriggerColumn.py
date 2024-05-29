@@ -64,6 +64,8 @@ class TriggerColumn(ScrollableMenu):
         except Exception as e:
             logging.error(f"Error handling default trigger response: {e}")
             logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def add_trigger(self, trigger_type, data=None):
         try:

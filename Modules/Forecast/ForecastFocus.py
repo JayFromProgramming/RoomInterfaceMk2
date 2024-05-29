@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import QLabel
 
 from loguru import logger as logging
 
+from Utils.UtilMethods import load_no_image
 from Utils.WeatherHelpers import kelvin_to_fahrenheit, mps_to_mph, wind_direction_arrow, convert_relative_humidity, \
     visibility_to_text, mm_to_inches
 
@@ -39,9 +40,10 @@ class ForecastFocus(QLabel):
 
         self.icon_label = QLabel(self)
         self.icon_label.setFixedSize(100, 100)
-        self.icon_label.move(self.width() - self.icon_label.width(), -15)
+        self.icon_label.move(self.width() - self.icon_label.width() - 10, 10)
         self.icon_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.icon_label.setStyleSheet("background-color: transparent; border: none")
+        self.icon_label.setPixmap(load_no_image((55, 55)))
 
         self.detailed_status = QLabel(self)
         self.detailed_status.setFont(self.font)
@@ -79,7 +81,8 @@ class ForecastFocus(QLabel):
         self.header.setText("Forecast for Loading...")
         self.detailed_status.setText("Loading...")
         self.weather_info.setText("Loading...")
-        self.icon_label.clear()
+        self.icon_label.setPixmap(load_no_image((55, 55)))
+        self.icon_label.move(self.width() - self.icon_label.width() - 10, 10)
         self.show_timer.stop()
 
     def hide_focus(self):
@@ -185,6 +188,7 @@ class ForecastFocus(QLabel):
             pixmap = QPixmap()
             pixmap.loadFromData(data)
             self.icon_label.setPixmap(pixmap)
+            self.icon_label.move(self.width() - self.icon_label.width(), -15)
         except Exception as e:
             logging.error(f"Error handling icon response: {e}")
             logging.exception(e)

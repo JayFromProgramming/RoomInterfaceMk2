@@ -138,6 +138,21 @@ class SceneEditorFlyout(QDialog):
         if active_window.isFullScreen():
             self.setWindowState(Qt.WindowState.WindowFullScreen)
 
+    def closeEvent(self, a0) -> None:
+        # Mark all objects for garbage collection
+        self.schema_getter.deleteLater()
+        self.scene_request.deleteLater()
+        for tile in self.action_device_list.device_labels:
+            tile.deleteLater()
+        self.action_device_list.deleteLater()
+        for tile in self.available_device_list.device_labels:
+            tile.deleteLater()
+        for trigger in self.selected_trigger_list.trigger_labels:
+            trigger.deleteLater()
+        for trigger in self.available_trigger_list.trigger_labels:
+            trigger.deleteLater()
+        self.deleteLater()
+
     def get_schema(self):
         try:
             request = QNetworkRequest(QUrl(f"http://{self.host}/get_schema"))
@@ -165,6 +180,8 @@ class SceneEditorFlyout(QDialog):
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def transfer_device(self, source_column, tile):
         try:
@@ -209,6 +226,8 @@ class SceneEditorFlyout(QDialog):
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def save_scene(self):
         try:

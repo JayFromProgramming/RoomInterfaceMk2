@@ -80,6 +80,8 @@ class DeviceColumn(ScrollableMenu):
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def has_device(self, device):
         for label in self.device_labels:

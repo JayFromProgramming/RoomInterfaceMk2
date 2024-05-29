@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QLabel
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from loguru import logger as logging
 
+from Utils.UtilMethods import load_no_image
 from Utils.WeatherHelpers import kelvin_to_fahrenheit, wind_direction_arrow, visibility_to_text, mps_to_mph
 
 
@@ -58,13 +59,10 @@ class ForecastEntry(QLabel):
 
         font = parent.parent.get_font("JetBrainsMono-Bold")
 
-        # self.setStyleSheet("border: 2px solid #ffcd00; border-radius: 10px; background-color: transparent")
-
-        # self.setStyleSheet("border: 2px solid #ffcd00")
-
         self.date_label = QLabel(self)
         self.date_label.setFixedSize(75, 20)
-        self.date_label.setStyleSheet("color: #ffcd00; font-size: 20px; font-weight: bold; border: none; border-radius: none")
+        self.date_label.setStyleSheet("color: #ffcd00; font-size: 20px; font-weight: bold;"
+                                      " border: none; border-radius: none")
         self.date_label.setFont(font)
         self.date_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.date_label.move(0, 0)
@@ -91,6 +89,7 @@ class ForecastEntry(QLabel):
         self.weather_icon.move(0, self.status_label.height() + self.status_label.y())
         self.weather_icon.setStyleSheet("border: none;")
         self.weather_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.weather_icon.setPixmap(load_no_image())
 
         self.temperature_label = QLabel(self)
         self.temperature_label.setFixedSize(75, 30)

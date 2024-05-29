@@ -168,6 +168,8 @@ class DeviceTile(QLabel):
         except Exception as e:
             logging.error(f"Error handling network response for device {self.device}: {e}")
             logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def get_data(self):
         request = QNetworkRequest(QUrl(f"http://{self.host}/get/{self.device}"))

@@ -71,11 +71,11 @@ class WebcamWindow(QLabel):
             pixmap = pixmap.scaled(self.thumbnail_label.width(), self.thumbnail_label.height() - 15,
                                    Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.thumbnail_label.setPixmap(pixmap)
+            self.thumbnail_update_timer.start(60000)
         except Exception as e:
             logging.error(f"Error handling thumbnail response: {e}")
             logging.exception(e)
         finally:
-            self.thumbnail_update_timer.start(60000)
             reply.deleteLater()
 
     def hideEvent(self, event):
