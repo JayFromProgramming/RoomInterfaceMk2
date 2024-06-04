@@ -73,9 +73,9 @@ class MapTile(QLabel):
         self.radar_overlay.setFixedSize(round(self.radar_overlay.width() * factor),
                                         round(self.radar_overlay.height() * factor))
         # Resize the map tile image to match the new size
-        self.setPixmap(QPixmap(f"Assets/MapTiles/{self.x}-{self.y}.png").scaled(self.width(), self.height(),
-                                                                               Qt.AspectRatioMode.KeepAspectRatio,
-                                                                                 Qt.TransformationMode.SmoothTransformation))
+        self.setPixmap(QPixmap(f"Assets/MapTiles/{self.x}-{self.y}.png").
+                       scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio,
+                                                           Qt.TransformationMode.SmoothTransformation))
         self.radar_images.clear()
 
 

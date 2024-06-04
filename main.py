@@ -114,6 +114,9 @@ class MainWindow(QMainWindow):
         self.menu_bar.reset_focus_timer()
         super().wheelEvent(a0)
 
+    def closeEvent(self, a0) -> None:
+        sys.exit()
+
     def get_font(self, name: str):
         # Load the custom font from a file
         if name in self.cached_fonts:
