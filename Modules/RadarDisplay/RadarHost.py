@@ -57,7 +57,7 @@ class MapTile(QLabel):
 
     def parse_responses(self):
         parsed_this_round = 0
-        while not self.response_queue.empty() and parsed_this_round < 5:
+        while not self.response_queue.empty() and parsed_this_round < 1:
             reply = self.response_queue.get()
             parsed_this_round += 1
             timestamp = int(reply.url().toString().split('/')[-4])  # Extract the timestamp from the URL
@@ -293,10 +293,11 @@ class RadarHost(QLabel):
             data = json.loads(str(data, 'utf-8'))
             self.timestamp_list = data['weather_radar_list'][-self.max_frames:]
             # Find the last timestamp that is less than the current time
-            for i, timestamp in enumerate(self.timestamp_list.__reversed__()):
-                if timestamp < time.time():
-                    self.current_frame = len(self.timestamp_list) - i - 2
-                    break
+            self.current_frame = len(self.timestamp_list) - 2 - 3
+            # for i, timestamp in enumerate(self.timestamp_list.__reversed__()):
+            #     if timestamp < time.time():
+            #         self.current_frame = len(self.timestamp_list) - i - 2
+            #         break
             for map_tile in self.map_tiles:
                 map_tile.load_radar_overlays(self.timestamp_list.__reversed__())
             self.next_frame()
