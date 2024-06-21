@@ -1,5 +1,6 @@
 import datetime
 import json
+import queue
 import time
 
 from PyQt6.QtCore import QUrl, QTimer, Qt
@@ -30,6 +31,11 @@ class MapTile(QLabel):
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_response)
 
+        self.response_queue = queue.Queue()
+        self.parse_timer = QTimer(self)
+        self.parse_timer.timeout.connect(self.parse_responses)
+        self.parse_timer.start(100)
+
         self.outstanding_requests = 0
 
     def load_radar_overlays(self, timestamps):
@@ -47,25 +53,32 @@ class MapTile(QLabel):
         self.radar_overlay.setPixmap(QPixmap())
 
     def handle_response(self, reply):
-        timestamp = int(reply.url().toString().split('/')[-4])  # Extract the timestamp from the URL
-        try:
-            if str(reply.error()) != "NetworkError.NoError":
-                logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {reply.error()}")
-                return
-            data = reply.readAll()
-            image = QImage.fromData(data)
-            # Resize the image to 256x256 pixels
-            image = image.scaled(self.width(), self.height(),
-                                 Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-            self.radar_images.append({"timestamp": timestamp, "image": image})
-            if timestamp == self.displayed_radar_image:
-                self.radar_overlay.setPixmap(QPixmap.fromImage(image))
-        except Exception as e:
-            logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {e}")
-            logging.exception(e)
-        finally:
-            self.outstanding_requests -= 1
-            reply.deleteLater()
+        self.response_queue.put(reply)
+
+    def parse_responses(self):
+        parsed_this_round = 0
+        while not self.response_queue.empty() and parsed_this_round < 5:
+            reply = self.response_queue.get()
+            parsed_this_round += 1
+            timestamp = int(reply.url().toString().split('/')[-4])  # Extract the timestamp from the URL
+            try:
+                if str(reply.error()) != "NetworkError.NoError":
+                    logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {reply.error()}")
+                    return
+                data = reply.readAll()
+                image = QImage.fromData(data)
+                # Resize the image to 256x256 pixels
+                image = image.scaled(self.width(), self.height(),
+                                     Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                self.radar_images.append({"timestamp": timestamp, "image": image})
+                if timestamp == self.displayed_radar_image:
+                    self.radar_overlay.setPixmap(QPixmap.fromImage(image))
+            except Exception as e:
+                logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {e}")
+                logging.exception(e)
+            finally:
+                self.outstanding_requests -= 1
+                reply.deleteLater()
 
     def change_size(self, factor):
         self.setFixedSize(round(self.width() * factor),
