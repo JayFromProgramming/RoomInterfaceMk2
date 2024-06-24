@@ -1,6 +1,7 @@
 import datetime
 import json
 import queue
+import random
 import time
 
 from PyQt6.QtCore import QUrl, QTimer, Qt
@@ -11,6 +12,8 @@ from loguru import logger as logging
 
 
 class MapTile(QLabel):
+
+    MAX_PARSE_TIME = 0.01  # Maximum time to spend parsing responses in milliseconds per parse event
 
     def __init__(self, host, parent=None, x=0, y=0):
         super().__init__(parent)
@@ -34,15 +37,17 @@ class MapTile(QLabel):
         self.response_queue = queue.Queue()
         self.parse_timer = QTimer(self)
         self.parse_timer.timeout.connect(self.parse_responses)
-        self.parse_timer.start(100)
+        self.parse_timer.start(100 + int(random.random() * 50))
 
         self.outstanding_requests = 0
+        self.loading = False
 
     def load_radar_overlays(self, timestamps):
         for timestamp in timestamps:
             self.outstanding_requests += 1
             self.network_manager.get(
                 QNetworkRequest(QUrl(f"http://{self.host}/weather/radar/{timestamp}/{self.x}/{self.y}/4")))
+        self.loading = True
 
     def set_radar_overlay(self, timestamp):
         self.displayed_radar_image = timestamp
@@ -53,18 +58,27 @@ class MapTile(QLabel):
         self.radar_overlay.setPixmap(QPixmap())
 
     def handle_response(self, reply):
-        self.response_queue.put(reply)
+        # Defer the parsing of the response to a background loop that only runs once every 100ms to prevent
+        # holding up the refresh of the main UI
+        try:
+            timestamp = int(reply.url().toString().split('/')[-4])  # Extract the timestamp from the URL
+            if str(reply.error()) != "NetworkError.NoError":
+                logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {reply.error()}")
+                return
+            self.outstanding_requests -= 1
+            self.response_queue.put(reply)
+        except Exception as e:
+            logging.error(f"Failed to handle radar response: {e}")
+            logging.exception(e)
+            reply.deleteLater()
 
     def parse_responses(self):
-        parsed_this_round = 0
-        while not self.response_queue.empty() and parsed_this_round < 1:
+        parse_start = time.time()
+        starting_size = len(self.radar_images)
+        while not self.response_queue.empty() and time.time() - parse_start < self.MAX_PARSE_TIME:
             reply = self.response_queue.get()
-            parsed_this_round += 1
             timestamp = int(reply.url().toString().split('/')[-4])  # Extract the timestamp from the URL
             try:
-                if str(reply.error()) != "NetworkError.NoError":
-                    logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {reply.error()}")
-                    return
                 data = reply.readAll()
                 image = QImage.fromData(data)
                 # Resize the image to 256x256 pixels
@@ -77,8 +91,11 @@ class MapTile(QLabel):
                 logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {e}")
                 logging.exception(e)
             finally:
-                self.outstanding_requests -= 1
-                reply.deleteLater()
+                reply.deleteLater()  # Clean up the reply object
+        # print(f"Parsed {len(self.radar_images) - starting_size} images in {time.time() - parse_start:.2f}s")
+        if self.outstanding_requests == 0 and self.response_queue.empty() and self.loading:
+            logging.info(f"Finished parsing {len(self.radar_images)} images for {self.x}-{self.y}")
+            self.parse_timer.stop()
 
     def change_size(self, factor):
         self.setFixedSize(round(self.width() * factor),
@@ -160,7 +177,7 @@ class RadarHost(QLabel):
 
         self.loading_label = QLabel(self)
         self.loading_label.setFont(self.parent.get_font("JetBrainsMono-Regular"))
-        self.loading_label.setFixedSize(300, 30)
+        self.loading_label.setFixedSize(300, 45)
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.loading_label.setStyleSheet("color: #ffcd00; font-size: 15px; font-weight: bold; border: none;"
                                          " background-color: black")
@@ -186,9 +203,12 @@ class RadarHost(QLabel):
     def check_loading(self):
         # Compare the number of frames still loading to the total number of frames to be loaded
         total_tiles = len(self.map_tiles) * len(self.timestamp_list)
-        loaded_frames = total_tiles - sum([map_tile.outstanding_requests for map_tile in self.map_tiles])
-        self.loading_label.setText(f"Loading Radar Data [{loaded_frames}/{total_tiles}]")
-        if all([map_tile.outstanding_requests == 0 for map_tile in self.map_tiles]):
+        downloaded_frames = total_tiles - sum([map_tile.outstanding_requests for map_tile in self.map_tiles])
+        loaded_frames = sum([len(map_tile.radar_images) for map_tile in self.map_tiles])
+        self.loading_label.setText(f"Loading Radar Data [{downloaded_frames}/{total_tiles}]\n"
+                                   f"Parsing Radar Data [{loaded_frames}/{total_tiles}]")
+        if all([map_tile.outstanding_requests == 0 and len(map_tile.radar_images) == len(self.timestamp_list)
+                for map_tile in self.map_tiles]):
             self.loading_check_timer.stop()
             self.loading_label.hide()
 
