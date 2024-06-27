@@ -1,6 +1,7 @@
 import json
 import os
 
+from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QLabel
 from loguru import logger as logging
 
@@ -27,13 +28,15 @@ class WebcamLayout(QLabel):
                 logging.warning("Please fill out the webcams.json file with the proper information")
         with open("Config/webcams.json", "r") as f:
             self.webcam_file = json.load(f)
-
+        self.create_layout_timer = QTimer()
+        self.create_layout_timer.timeout.connect(self.create_layout)
+        self.create_layout_timer.setSingleShot(True)
         self.hide()
 
     def set_focus(self, focus) -> None:
         self.focused = focus
         if focus:
-            self.create_layout()
+            self.create_layout_timer.start(1)  # Use timer to preform layout creation in background
             self.show()
         else:
             self.clear_layout()
@@ -53,6 +56,7 @@ class WebcamLayout(QLabel):
             webcam_window.move((i % self.target_layout[0]) * webcam_window.width(),
                                (i // self.target_layout[0]) * webcam_window.height())
             self.webcams.append(webcam_window)
+            webcam_window.show()
 
     def update_layout(self):
         # Check if the webcam

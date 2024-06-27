@@ -74,7 +74,7 @@ class MapTile(QLabel):
 
     def parse_responses(self):
         parse_start = time.time()
-        starting_size = len(self.radar_images)
+        # starting_size = len(self.radar_images)
         while not self.response_queue.empty() and time.time() - parse_start < self.MAX_PARSE_TIME:
             reply = self.response_queue.get()
             timestamp = int(reply.url().toString().split('/')[-4])  # Extract the timestamp from the URL
