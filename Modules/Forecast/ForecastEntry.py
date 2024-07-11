@@ -120,6 +120,11 @@ class ForecastEntry(QLabel):
         self.loaded = True
         self.make_request(self.reference_time)
 
+    def release(self):
+        # This forcast is about to be destroyed, so we need to release the resources
+        self.network_manager.deleteLater()
+        self.icon_manager.deleteLater()
+
     def make_request(self, reference_time):
         request = QNetworkRequest(QUrl(f"http://{self.parent.auth['host']}/weather/forecast/{reference_time}"))
         self.network_manager.get(request)

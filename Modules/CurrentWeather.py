@@ -4,12 +4,12 @@ import time
 from PyQt6.QtCore import QUrl, Qt, QTimer
 from PyQt6.QtGui import QPixmap, QPainter, QRegion, QColor
 from PyQt6.QtWidgets import QLabel
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
+from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from loguru import logger as logging
 
 import json
 
-from Utils.UtilMethods import load_no_image
+from Utils.UtilMethods import load_no_image, format_net_error
 from Utils.WeatherHelpers import wind_direction_arrow, kelvin_to_fahrenheit, visibility_to_text, mps_to_mph
 
 
@@ -84,29 +84,45 @@ class CurrentWeather(QLabel):
         """Makes a request to the given URL"""
         # logging.info("Making request to get current weather")
         request = QNetworkRequest(QUrl(f"http://{self.auth['host']}/weather/now"))
+        request.setTransferTimeout(5000)  # 5 seconds
         # request.setRawHeader(b"Cookie", b"auth=5149e8d1606397fddc35cf0303b98c1318b963c3c0e6069fcabb8d970c8fe9bd")
         self.weather_manager.get(request)
 
-    def handle_weather_response(self, reply):
+    def handle_weather_response(self, response):
         """Handles the response from the server"""
         try:
             # Check if the server replied ok
-            if str(reply.error()) != "NetworkError.NoError":
-                logging.error(f"Error: {reply.error()}")
-                self.weather_header.setText("Network Error")
-                self.weather_row_1.setText(str(reply.error()))
-                self.weather_row_2.setText("Weather data unavailable")
+            self.weather_row_2.setText("Weather data unavailable")
+            if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
+                logging.error(f"Error: {response.error()}")
+                self.weather_header.setText("Server Unavailable")
+                self.weather_row_1.setText(format_net_error(response.error()))
                 return
-            data = reply.readAll()
+            elif response.error() == QNetworkReply.NetworkError.InternalServerError:
+                logging.error(f"Error: {response.error()}")
+                self.weather_header.setText("Server Error")
+                self.weather_row_1.setText(format_net_error(response.error()))
+                return
+            elif response.error() == QNetworkReply.NetworkError.OperationCanceledError:
+                logging.error(f"Error: {response.error()}")
+                self.weather_header.setText("Server Timeout")
+                self.weather_row_1.setText(format_net_error(response.error()))
+                return
+            elif response.error() != QNetworkReply.NetworkError.NoError:
+                logging.error(f"Error: {response.error()}")
+                self.weather_header.setText("Unknown Error")
+                self.weather_row_1.setText(format_net_error(response.error()))
+                return
+            data = response.readAll()
             data = data.data().decode("utf-8")
             data = json.loads(data)
             self.parse_data(data)
-            reply.deleteLater()
+            response.deleteLater()
         except Exception as e:
             logging.error(f"Error handling weather response: {e}")
             logging.exception(e)
         finally:
-            reply.deleteLater()
+            response.deleteLater()
 
     def handle_icon_response(self, reply):
         try:

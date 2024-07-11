@@ -1,8 +1,13 @@
 from PyQt6.QtGui import QPixmap
 
 
-def parse_net_err_message(message):
-    message = message.split("server replied: ")[1]
+def format_net_error(message):
+    message = str(str(message).split('.')[1])
+    # Add a space before each capital letter
+    message = ''.join([char if char.islower() else f' {char}' for char in message])[1:]
+    # Remove the word "Error"
+    message = message.replace("Error", "")
+    message = f"Error: {message}"
     return message
 
 

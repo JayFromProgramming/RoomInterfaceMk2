@@ -41,6 +41,7 @@ class WebcamLayout(QLabel):
             self.start_layout_creation()
             self.show()
         else:
+            self.create_layout_timer.stop()
             self.clear_layout()
             self.hide()
 

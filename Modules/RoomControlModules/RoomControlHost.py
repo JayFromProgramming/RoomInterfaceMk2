@@ -17,6 +17,7 @@ class RoomControlHost(ScrollableMenu):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedSize(parent.width(), parent.height() - self.y())
+        self.internet_connected = False
 
         self.schema_data = {}
         self.loading_label = QLabel(self)
@@ -52,6 +53,9 @@ class RoomControlHost(ScrollableMenu):
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_network_response)
 
+        self.network_check_manager = QNetworkAccessManager()
+        self.network_check_manager.finished.connect(self.handle_network_check_response)
+
         self.retry_timer = QTimer(self)
         self.retry_timer.timeout.connect(self.make_request)
         self.retry_timer.start(5000)
@@ -74,6 +78,20 @@ class RoomControlHost(ScrollableMenu):
         request = QNetworkRequest(QUrl(f"http://{self.host}/get_schema"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.network_manager.get(request)
+
+    def has_internet(self) -> bool:
+        request = QNetworkRequest(QUrl("https://www.google.com"))
+        request.setTransferTimeout(5000)
+        self.network_check_manager.get(request)
+        return self.internet_connected
+
+    def handle_network_check_response(self, reply):
+        if str(reply.error()) != "NetworkError.NoError":
+            logging.error(f"Error: {reply.error()}")
+            self.internet_connected = False
+            return
+        self.internet_connected = True
+        reply.deleteLater()
 
     def process_schema_response(self, data):
         for device_name, values in data.items():

@@ -72,11 +72,16 @@ class ToggleDevice(RoomDevice):
                                              " background-color: blue;")
 
     def handle_failure(self, response):
+        has_network = self.parent.parent.has_internet()
         if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
             self.device_text.setText(f"<pre>SERVER DOWN</pre>")
+        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and has_network:
+            self.device_text.setText(f"<pre>SERVER OFFLINE</pre>")
         elif response.error() == QNetworkReply.NetworkError.InternalServerError:
             self.device_text.setText(f"<pre>SERVER ERROR</pre>")
-        else:
+        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and not has_network:
             self.device_text.setText(f"<pre>NETWORK ERROR</pre>")
+        else:
+            self.device_text.setText(f"<pre>UNKNOWN ERROR</pre>")
         self.toggle_button.setText("Turn ???")
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")

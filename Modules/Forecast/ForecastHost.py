@@ -51,7 +51,7 @@ class ForecastHost(QLabel):
         self.refresh_forecast()
         self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self.refresh_forecast)
-        # self.refresh_timer.start(900000)
+        self.refresh_timer.setSingleShot(True)
         self.refresh_timer.start(300000)
 
         self.scroll_reset_timer = QTimer(self)
@@ -82,6 +82,7 @@ class ForecastHost(QLabel):
             data = json.loads(data)
             forecasts = data["weather_forecast_list"]
             for widget in self.forecast_widgets:
+                widget.release()
                 widget.deleteLater()
             self.forecast_widgets.clear()
             self.forecast_widgets = [ForecastEntry(self, forecast) for forecast in forecasts
@@ -93,7 +94,7 @@ class ForecastHost(QLabel):
             logging.exception(e)
             self.refresh_timer.start(5000)  # Retry in 5 seconds
         else:
-            self.refresh_timer.start(300000)
+            self.refresh_timer.start(300000)  # Refresh every 5 minutes
         finally:
             reply.deleteLater()
 
