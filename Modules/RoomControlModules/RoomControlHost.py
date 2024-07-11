@@ -29,7 +29,7 @@ class RoomControlHost(ScrollableMenu):
         self.loading_label.move(round((self.width() - self.loading_label.width()) / 2), 20)
 
         self.has_schema = False
-        self.setStyleSheet("border: 2px solid #ffcd00; border-radius: 10px")
+        self.setStyleSheet("border-radius: 10px")
         if os.path.exists("Config/auth.json"):
             with open("Config/auth.json", "r") as f:
                 data = json.load(f)
