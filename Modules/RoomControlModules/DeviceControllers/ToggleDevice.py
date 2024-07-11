@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QLabel, QPushButton
 from loguru import logger as logging
 
 from Utils.RoomDevice import RoomDevice
+from Utils.UtilMethods import has_internet
 
 
 class ToggleDevice(RoomDevice):
@@ -72,7 +73,7 @@ class ToggleDevice(RoomDevice):
                                              " background-color: blue;")
 
     def handle_failure(self, response):
-        has_network = self.parent.parent.has_internet()
+        has_network = has_internet()
         if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
             self.device_text.setText(f"<pre>SERVER DOWN</pre>")
         elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and has_network:
@@ -81,6 +82,14 @@ class ToggleDevice(RoomDevice):
             self.device_text.setText(f"<pre>SERVER ERROR</pre>")
         elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and not has_network:
             self.device_text.setText(f"<pre>NETWORK ERROR</pre>")
+        elif response.error() == QNetworkReply.NetworkError.HostNotFoundError and not has_network:
+            self.device_text.setText(f"<pre>NO NETWORK</pre>")
+        elif response.error() == QNetworkReply.NetworkError.HostNotFoundError and has_network:
+            self.device_text.setText(f"<pre>SERVER NOT FOUND</pre>")
+        elif response.error() == QNetworkReply.NetworkError.TemporaryNetworkFailureError:
+            self.device_text.setText(f"<pre>NET FAILURE</pre>")
+        elif response.error() == QNetworkReply.NetworkError.UnknownNetworkError and not has_network:
+            self.device_text.setText(f"<pre>NET FAILURE</pre>")
         else:
             self.device_text.setText(f"<pre>UNKNOWN ERROR</pre>")
         self.toggle_button.setText("Turn ???")

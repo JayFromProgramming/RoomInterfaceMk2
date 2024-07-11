@@ -9,7 +9,7 @@ from loguru import logger as logging
 
 import json
 
-from Utils.UtilMethods import load_no_image, format_net_error
+from Utils.UtilMethods import load_no_image, format_net_error, has_internet
 from Utils.WeatherHelpers import wind_direction_arrow, kelvin_to_fahrenheit, visibility_to_text, mps_to_mph
 
 
@@ -92,26 +92,8 @@ class CurrentWeather(QLabel):
         """Handles the response from the server"""
         try:
             # Check if the server replied ok
-            self.weather_row_2.setText("Weather data unavailable")
-            if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
-                logging.error(f"Error: {response.error()}")
-                self.weather_header.setText("Server Unavailable")
-                self.weather_row_1.setText(format_net_error(response.error()))
-                return
-            elif response.error() == QNetworkReply.NetworkError.InternalServerError:
-                logging.error(f"Error: {response.error()}")
-                self.weather_header.setText("Server Error")
-                self.weather_row_1.setText(format_net_error(response.error()))
-                return
-            elif response.error() == QNetworkReply.NetworkError.OperationCanceledError:
-                logging.error(f"Error: {response.error()}")
-                self.weather_header.setText("Server Timeout")
-                self.weather_row_1.setText(format_net_error(response.error()))
-                return
-            elif response.error() != QNetworkReply.NetworkError.NoError:
-                logging.error(f"Error: {response.error()}")
-                self.weather_header.setText("Unknown Error")
-                self.weather_row_1.setText(format_net_error(response.error()))
+            if response.error() != QNetworkReply.NetworkError.NoError:
+                self.handle_failure(response)
                 return
             data = response.readAll()
             data = data.data().decode("utf-8")
@@ -123,6 +105,26 @@ class CurrentWeather(QLabel):
             logging.exception(e)
         finally:
             response.deleteLater()
+
+    def handle_failure(self, response):
+        has_net = has_internet()
+        self.weather_row_1.setText(format_net_error(response.error()))
+        self.weather_row_2.setText("Weather data unavailable")
+        logging.error(f"Error: {response.error()}")
+        if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
+            self.weather_header.setText("Server Unavailable")
+        elif response.error() == QNetworkReply.NetworkError.InternalServerError:
+            self.weather_header.setText("Server Error")
+        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and has_net:
+            self.weather_header.setText("Server Offline")
+        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and not has_net:
+            self.weather_header.setText("No Network Connection")
+        elif response.error() == QNetworkReply.NetworkError.UnknownNetworkError and not has_net:
+            self.weather_header.setText("No Network Connection")
+        elif response.error() == QNetworkReply.NetworkError.HostNotFoundError:
+            self.weather_header.setText("Server Not Found")
+        else:
+            self.weather_header.setText("Unknown Error")
 
     def handle_icon_response(self, reply):
         try:

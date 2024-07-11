@@ -7,6 +7,8 @@ from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel
 from loguru import logger as logging
 
+from Utils.UtilMethods import has_internet
+
 
 class RoomDevice(QLabel):
 
@@ -101,7 +103,7 @@ class RoomDevice(QLabel):
     def handle_response(self, response):
         try:
             if str(response.error()) != "NetworkError.NoError":
-                logging.error(f"Error handling response: {response.error()}")
+                logging.error(f"Device data error: {response.error()} : {has_internet()}")
                 self.handle_failure(response)
                 return
             data = response.readAll()
