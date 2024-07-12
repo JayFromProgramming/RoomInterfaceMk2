@@ -111,8 +111,7 @@ class ForecastEntry(QLabel):
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_forecast_response)
 
-        self.icon_manager = QNetworkAccessManager()
-        self.icon_manager.finished.connect(self.handle_icon_response)
+        self.icon_manager = self.parent.icon_manager
 
     def load(self):
         if self.loaded or self.placeholder:
@@ -123,28 +122,19 @@ class ForecastEntry(QLabel):
     def release(self):
         # This forcast is about to be destroyed, so we need to release the resources
         self.network_manager.deleteLater()
-        self.icon_manager.deleteLater()
 
     def make_request(self, reference_time):
         request = QNetworkRequest(QUrl(f"http://{self.parent.auth['host']}/weather/forecast/{reference_time}"))
         self.network_manager.get(request)
 
-    def handle_icon_response(self, response):
+    def handle_icon_response(self, pixmap):
         try:
-            if str(response.error()) != "NetworkError.NoError":
-                self.date_label.setText("NET")
-                self.time_label.setText("Error")
-                # Check if the error was server related or client related
+            if pixmap is None:
                 return
-            data = response.readAll()
-            pixmap = QPixmap()
-            pixmap.loadFromData(data)
             self.weather_icon.setPixmap(pixmap)
         except Exception as e:
             logging.error(f"Error handling icon response: {e}")
             logging.exception(e)
-        finally:
-            response.deleteLater()
 
     def handle_forecast_response(self, response):
         try:
@@ -194,7 +184,7 @@ class ForecastEntry(QLabel):
 
             self.humidity_label.lower_label.setText(f"{data['humidity']:0.0f}%")
 
-            self.icon_manager.get(QNetworkRequest(QUrl(f"http://openweathermap.org/img/wn/{data['weather_icon_name']}.png")))
+            self.icon_manager.get_icon(data['weather_icon_name'], self.handle_icon_response)
             self.repaint()
         except Exception as e:
             logging.error(f"Error parsing forecast data: {e}")

@@ -2,12 +2,57 @@ import json
 import time
 
 from PyQt6.QtCore import QUrl, QTimer, Qt
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QLabel
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
+from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from loguru import logger as logging
 
 from Modules.Forecast.ForecastEntry import ForecastEntry
 from Modules.Forecast.ForecastFocus import ForecastFocus
+
+
+class IconManager(QNetworkAccessManager):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.parent = parent
+        self.icon_cache = {}
+        self.icon_requests = {}  # {icon_id: [callbacks]}
+        self.finished.connect(self.handle_response)
+
+    def get_icon(self, icon_id, callback):
+        if icon_id in self.icon_cache:
+            logging.info(f"Icon {icon_id} found in cache")
+            callback(self.icon_cache[icon_id])
+            return
+        if icon_id in self.icon_requests:
+            logging.info(f"Icon {icon_id} is already being requested")
+            self.icon_requests[icon_id].append(callback)
+            return
+        request = QNetworkRequest(QUrl(f"http://openweathermap.org/img/wn/{icon_id}.png"))
+        self.icon_requests[icon_id] = [callback]
+        self.get(request)
+
+    def handle_response(self, reply):
+        try:
+            icon_id = reply.request().url().fileName().split(".")[0]
+            callbacks = self.icon_requests[icon_id]
+            if reply.error() != QNetworkReply.NetworkError.NoError:
+                logging.error(f"Error: {reply.error()}")
+                for callback in callbacks:
+                    callback(None)
+                return
+            data = reply.readAll()
+            pixmap = QPixmap()
+            pixmap.loadFromData(data)
+            self.icon_cache[icon_id] = pixmap
+            for callback in callbacks:
+                callback(pixmap)
+        except Exception as e:
+            logging.error(f"Error handling icon response: {e}")
+            logging.exception(e)
+        finally:
+            reply.deleteLater()
 
 
 class ForecastHost(QLabel):
@@ -29,6 +74,8 @@ class ForecastHost(QLabel):
         self.last_scroll = 0
         # self.setStyleSheet("background-color: white")
         self.forecast_focus = ForecastFocus(self)
+
+        self.icon_manager = IconManager(self)
 
         self.forecast_widgets = [ForecastEntry(self, i, True) for i in range(48)]
         self.lines = []

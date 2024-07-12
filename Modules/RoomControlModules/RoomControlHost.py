@@ -55,7 +55,8 @@ class RoomControlHost(ScrollableMenu):
 
         self.retry_timer = QTimer(self)
         self.retry_timer.timeout.connect(self.make_request)
-        self.retry_timer.start(5000)
+        self.retry_timer.start(5000)  # Retry every 5 seconds
+        self.retry_time = 5
 
         self.make_request()
 

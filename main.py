@@ -103,7 +103,7 @@ class MainWindow(QMainWindow):
 
         self.show()
         # If running on a linux system, use this to make the window full screen
-        if os.name == "posix":
+        if os.name == "posix":  # If you want to run this windowed on linux, pound sand
             self.showFullScreen()
 
     def mousePressEvent(self, a0) -> None:
