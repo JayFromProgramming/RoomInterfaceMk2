@@ -22,11 +22,11 @@ class IconManager(QNetworkAccessManager):
 
     def get_icon(self, icon_id, callback):
         if icon_id in self.icon_cache:
-            logging.info(f"Icon {icon_id} found in cache")
+            # logging.info(f"Icon {icon_id} found in cache")
             callback(self.icon_cache[icon_id])
             return
         if icon_id in self.icon_requests:
-            logging.info(f"Icon {icon_id} is already being requested")
+            # logging.info(f"Icon {icon_id} is already being requested")
             self.icon_requests[icon_id].append(callback)
             return
         request = QNetworkRequest(QUrl(f"http://openweathermap.org/img/wn/{icon_id}.png"))
