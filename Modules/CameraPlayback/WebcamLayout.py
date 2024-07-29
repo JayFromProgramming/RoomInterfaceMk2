@@ -111,8 +111,8 @@ class WebcamLayout(QLabel):
                 self.start_layout_creation()
 
     def enlarge_webcam(self, clicked_webcam):
-        at_bottom = clicked_webcam.y() + clicked_webcam.height() == self.height()
-        at_right = clicked_webcam.x() + clicked_webcam.width() == self.width()
+        at_bottom = clicked_webcam.y() + clicked_webcam.height() >= self.height()
+        at_right = clicked_webcam.x() + clicked_webcam.width() >= self.width()
         # Double the size of the clicked webcam
         if at_bottom:
             clicked_webcam.move(clicked_webcam.x(), clicked_webcam.y() - clicked_webcam.height())

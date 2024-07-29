@@ -118,7 +118,10 @@ class WebcamWindow(QLabel):
             logging.exception(e)
 
     def video_player_error(self, error):
-        logging.error(f"Error playing video: {error}")
+        logging.error(f"Error playing video {self.source_url}: {error}")
+        # Replace the video with the thumbnail
+        self.video_widget.hide()
+        self.thumbnail_label.show()
 
     def metadata_updated(self):
         try:
@@ -126,6 +129,8 @@ class WebcamWindow(QLabel):
             metadata = self.media_player.metaData()
             # print(metadata.value('')
             # print(metadata)
+            if self.media_player.audioOutput() is not None:
+                self.media_player.audioOutput().setVolume(0)
         except Exception as e:
             logging.error(f"Error updating metadata: {e}")
             logging.exception(e)
