@@ -38,6 +38,9 @@ class WebcamWindow(QLabel):
             self.name_label.move(round((self.width() - self.name_label.width()) / 2), 0)
             self.name_label.show()
 
+            self.media_player.errorOccurred.connect(self.video_player_error)
+            self.media_player.metaDataChanged.connect(self.metadata_updated)
+
             self.current_thumbnail_data = None
             self.thumbnail_grabber = QNetworkAccessManager()
             self.thumbnail_grabber.finished.connect(self.handle_thumbnail_response)
@@ -50,6 +53,7 @@ class WebcamWindow(QLabel):
             self.thumbnail_update_timer.start(60000)  # Update the thumbnail every minute
 
             self.is_playing = False
+            self.enlarged = False
 
         except Exception as e:
             logging.error(f"Failed to initialize webcam window: {e}")
@@ -78,6 +82,12 @@ class WebcamWindow(QLabel):
         finally:
             reply.deleteLater()
 
+    def release_resources(self):
+        self.media_player.stop()
+        self.media_player.deleteLater()
+        self.thumbnail_grabber.deleteLater()
+        self.thumbnail_update_timer.deleteLater()
+
     def hideEvent(self, event):
         self.thumbnail_update_timer.stop()
 
@@ -85,7 +95,14 @@ class WebcamWindow(QLabel):
         # self.media_player.play()
         self.thumbnail_update_timer.start(60000)
 
-    def mousePressEvent(self, event):
+    # def mousePressEvent(self, event):
+    #     try:
+    #
+    #     except Exception as e:
+    #         logging.error(f"Error pausing playback: {e}")
+    #         logging.exception(e)
+
+    def toggle_playback(self, force_play=False, force_pause=False):
         try:
             # If playback is paused, resume playback
             if self.is_playing:
@@ -95,8 +112,22 @@ class WebcamWindow(QLabel):
                 self.media_player.setSource(QUrl(self.source_url))
                 self.media_player.play()
                 self.video_widget.show()
+            self.is_playing = not self.is_playing
         except Exception as e:
-            logging.error(f"Error pausing playback: {e}")
+            logging.error(f"Error toggling playback: {e}")
+            logging.exception(e)
+
+    def video_player_error(self, error):
+        logging.error(f"Error playing video: {error}")
+
+    def metadata_updated(self):
+        try:
+            # Get the metadata
+            metadata = self.media_player.metaData()
+            # print(metadata.value('')
+            # print(metadata)
+        except Exception as e:
+            logging.error(f"Error updating metadata: {e}")
             logging.exception(e)
 
     def resizeEvent(self, a0):

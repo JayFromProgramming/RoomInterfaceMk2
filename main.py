@@ -3,6 +3,7 @@ import sys
 import time
 import threading
 
+import psutil
 from PyQt6.QtCore import QTimer, QElapsedTimer, QEvent
 from PyQt6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QLabel, QVBoxLayout
 from PyQt6.QtGui import QFont, QFontDatabase
@@ -100,11 +101,17 @@ class MainWindow(QMainWindow):
 
         self.room_control.set_activity_timer_callback(self.menu_bar.reset_focus_timer)
         self.radar_host.set_activity_timer_callback(self.menu_bar.reset_focus_timer)
+        self.window_title_update_timer = QTimer()
+        self.window_title_update_timer.timeout.connect(self.update_window_title)
+
+        self.process = psutil.Process(os.getpid())
 
         self.show()
         # If running on a linux system, use this to make the window full screen
         if os.name == "posix":  # If you want to run this windowed on linux, pound sand
             self.showFullScreen()
+        else:
+            self.window_title_update_timer.start(500)
 
     def mousePressEvent(self, a0) -> None:
         self.menu_bar.reset_focus_timer()
@@ -113,6 +120,19 @@ class MainWindow(QMainWindow):
     def wheelEvent(self, a0) -> None:
         self.menu_bar.reset_focus_timer()
         super().wheelEvent(a0)
+
+    def update_window_title(self):
+        try:
+            cpu_percent = self.process.cpu_percent() / psutil.cpu_count()
+            cpu_percent = f"{cpu_percent:.2f}".rjust(5, " ")
+            memory_usage = self.process.memory_info().rss
+            # Add the current memory usage to the window title and the current cpu usage
+            self.setWindowTitle(f"RoomInterfaceMk2[PID:{os.getpid()}] - CPU: {cpu_percent}% "
+                                f"- Memory: {round(memory_usage / 1024 / 1024, 2)}MB")
+        except Exception as e:
+            logging.exception(e)
+            self.setWindowTitle("RoomInterfaceMk2 - Unable to get process info")
+            self.window_title_update_timer.stop()
 
     def closeEvent(self, a0) -> None:
         sys.exit()

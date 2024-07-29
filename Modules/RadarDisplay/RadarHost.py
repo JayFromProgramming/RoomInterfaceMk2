@@ -62,10 +62,10 @@ class MapTile(QLabel):
         # holding up the refresh of the main UI
         try:
             timestamp = int(reply.url().toString().split('/')[-4])  # Extract the timestamp from the URL
+            self.outstanding_requests -= 1
             if str(reply.error()) != "NetworkError.NoError":
                 logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {reply.error()}")
                 return
-            self.outstanding_requests -= 1
             self.response_queue.put(reply)
         except Exception as e:
             logging.error(f"Failed to handle radar response: {e}")

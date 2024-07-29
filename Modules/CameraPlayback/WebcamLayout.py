@@ -46,7 +46,7 @@ class WebcamLayout(QLabel):
             self.hide()
 
     def start_layout_creation(self):
-        # self.clear_layout()
+        self.clear_layout()
         self.webcams = []
         if WebcamWindow is None:
             return
@@ -87,11 +87,48 @@ class WebcamLayout(QLabel):
         # Check that none of the webcams were deleteLater'd
         for webcam in self.webcams:
             webcam.hide()
+            webcam.release_resources()
             webcam.deleteLater()
         self.webcams = []
 
     def resizeEvent(self, a0):
         self.update_layout()
+
+    def mousePressEvent(self, ev) -> None:
+        """
+        When clicked a webcam will be enlarged to fill the space of it's neighbors
+        """
+        clicked_webcam = None
+        for webcam in self.webcams:
+            if webcam.geometry().contains(ev.pos()):
+                clicked_webcam = webcam
+                break
+        if clicked_webcam is not None:
+            if not clicked_webcam.enlarged:
+                self.enlarge_webcam(clicked_webcam)
+            else:
+                # Relayout the webcams
+                self.start_layout_creation()
+
+    def enlarge_webcam(self, clicked_webcam):
+        at_bottom = clicked_webcam.y() + clicked_webcam.height() == self.height()
+        at_right = clicked_webcam.x() + clicked_webcam.width() == self.width()
+        # Double the size of the clicked webcam
+        if at_bottom:
+            clicked_webcam.move(clicked_webcam.x(), clicked_webcam.y() - clicked_webcam.height())
+        if at_right:
+            clicked_webcam.move(clicked_webcam.x() - clicked_webcam.width(), clicked_webcam.y())
+        clicked_webcam.setFixedSize(clicked_webcam.width() * 2, clicked_webcam.height() * 2)
+        clicked_webcam.enlarged = True
+        clicked_webcam.toggle_playback()
+        # Hide the webcams that are being overlapped
+        for webcam in self.webcams:
+            if webcam != clicked_webcam:
+                if webcam.x() < clicked_webcam.x() + clicked_webcam.width() and \
+                        webcam.x() + webcam.width() > clicked_webcam.x() and \
+                        webcam.y() < clicked_webcam.y() + clicked_webcam.height() and \
+                        webcam.y() + webcam.height() > clicked_webcam.y():
+                    webcam.hide()
 
     # def hideEvent(self, a0):
     #     self.clear_layout()
