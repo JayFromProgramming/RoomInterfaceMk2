@@ -108,6 +108,8 @@ class WebcamWindow(QLabel):
             if self.is_playing:
                 self.media_player.stop()
                 self.video_widget.hide()
+                # Unload the video
+                self.media_player.setSource(QUrl())
             else:
                 self.media_player.setSource(QUrl(self.source_url))
                 self.media_player.play()

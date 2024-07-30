@@ -100,7 +100,7 @@ class WebcamLayout(QLabel):
         """
         clicked_webcam = None
         for webcam in self.webcams:
-            if webcam.geometry().contains(ev.pos()):
+            if webcam.geometry().contains(ev.pos()) and webcam.isVisible():
                 clicked_webcam = webcam
                 break
         if clicked_webcam is not None:
@@ -119,24 +119,34 @@ class WebcamLayout(QLabel):
             clicked_webcam.move(clicked_webcam.x(), clicked_webcam.y() - clicked_webcam.height())
         if at_right:
             clicked_webcam.move(clicked_webcam.x() - clicked_webcam.width(), clicked_webcam.y())
-        clicked_webcam.setFixedSize(clicked_webcam.width() * 2, clicked_webcam.height() * 2)
-        clicked_webcam.enlarged = True
-        clicked_webcam.toggle_playback()
         # Hide the webcams that are being overlapped
+        clicked_webcam.setFixedSize(clicked_webcam.width() * 2, clicked_webcam.height() * 2)
         for webcam in self.webcams:
             if webcam != clicked_webcam:
-                if webcam.x() < clicked_webcam.x() + clicked_webcam.width() and \
-                        webcam.x() + webcam.width() > clicked_webcam.x() and \
-                        webcam.y() < clicked_webcam.y() + clicked_webcam.height() and \
-                        webcam.y() + webcam.height() > clicked_webcam.y():
+                if self.is_occulded(webcam, clicked_webcam):
                     webcam.hide()
+                    self.unenlarge_webcam(webcam)
+        clicked_webcam.enlarged = True
+        clicked_webcam.toggle_playback()
 
     def unenlarge_webcam(self, clicked_webcam):
+        if not clicked_webcam.enlarged:
+            return
+        # Re-show the webcams that were under this one
+        for webcam in self.webcams:
+            if webcam != clicked_webcam:
+                if self.is_occulded(webcam, clicked_webcam):
+                    webcam.show()
         clicked_webcam.setFixedSize(clicked_webcam.width() // 2, clicked_webcam.height() // 2)
         clicked_webcam.enlarged = False
         clicked_webcam.toggle_playback()
-        for webcam in self.webcams:
-            webcam.show()
+        clicked_webcam.show()
+
+    def is_occulded(self, webcam, clicked_webcam):
+        return webcam.x() < clicked_webcam.x() + clicked_webcam.width() and \
+                webcam.x() + webcam.width() > clicked_webcam.x() and \
+                webcam.y() < clicked_webcam.y() + clicked_webcam.height() and \
+                webcam.y() + webcam.height() > clicked_webcam.y()
 
     # def hideEvent(self, a0):
     #     self.clear_layout()
