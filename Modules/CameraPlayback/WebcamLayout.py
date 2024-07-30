@@ -108,7 +108,8 @@ class WebcamLayout(QLabel):
                 self.enlarge_webcam(clicked_webcam)
             else:
                 # Relayout the webcams
-                self.start_layout_creation()
+                self.unenlarge_webcam(clicked_webcam)
+                self.update_layout()
 
     def enlarge_webcam(self, clicked_webcam):
         at_bottom = clicked_webcam.y() + clicked_webcam.height() >= self.height()
@@ -129,6 +130,13 @@ class WebcamLayout(QLabel):
                         webcam.y() < clicked_webcam.y() + clicked_webcam.height() and \
                         webcam.y() + webcam.height() > clicked_webcam.y():
                     webcam.hide()
+
+    def unenlarge_webcam(self, clicked_webcam):
+        clicked_webcam.setFixedSize(clicked_webcam.width() // 2, clicked_webcam.height() // 2)
+        clicked_webcam.enlarged = False
+        clicked_webcam.toggle_playback()
+        for webcam in self.webcams:
+            webcam.show()
 
     # def hideEvent(self, a0):
     #     self.clear_layout()

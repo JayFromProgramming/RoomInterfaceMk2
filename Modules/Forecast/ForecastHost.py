@@ -81,8 +81,6 @@ class ForecastHost(QLabel):
         self.lines = []
         self.layout_widgets()
 
-        self.lines = []
-
         with open("Config/auth.json", "r") as f:
             self.auth = json.load(f)
 
