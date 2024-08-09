@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 import queue
 import random
 import time
@@ -10,103 +11,7 @@ from PyQt6.QtWidgets import QLabel, QPushButton
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from loguru import logger as logging
 
-
-class MapTile(QLabel):
-
-    MAX_PARSE_TIME = 0.01  # Maximum time to spend parsing responses in milliseconds per parse event
-
-    def __init__(self, host, parent=None, x=0, y=0):
-        super().__init__(parent)
-        self.parent = parent
-        self.host = host
-        self.setFixedSize(256, 256)
-        self.x = x
-        self.y = y
-        self.setPixmap(QPixmap(f"Assets/MapTiles/{x}-{y}.png"))
-
-        self.radar_images = []
-        self.displayed_radar_image = 0
-
-        self.radar_overlay = QLabel(self)
-        self.radar_overlay.setFixedSize(256, 256)
-        self.radar_overlay.setStyleSheet('background-color: transparent;')
-
-        self.network_manager = QNetworkAccessManager()
-        self.network_manager.finished.connect(self.handle_response)
-
-        self.response_queue = queue.Queue()
-        self.parse_timer = QTimer(self)
-        self.parse_timer.timeout.connect(self.parse_responses)
-        self.parse_timer.start(100 + int(random.random() * 50))
-
-        self.outstanding_requests = 0
-        self.loading = False
-
-    def load_radar_overlays(self, timestamps):
-        for timestamp in timestamps:
-            self.outstanding_requests += 1
-            self.network_manager.get(
-                QNetworkRequest(QUrl(f"http://{self.host}/weather/radar/{timestamp}/{self.x}/{self.y}/4")))
-        self.loading = True
-
-    def set_radar_overlay(self, timestamp):
-        self.displayed_radar_image = timestamp
-        for radar_image in self.radar_images:
-            if radar_image['timestamp'] == timestamp:
-                self.radar_overlay.setPixmap(QPixmap.fromImage(radar_image['image']))
-                return
-        self.radar_overlay.setPixmap(QPixmap())
-
-    def handle_response(self, reply):
-        # Defer the parsing of the response to a background loop that only runs once every 100ms to prevent
-        # holding up the refresh of the main UI
-        try:
-            timestamp = int(reply.url().toString().split('/')[-4])  # Extract the timestamp from the URL
-            self.outstanding_requests -= 1
-            if str(reply.error()) != "NetworkError.NoError":
-                logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {reply.error()}")
-                return
-            self.response_queue.put(reply)
-        except Exception as e:
-            logging.error(f"Failed to handle radar response: {e}")
-            logging.exception(e)
-            reply.deleteLater()
-
-    def parse_responses(self):
-        parse_start = time.time()
-        # starting_size = len(self.radar_images)
-        while not self.response_queue.empty() and time.time() - parse_start < self.MAX_PARSE_TIME:
-            reply = self.response_queue.get()
-            timestamp = int(reply.url().toString().split('/')[-4])  # Extract the timestamp from the URL
-            try:
-                data = reply.readAll()
-                image = QImage.fromData(data)
-                # Resize the image to 256x256 pixels
-                image = image.scaled(self.width(), self.height(),
-                                     Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                self.radar_images.append({"timestamp": timestamp, "image": image})
-                if timestamp == self.displayed_radar_image:
-                    self.radar_overlay.setPixmap(QPixmap.fromImage(image))
-            except Exception as e:
-                logging.error(f"Failed to load map tile {self.x}-{self.y}@{timestamp}: {e}")
-                logging.exception(e)
-            finally:
-                reply.deleteLater()  # Clean up the reply object
-        # print(f"Parsed {len(self.radar_images) - starting_size} images in {time.time() - parse_start:.2f}s")
-        if self.outstanding_requests == 0 and self.response_queue.empty() and self.loading:
-            logging.info(f"Finished parsing {len(self.radar_images)} images for {self.x}-{self.y}")
-            self.parse_timer.stop()
-
-    def change_size(self, factor):
-        self.setFixedSize(round(self.width() * factor),
-                          round(self.height() * factor))
-        self.radar_overlay.setFixedSize(round(self.radar_overlay.width() * factor),
-                                        round(self.radar_overlay.height() * factor))
-        # Resize the map tile image to match the new size
-        self.setPixmap(QPixmap(f"Assets/MapTiles/{self.x}-{self.y}.png").
-                       scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio,
-                                                           Qt.TransformationMode.SmoothTransformation))
-        self.radar_images.clear()
+from Modules.RadarDisplay.RadarTile import RadarTile
 
 
 class RadarHost(QLabel):
@@ -117,7 +22,12 @@ class RadarHost(QLabel):
         self.parent = parent
         self.setFixedSize(parent.width(), parent.height() - self.y())
         self.maptile_surface = QLabel(self)
-        self.maptile_surface.setFixedSize(256 * 4, 256 * 3)
+        # Look into the MapTiles folder and determine the range of available map tiles
+        self.min_x, self.max_x, self.min_y, self.max_y = self.determine_map_size()
+        self.range_x = self.max_x - self.min_x + 1
+        self.range_y = self.max_y - self.min_y + 1
+        logging.info(f"Map Tile Range: {self.min_x}-{self.max_x}, {self.min_y}-{self.max_y} : {self.range_x}x{self.range_y}")
+        self.maptile_surface.setFixedSize(256 * self.range_x, 256 * self.range_y)
         self.map_tiles = []
 
         with open("Config/auth.json", "r") as f:
@@ -197,17 +107,29 @@ class RadarHost(QLabel):
 
         self.activity_timer_callback = None
 
+    @staticmethod
+    def determine_map_size():
+        # Look into the MapTiles folder and determine the range of available map tiles
+        min_x, max_x, min_y, max_y = 1000, 0, 1000, 0
+        for file in os.listdir("Assets/MapTiles2"):
+            x, y = map(int, file.split('.')[0].split('-'))
+            min_x = min(min_x, x)
+            max_x = max(max_x, x)
+            min_y = min(min_y, y)
+            max_y = max(max_y, y)
+        return min_x, max_x, min_y, max_y
+
     def set_activity_timer_callback(self, callback):
         self.activity_timer_callback = callback
 
     def check_loading(self):
         # Compare the number of frames still loading to the total number of frames to be loaded
-        total_tiles = len(self.map_tiles) * len(self.timestamp_list)
+        total_tiles = sum([map_tile.total_frames for map_tile in self.map_tiles])
         downloaded_frames = total_tiles - sum([map_tile.outstanding_requests for map_tile in self.map_tiles])
         loaded_frames = sum([len(map_tile.radar_images) for map_tile in self.map_tiles])
         self.loading_label.setText(f"Loading Radar Data [{downloaded_frames}/{total_tiles}]\n"
                                    f"Parsing Radar Data [{loaded_frames}/{total_tiles}]")
-        if all([map_tile.outstanding_requests == 0 and len(map_tile.radar_images) == len(self.timestamp_list)
+        if all([map_tile.outstanding_requests == 0 and map_tile.outstanding_parses == 0
                 for map_tile in self.map_tiles]):
             self.loading_check_timer.stop()
             self.loading_label.hide()
@@ -351,11 +273,13 @@ class RadarHost(QLabel):
     def load_maptiles(self):
         # All map tiles are 256x256 pixels in size and are stored in 'Assets/MapTiles/{x}-{y}.png'
         # The map is 4 tiles wide and 3 tiles tall (15-18, 22-24)
-        for y in range(22, 25):
-            for x in range(15, 19):
-                self.map_tiles.append(MapTile(self.host, self.maptile_surface, x, y))
+        for y in range(self.min_y, self.max_y + 1):
+            for x in range(self.min_x, self.max_x + 1):
+                self.map_tiles.append(RadarTile(self.host, self.maptile_surface, x, y))
         for i, map_tile in enumerate(self.map_tiles):
-            map_tile.move((i % 4) * 256,
-                          (i // 4) * 256)
-        self.maptile_surface.move(0, -100)
+            map_tile.move((i % self.range_x) * 256,
+                          (i // self.range_x) * 256)
+            # Print where the tile was placed
+            # logging.info(f"Placed tile {map_tile.tile_x}-{map_tile.tile_y} at {map_tile.x()},{map_tile.y()}")
+        self.maptile_surface.move(int(-2 * 256), int(-1.5 * 256))
         self.load_radartiles()
