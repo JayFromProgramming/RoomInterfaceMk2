@@ -26,7 +26,7 @@ class RoomDevice(QLabel):
         self.host = parent.host
         self.auth = auth
         if large:
-            self.setFixedSize(300, 75)
+            self.setFixedSize(295, 75)
         else:
             self.setFixedSize(145, 75)
         self.setStyleSheet("background-color: #ffcd00; border: 2px solid #ffcd00; border-radius: 10px")

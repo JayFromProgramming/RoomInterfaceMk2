@@ -20,7 +20,7 @@ class RadarTile(QLabel):
         self.setFixedSize(256, 256)
         self.tile_x = x
         self.tile_y = y
-        self.setPixmap(QPixmap(f"Assets/MapTiles2/{self.tile_x}-{self.tile_y}.png").
+        self.setPixmap(QPixmap(f"Assets/MapTiles/{self.tile_x}-{self.tile_y}.png").
                        scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio,
                               Qt.TransformationMode.SmoothTransformation))
 
@@ -128,7 +128,7 @@ class RadarTile(QLabel):
         self.radar_overlay.setFixedSize(round(self.radar_overlay.width() * factor),
                                         round(self.radar_overlay.height() * factor))
         # Resize the map tile image to match the new size
-        self.setPixmap(QPixmap(f"Assets/MapTiles2/{self.tile_x}-{self.tile_y}.png").
+        self.setPixmap(QPixmap(f"Assets/MapTiles/{self.tile_x}-{self.tile_y}.png").
                        scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio,
                               Qt.TransformationMode.SmoothTransformation))
         self.radar_images.clear()

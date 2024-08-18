@@ -111,7 +111,7 @@ class RadarHost(QLabel):
     def determine_map_size():
         # Look into the MapTiles folder and determine the range of available map tiles
         min_x, max_x, min_y, max_y = 1000, 0, 1000, 0
-        for file in os.listdir("Assets/MapTiles2"):
+        for file in os.listdir("Assets/MapTiles"):
             x, y = map(int, file.split('.')[0].split('-'))
             min_x = min(min_x, x)
             max_x = max(max_x, x)
