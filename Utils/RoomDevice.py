@@ -35,7 +35,7 @@ class RoomDevice(QLabel):
 
         self.device_label = QLabel(self)
         self.device_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
-        self.device_label.setFixedSize(self.width(), 20)
+        self.device_label.setFixedSize(self.width(), 22)
         self.device_label.setFont(parent.font)
 
         self.network_manager = QNetworkAccessManager()

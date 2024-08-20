@@ -240,6 +240,7 @@ class RadarHost(QLabel):
             #     if timestamp < time.time():
             #         self.current_frame = len(self.timestamp_list) - i - 2
             #         break
+            logging.info(f"Loaded {len(self.timestamp_list)} radar frames")
             for map_tile in self.map_tiles:
                 map_tile.load_radar_overlays(self.timestamp_list.__reversed__())
             self.next_frame()
