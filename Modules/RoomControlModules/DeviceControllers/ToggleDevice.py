@@ -12,7 +12,7 @@ from Utils.UtilMethods import has_internet
 
 
 class ToggleDevice(RoomDevice):
-    supported_types = ["VoiceMonkeyDevice", "abstract_toggle_device"]
+    supported_types = ["VoiceMonkeyDevice", "abstract_toggle_device", "satellite_Relay"]
 
     def __init__(self, parent=None, device=None, priority=0):
         super().__init__(parent.auth, parent, device, False, priority)
@@ -54,12 +54,17 @@ class ToggleDevice(RoomDevice):
             self.toggle_button.setStyleSheet(
                 "color: black; font-size: 14px; font-weight: bold; background-color: orange;")
         else:
-            if self.data["auto_state"]["is_auto"]:
+            if "power" in self.data["info"] and self.state["on"]:
+                self.device_text.setText(f"<pre>DRAW: {self.data['info']['power']}W</pre>")
+            elif self.data["auto_state"]["is_auto"]:
                 self.device_text.setText(f"<pre>Online: AUTO</pre>")
             else:
                 self.device_text.setText(f"<pre>Online: MANUAL</pre>")
 
     def parse_data(self, data):
+        if self.state is None:
+            self.device_text.setText("<pre>DEVICE UNKNOWN</pre>")
+            return
         if not self.toggling:
             self.toggle_button.setText(f"Turn {['On', 'Off'][self.state['on']]}")
             button_color = "#4080FF" if self.state["on"] else "grey"

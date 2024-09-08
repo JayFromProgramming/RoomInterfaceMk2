@@ -24,12 +24,12 @@ class RadarTile(QLabel):
                        scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio,
                               Qt.TransformationMode.SmoothTransformation))
 
-        self.debug_title = QLabel(self)
-        self.debug_title.setText(f"{self.tile_x}-{self.tile_y} [False]")
-        self.debug_title.setStyleSheet("color: white; font-size: 10px; font-weight: bold; background-color: black")
-        self.debug_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.debug_title.setFixedSize(60, 14)
-        self.debug_title.move(0, 0)
+        # self.debug_title = QLabel(self)
+        # self.debug_title.setText(f"{self.tile_x}-{self.tile_y} [False]")
+        # self.debug_title.setStyleSheet("color: white; font-size: 10px; font-weight: bold; background-color: black")
+        # self.debug_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # self.debug_title.setFixedSize(60, 14)
+        # self.debug_title.move(0, 0)
 
         self.timestamps = []
 
@@ -47,7 +47,7 @@ class RadarTile(QLabel):
         self.parse_timer = QTimer(self)
         self.parse_timer.timeout.connect(self.parse_responses)
         self.parse_timer.start(100 + int(random.random() * 50))
-        self.debug_title.raise_()
+        # self.debug_title.raise_()
 
         self.total_frames = 0
         self.outstanding_requests = 0
@@ -62,10 +62,10 @@ class RadarTile(QLabel):
         self.visibility_timer.start(100 + int(random.random() * 50))
 
     def start_loading(self):
-        self.debug_title.setText(f"{self.tile_x}-{self.tile_y} [{self.on_screen()}]")
-        return
-        if not self.on_screen():
-            return
+        # self.debug_title.setText(f"{self.tile_x}-{self.tile_y} [{self.on_screen()}]")
+        # return
+        # if not self.on_screen():
+        #     return
         self.loading = True
         self.visibility_timer.stop()
         for timestamp in self.timestamps:

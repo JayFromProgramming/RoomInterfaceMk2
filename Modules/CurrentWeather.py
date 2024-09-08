@@ -124,7 +124,7 @@ class CurrentWeather(QLabel):
         elif response.error() == QNetworkReply.NetworkError.HostNotFoundError:
             self.weather_header.setText("Server Not Found")
         else:
-            self.weather_header.setText("Unknown Error")
+            self.weather_header.setText("Unexpected Error")
 
     def handle_icon_response(self, reply):
         try:
