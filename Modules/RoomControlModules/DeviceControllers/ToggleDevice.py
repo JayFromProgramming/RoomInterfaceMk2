@@ -54,6 +54,9 @@ class ToggleDevice(RoomDevice):
             self.toggle_button.setStyleSheet(
                 "color: black; font-size: 14px; font-weight: bold; background-color: orange;")
         else:
+            if "info" not in self.data or self.data["info"] is None:
+                self.device_text.setText(f"<pre>Online: ???</pre>")
+                return
             if "power" in self.data["info"] and self.state["on"]:
                 self.device_text.setText(f"<pre>DRAW: {self.data['info']['power']}W</pre>")
             elif self.data["auto_state"]["is_auto"]:
