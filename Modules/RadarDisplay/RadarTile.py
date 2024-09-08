@@ -24,12 +24,12 @@ class RadarTile(QLabel):
                        scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio,
                               Qt.TransformationMode.SmoothTransformation))
 
-        self.debug_title = QLabel(self)
-        self.debug_title.setText(f"{self.tile_x}-{self.tile_y} [False]")
-        self.debug_title.setStyleSheet("color: white; font-size: 10px; font-weight: bold; background-color: black")
-        self.debug_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.debug_title.setFixedSize(60, 14)
-        self.debug_title.move(0, 0)
+        # self.debug_title = QLabel(self)
+        # self.debug_title.setText(f"{self.tile_x}-{self.tile_y} [False]")
+        # self.debug_title.setStyleSheet("color: white; font-size: 10px; font-weight: bold; background-color: black")
+        # self.debug_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # self.debug_title.setFixedSize(60, 14)
+        # self.debug_title.move(0, 0)
 
         self.timestamps = []
 
@@ -60,10 +60,11 @@ class RadarTile(QLabel):
 
     def load_radar_overlays(self, timestamps):
         self.timestamps = timestamps
+        self.start_loading()
         # self.visibility_timer.start(100 + int(random.random() * 50))
 
     def start_loading(self):
-        self.debug_title.setText(f"{self.tile_x}-{self.tile_y} [{self.on_screen()}]")
+        # self.debug_title.setText(f"{self.tile_x}-{self.tile_y} [{self.on_screen()}]")
         # return
         # if not self.on_screen():
         #     return

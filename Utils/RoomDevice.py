@@ -45,6 +45,7 @@ class RoomDevice(QLabel):
         self.state = None
         self.data = None
         self.has_names = False
+        self.human_name = None
 
         self.toggling = False
         self.last_toggle_state = None
@@ -59,6 +60,7 @@ class RoomDevice(QLabel):
     def update_human_name(self, name):
         # print(f"Updating name to {name}")
         self.has_names = True
+        self.human_name = name
         self.device_label.setText(name)
 
     def hideEvent(self, a0):
