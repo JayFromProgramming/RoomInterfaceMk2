@@ -101,7 +101,10 @@ class ForecastFocus(QLabel):
             ref_time = datetime.datetime.fromtimestamp(reference_time)
             date_suffix = ordinal(ref_time.day)
             # Display the reference time as Day Month Day(suffix), Time AM/PM
-            reference_time_str = ref_time.strftime(f"%A, %B {date_suffix}, %I:%M%p")
+            if reference_time <= 30:
+                reference_time_str = "\"The Beginning of Time\""
+            else:
+                reference_time_str = ref_time.strftime(f"%A, %B {date_suffix}, %I:%M%p")
             self.header.setText(f"Forecast for {reference_time_str}")
             self.make_request(reference_time)
         except Exception as e:
@@ -167,7 +170,7 @@ class ForecastFocus(QLabel):
     def handle_forecast_response(self, reply):
         try:
             if str(reply.error()) != "NetworkError.NoError":
-                self.weather_info.setText("Error")
+                self.weather_info.setText(f"Error: {reply.error()}")
                 # Check if the error was server related or client related
                 return
             data = reply.readAll()

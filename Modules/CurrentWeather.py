@@ -123,6 +123,8 @@ class CurrentWeather(QLabel):
             self.weather_header.setText("No Network Connection")
         elif response.error() == QNetworkReply.NetworkError.HostNotFoundError:
             self.weather_header.setText("Server Not Found")
+        elif response.error() == QNetworkReply.NetworkError.ServiceUnavailableError:
+            self.weather_header.setText("Weather Relay Down")
         else:
             self.weather_header.setText("Unexpected Error")
 

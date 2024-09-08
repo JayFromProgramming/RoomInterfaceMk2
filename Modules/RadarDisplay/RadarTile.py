@@ -20,7 +20,7 @@ class RadarTile(QLabel):
         self.setFixedSize(256, 256)
         self.tile_x = x
         self.tile_y = y
-        self.setPixmap(QPixmap(f"Assets/MapTiles2/{self.tile_x}-{self.tile_y}.png").
+        self.setPixmap(QPixmap(f"Assets/MapTiles/{self.tile_x}-{self.tile_y}.png").
                        scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio,
                               Qt.TransformationMode.SmoothTransformation))
 
@@ -39,6 +39,7 @@ class RadarTile(QLabel):
         self.radar_overlay = QLabel(self)
         self.radar_overlay.setFixedSize(256, 256)
         self.radar_overlay.setStyleSheet('background-color: transparent;')
+        self.radar_overlay.raise_()
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_response)
@@ -54,12 +55,13 @@ class RadarTile(QLabel):
         self.outstanding_parses = 0
         self.loading = False
 
-        self.visibility_timer = QTimer(self)
-        self.visibility_timer.timeout.connect(self.start_loading)
+        # self.visibility_timer = QTimer(self)
+        # self.visibility_timer.timeout.connect(self.start_loading)
 
     def load_radar_overlays(self, timestamps):
         self.timestamps = timestamps
-        self.visibility_timer.start(100 + int(random.random() * 50))
+        self.start_loading()
+        # self.visibility_timer.start(100 + int(random.random() * 50))
 
     def start_loading(self):
         # self.debug_title.setText(f"{self.tile_x}-{self.tile_y} [{self.on_screen()}]")
@@ -67,7 +69,7 @@ class RadarTile(QLabel):
         # if not self.on_screen():
         #     return
         self.loading = True
-        self.visibility_timer.stop()
+        # self.visibility_timer.stop()
         for timestamp in self.timestamps:
             self.outstanding_requests += 1
             self.total_frames += 1
@@ -89,7 +91,7 @@ class RadarTile(QLabel):
             timestamp = int(reply.url().toString().split('/')[-4])  # Extract the timestamp from the URL
             self.outstanding_requests -= 1
             if str(reply.error()) != "NetworkError.NoError":
-                # logging.error(f"Failed to load map tile {self.tile_x}-{self.tile_y}@{timestamp}: {reply.error()}")
+                logging.error(f"Failed to load map tile {self.tile_x}-{self.tile_y}@{timestamp}: {reply.error()}")
                 return
             self.response_queue.put(reply)
         except Exception as e:
@@ -128,7 +130,7 @@ class RadarTile(QLabel):
         self.radar_overlay.setFixedSize(round(self.radar_overlay.width() * factor),
                                         round(self.radar_overlay.height() * factor))
         # Resize the map tile image to match the new size
-        self.setPixmap(QPixmap(f"Assets/MapTiles2/{self.tile_x}-{self.tile_y}.png").
+        self.setPixmap(QPixmap(f"Assets/MapTiles/{self.tile_x}-{self.tile_y}.png").
                        scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio,
                               Qt.TransformationMode.SmoothTransformation))
         self.radar_images.clear()

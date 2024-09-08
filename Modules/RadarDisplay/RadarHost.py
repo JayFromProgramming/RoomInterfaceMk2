@@ -111,7 +111,7 @@ class RadarHost(QLabel):
     def determine_map_size():
         # Look into the MapTiles folder and determine the range of available map tiles
         min_x, max_x, min_y, max_y = 1000, 0, 1000, 0
-        for file in os.listdir("Assets/MapTiles2"):
+        for file in os.listdir("Assets/MapTiles"):
             x, y = map(int, file.split('.')[0].split('-'))
             min_x = min(min_x, x)
             max_x = max(max_x, x)
@@ -240,6 +240,7 @@ class RadarHost(QLabel):
             #     if timestamp < time.time():
             #         self.current_frame = len(self.timestamp_list) - i - 2
             #         break
+            logging.info(f"Loaded {len(self.timestamp_list)} radar frames")
             for map_tile in self.map_tiles:
                 map_tile.load_radar_overlays(self.timestamp_list.__reversed__())
             self.next_frame()

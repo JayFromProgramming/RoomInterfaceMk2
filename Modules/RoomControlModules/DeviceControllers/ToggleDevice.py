@@ -38,7 +38,7 @@ class ToggleDevice(RoomDevice):
         self.device_text.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom)
         self.device_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
         self.device_text.setText("<pre>Status: ???</pre>")
-        self.device_text.move(5, 20)
+        self.device_text.move(5, 21)
 
     def update_human_name(self, name):
         super().update_human_name(name)
