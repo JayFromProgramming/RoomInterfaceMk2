@@ -19,7 +19,7 @@ class EnvivControlDevice(RoomDevice):
         self.unit = "°?"
 
         self.info_text = QLabel(self)
-        self.info_text.setFixedSize(200, 75)
+        self.info_text.setFixedSize(250, 75)
         self.info_text.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.info_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none; background-color: transparent")
         self.info_text.setText("<pre>Target: N/A\nCurrent: N/A\nState: UNKNOWN</pre>")
@@ -61,16 +61,19 @@ class EnvivControlDevice(RoomDevice):
         self.device_label.setText(name)
 
     def update_state(self):
+        self.target_selector_button.show()
         if not self.data["health"]["online"]:
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red")
             return "OFFLINE"
         elif self.data["health"]["fault"]:
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: orange")
-            return "FAULT"
+            # Hide the set target button if the device is in a fault state
+            self.target_selector_button.hide()
+            return "FAULT: " + self.data["health"]["reason"]
         elif self.state["on"]:
-            return "NORMAL" if self.data["health"]["down_devices"] == 0 else "DEGRADED"
+            return "State: NORMAL" if self.data["health"]["down_devices"] == 0 else f"State: DEGRADED[-{self.data['health']['down_devices']}]"
         else:
-            return "STANDBY"
+            return "State: STANDBY"
 
     def parse_data(self, data):
         self.unit = data["info"]["units"]
@@ -82,11 +85,11 @@ class EnvivControlDevice(RoomDevice):
         if self.state['current_value'] is None:
             self.info_text.setText(f"<pre>Target:  {round(self.state['target_value'], 2)}{self.unit}\n"
                                    f"Current: N/A\n"
-                                   f"State: {self.update_state()}</pre>")
+                                   f"{self.update_state()}</pre>")
         else:
             self.info_text.setText(f"<pre>Target:  {round(self.state['target_value'], 2)}{self.unit}\n"
                                    f"Current: {round(self.state['current_value'], 2)}{self.unit}\n"
-                                   f"State: {self.update_state()}</pre>")
+                                   f"{self.update_state()}</pre>")
         self.toggle_button.setText(f"{['Enable', 'Disable'][self.state['on']]}")
 
     def open_target_selector(self):

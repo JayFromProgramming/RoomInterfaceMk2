@@ -19,7 +19,7 @@ class LightController(RoomDevice):
 
         # This is one of many widgets that will be placed on the RoomControlHost so they shouldn't use too much space
         self.device_label.setFont(parent.font)
-        self.device_label.setFixedSize(300, 20)
+        self.device_label.setFixedSize(self.width(), 20)
         self.device_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.device_label.setStyleSheet("color: black; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
         self.device_label.setText(f"Light: [{device}]")
