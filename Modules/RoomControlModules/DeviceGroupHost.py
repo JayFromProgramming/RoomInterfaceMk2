@@ -149,7 +149,7 @@ class DeviceGroupHost(QLabel):
         for widget in self.device_widgets:
             widget.move(x_offset, y_offset)
             widget.show()
-            x_offset += widget.width() + 7
+            x_offset += widget.width() + 5
             widget.row_num = row_num
             # If this is the last widget don't make a new row
             if x_offset + widget.width() > self.width() and widget != self.device_widgets[-1]:
