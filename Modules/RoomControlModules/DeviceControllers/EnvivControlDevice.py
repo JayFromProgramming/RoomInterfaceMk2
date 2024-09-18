@@ -60,6 +60,24 @@ class EnvivControlDevice(RoomDevice):
     def update_human_name(self, name):
         self.device_label.setText(name)
 
+    def active_text(self):
+        if "active_increasers" not in self.state or "active_decreasers" not in self.state:
+            return "State: NORMAL"
+        active_increasers = self.state["active_increasers"]
+        active_decreasers = self.state["active_decreasers"]
+        if active_increasers == 0 and active_decreasers == 0:
+            return "State: IDLE"
+        output = "State: ACTIVE "
+        # Use up arrow for increasers and down arrow for decreasers
+        for _ in range(active_increasers):
+            output += "▲"
+        for _ in range(active_decreasers):
+            output += "▼"
+        # If there is both increasers and decreasers, display a conflict warning
+        if active_increasers > 0 and active_decreasers > 0:
+            output = "State: CONFLICT ▲▼"
+        return output
+
     def update_state(self):
         self.target_selector_button.show()
         if not self.data["health"]["online"]:
@@ -71,7 +89,9 @@ class EnvivControlDevice(RoomDevice):
             self.target_selector_button.hide()
             return "FAULT: " + self.data["health"]["reason"]
         elif self.state["on"]:
-            return "State: NORMAL" if self.data["health"]["down_devices"] == 0 else f"State: DEGRADED[-{self.data['health']['down_devices']}]"
+            if self.data["health"]["down_devices"] == 0:
+                return self.active_text()
+            return f"State: DEGRADED[-{self.data['health']['down_devices']}]"
         else:
             return "State: STANDBY"
 

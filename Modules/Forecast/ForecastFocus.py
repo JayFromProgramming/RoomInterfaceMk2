@@ -104,7 +104,7 @@ class ForecastFocus(QLabel):
             if reference_time <= 30:
                 reference_time_str = "\"The Beginning of Time\""
             else:
-                reference_time_str = ref_time.strftime(f"%A, %B {date_suffix}, %I:%M%p")
+                reference_time_str = ref_time.strftime(f"%A, %B {date_suffix}, %I%p")
             self.header.setText(f"Forecast for {reference_time_str}")
             self.make_request(reference_time)
         except Exception as e:
