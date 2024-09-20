@@ -27,7 +27,7 @@ class NotInitalizedDevice(RoomDevice):
         self.device_text.setFixedSize(135, 60)
         self.device_text.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.device_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none; background-color: transparent;")
-        self.device_text.setText("<pre>Status: ???</pre>")
+        self.device_text.setText("<pre>UNSUPPORTED\nDEVICE TYPE</pre>")
         self.device_text.move(5, 15)
 
     def update_human_name(self, name):

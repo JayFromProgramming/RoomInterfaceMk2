@@ -1,7 +1,9 @@
 from PyQt6.QtCore import Qt
+from PyQt6.QtNetwork import QNetworkReply
 from PyQt6.QtWidgets import QLabel, QPushButton, QDoubleSpinBox, QSpinBox, QWidget
 from loguru import logger as logging
 from Utils.RoomDevice import RoomDevice
+from Utils.UtilMethods import has_internet
 
 
 class EnvivControlDevice(RoomDevice):
@@ -103,14 +105,20 @@ class EnvivControlDevice(RoomDevice):
 
         self.toggle_button.setStyleSheet(f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
         if self.state['current_value'] is None:
-            self.info_text.setText(f"<pre>Target:  {round(self.state['target_value'], 2)}{self.unit}\n"
+            self.info_text.setText(f"<pre>Target:  {self.float_format(self.state['target_value'])}{self.unit}\n"
                                    f"Current: N/A\n"
                                    f"{self.update_state()}</pre>")
         else:
-            self.info_text.setText(f"<pre>Target:  {round(self.state['target_value'], 2)}{self.unit}\n"
-                                   f"Current: {round(self.state['current_value'], 2)}{self.unit}\n"
+            self.info_text.setText(f"<pre>Target:  {self.float_format(self.state['target_value'])}{self.unit}\n"
+                                   f"Current: {self.float_format(self.state['current_value'])}{self.unit}\n"
                                    f"{self.update_state()}</pre>")
         self.toggle_button.setText(f"{['Enable', 'Disable'][self.state['on']]}")
+
+    @staticmethod
+    def float_format(value):
+        # Round the value to 2 decimal places and make sure there are 2 characters before and after the decimal point
+        # e.g 01.23, 12.34, 23.40, 112.00
+        return f"{value:.2f}".zfill(5)
 
     def open_target_selector(self):
         try:
@@ -141,7 +149,25 @@ class EnvivControlDevice(RoomDevice):
 
     def handle_failure(self, response):
         error_string = str(response.error()).split(".")
-        self.info_text.setText(f"<pre>Server Error\n{error_string[0]}\n{error_string[1]}</pre>")
+        has_network = has_internet()
+        if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
+            self.info_text.setText(f"<pre>SERVER DOWN\nCONNECTION REFUSED\nNETWORK:   OK</pre>")
+        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and has_network:
+            self.info_text.setText(f"<pre>SERVER OFFLINE\nCONNECTION TIMEOUT\nNETWORK:   OK</pre>")
+        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and not has_network:
+            self.info_text.setText(f"<pre>NETWORK ERROR\nCONNECTION TIMEOUT\nNETWORK: DOWN</pre>")
+        elif response.error() == QNetworkReply.NetworkError.InternalServerError:
+            self.info_text.setText(f"<pre>SERVER ERROR\nINTERNAL SERVER ERROR\n{error_string[-1]}</pre>")
+        elif response.error() == QNetworkReply.NetworkError.HostNotFoundError and has_network:
+            self.info_text.setText(f"<pre>SERVER NOT FOUND\nUNABLE TO RESOLVE HOST\nNETWORK:   OK</pre>")
+        elif response.error() == QNetworkReply.NetworkError.HostNotFoundError and not has_network:
+            self.info_text.setText(f"<pre>NETWORK ERROR\nNAME RESOLUTION FAILURE\nNETWORK: DOWN</pre>")
+        elif response.error() == QNetworkReply.NetworkError.TemporaryNetworkFailureError:
+            self.info_text.setText(f"<pre>NETWORK ERROR\nTEMPORARY NETWORK FAILURE\n{error_string[-1]}</pre>")
+        elif response.error() == QNetworkReply.NetworkError.UnknownNetworkError:
+            self.info_text.setText(f"<pre>NETWORK ERROR\nUNKNOWN NETWORK ERROR\n{error_string[-1]}</pre>")
+        else:
+            self.info_text.setText(f"<pre>UNKNOWN ERROR\n{error_string[-1]}</pre>")
         self.toggle_button.setText("?????")
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red")
         self.update_state()
