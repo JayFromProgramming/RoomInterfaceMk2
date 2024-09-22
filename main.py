@@ -39,11 +39,6 @@ class RoomInterface(QApplication):
         logging.info("RoomInterface started")
         self.window = MainWindow()
         self.window.show()
-        # self.watchdog = WatchdogThread(timeout=10, fail_callback=self.watchdog_failed)
-        self.feed_timer = QTimer()
-        # self.feed_timer.timeout.connect(self.feed_watchdog)
-        # self.feed_timer.start(1000)
-        # self.watchdog.start()
         self.exec()
 
 
@@ -68,7 +63,7 @@ class MainWindow(QMainWindow):
         self.weather.move(0, 0)
 
         self.forecast = ForecastHost(self)
-        self.forecast.move(0, 90)
+        self.forecast.move(0, 90)  # These moves have fixed upper left corners, so they don't need to be dynamic
 
         self.room_control = RoomControlHost(self)
         self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
@@ -99,8 +94,11 @@ class MainWindow(QMainWindow):
         self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
         self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
 
+        # Allow modules to reset the focus timer on user interaction
         self.room_control.set_activity_timer_callback(self.menu_bar.reset_focus_timer)
         self.radar_host.set_activity_timer_callback(self.menu_bar.reset_focus_timer)
+
+        # Setup debug text timer so I can see the current CPU and memory usage (validate no memory leaks)
         self.window_title_update_timer = QTimer()
         self.window_title_update_timer.timeout.connect(self.update_window_title)
 

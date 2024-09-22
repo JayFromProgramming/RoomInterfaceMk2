@@ -37,6 +37,7 @@ class BlueStalkerControl(RoomDevice):
         self.toggle_button.move(self.width() - self.toggle_button.width() - 10, 5)
         self.toggle_button.clicked.connect(self.toggle_device)
         self.toggle_button.setFont(parent.font)
+        self.toggle_button.hide()
 
     def update_human_name(self, name):
         super().update_human_name(name)
