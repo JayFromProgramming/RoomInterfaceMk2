@@ -44,20 +44,37 @@ class EnvivControlDevice(RoomDevice):
         self.target_selector_button.clicked.connect(self.open_target_selector)
         self.target_selector_button.setFont(parent.font)
 
-        self.spin_box = QDoubleSpinBox(self)
-        self.spin_box.setFixedSize(90, 40)
-        self.spin_box.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey;"
-                                    "border: none; border-radius: none;"
-                                    "QDoubleSpinBox::up-button { width: 40px; height: 20px; };"
-                                    "QDoubleSpinBox::down-button { width: 40px; height: 20px; };")
-        self.spin_box.setRange(0, 100)
-        self.spin_box.setSingleStep(0.5)
-        self.spin_box.setValue(0)
-        self.spin_box.setSuffix(self.unit)
+        self.spin_box = QLabel(self)
+        self.spin_box.setFixedSize(90, 50)
+        self.spin_box.setStyleSheet("color: black; font-size: 17px; font-weight: bold; background-color: grey;"
+                                    "border: none; border-radius: none;")
+        self.spin_value = 0
+        self.spin_step = 0.5
+        self.spin_box.setText(str(self.spin_value) + self.unit)
+
         # Move the spin box to left center
         self.spin_box.move(10, 20)
         self.spin_box.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.spin_box.hide()
+
+        self.increase_button = QPushButton(self)
+        self.increase_button.setFixedSize(35, 25)
+        self.increase_button.setStyleSheet("color: black; font-size: 16px; font-weight: bold; background-color: grey;"
+                                           "border: black; border-radius: 0px; boarder-width: 1px;")
+        self.increase_button.setText("▲")
+        self.increase_button.move(self.spin_box.x() + self.spin_box.width(), 20)
+        self.increase_button.clicked.connect(self.increase_target)
+        self.increase_button.hide()
+
+        self.decrease_button = QPushButton(self)
+        self.decrease_button.setFixedSize(35, 25)
+        self.decrease_button.setStyleSheet("color: black; font-size: 16px; font-weight: bold; background-color: grey;"
+                                           "border: black; border-radius: 0px; boarder-width: 1px;")
+        self.decrease_button.setText("▼")
+        self.decrease_button.move(self.increase_button.x(),
+                                  self.increase_button.y() + self.increase_button.height())
+        self.decrease_button.clicked.connect(self.decrease_target)
+        self.decrease_button.hide()
 
     def update_human_name(self, name):
         self.device_label.setText(name)
@@ -122,18 +139,24 @@ class EnvivControlDevice(RoomDevice):
 
     def open_target_selector(self):
         try:
+            if self.state is None:
+                return
             if self.spin_box.isHidden():
                 self.spin_box.show()
                 # Hide the other buttons and rename the target selector button to "Submit"
                 self.toggle_button.hide()
                 self.target_selector_button.setText("Submit")
-                self.spin_box.setValue(self.state["target_value"])
-                self.spin_box.setSuffix(self.unit)
+                self.spin_value = self.state["target_value"]
+                self.spin_box.setText(f"{self.float_format(self.spin_value)}{self.unit}")
+                self.increase_button.show()
+                self.decrease_button.show()
                 self.target_selector_button.move(self.width() - self.target_selector_button.width() - 10,
                                                  self.spin_box.y())
                 self.info_text.hide()
             else:
                 self.spin_box.hide()
+                self.increase_button.hide()
+                self.decrease_button.hide()
                 self.toggle_button.show()
                 self.target_selector_button.setText("Set Target")
                 self.target_selector_button.move(self.width() - self.target_selector_button.width() - 10, 40)
@@ -143,8 +166,16 @@ class EnvivControlDevice(RoomDevice):
             logging.error(e)
             logging.exception(e)
 
+    def increase_target(self):
+        self.spin_value += self.spin_step
+        self.spin_box.setText(f"{self.float_format(self.spin_value)}{self.unit}")
+
+    def decrease_target(self):
+        self.spin_value -= self.spin_step
+        self.spin_box.setText(f"{self.float_format(self.spin_value)}{self.unit}")
+
     def set_target(self):
-        command = {"target_value": self.spin_box.value()}
+        command = {"target_value": self.spin_value}
         self.send_command(command)
 
     def handle_failure(self, response):
