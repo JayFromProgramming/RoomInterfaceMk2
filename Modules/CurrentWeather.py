@@ -85,7 +85,6 @@ class CurrentWeather(QLabel):
         # logging.info("Making request to get current weather")
         request = QNetworkRequest(QUrl(f"http://{self.auth['host']}/weather/now"))
         request.setTransferTimeout(5000)  # 5 seconds
-        # request.setRawHeader(b"Cookie", b"auth=5149e8d1606397fddc35cf0303b98c1318b963c3c0e6069fcabb8d970c8fe9bd")
         self.weather_manager.get(request)
 
     def handle_weather_response(self, response):

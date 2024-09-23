@@ -9,10 +9,11 @@ from Utils.RoomDevice import RoomDevice
 
 import os
 
-for file in os.listdir("Modules/RoomControlModules/DeviceControllers"):
-    if file.endswith(".py") and not file.startswith("__"):
-        print(f"Importing {file}")
-        __import__(f"Modules.RoomControlModules.DeviceControllers.{file[:-3]}")
+if os.path.exists("Modules/RoomControlModules/DeviceControllers"):
+    for file in os.listdir("Modules/RoomControlModules/DeviceControllers"):
+        if file.endswith(".py") and not file.startswith("__"):
+            print(f"Importing {file}")
+            __import__(f"Modules.RoomControlModules.DeviceControllers.{file[:-3]}")
 
 
 class DeviceGroupHost(QLabel):

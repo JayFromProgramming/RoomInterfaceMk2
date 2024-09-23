@@ -1,11 +1,9 @@
 import os
 import sys
-import time
-import threading
 
 import psutil
-from PyQt6.QtCore import QTimer, QElapsedTimer, QEvent
-from PyQt6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QLabel, QVBoxLayout
+from PyQt6.QtCore import QTimer, QElapsedTimer
+from PyQt6.QtWidgets import QMainWindow, QApplication
 from PyQt6.QtGui import QFont, QFontDatabase
 
 from Modules.CameraPlayback.WebcamLayout import WebcamLayout
@@ -18,8 +16,6 @@ from Modules.MenuBar import MenuBar
 from Modules.RadarDisplay.RadarHost import RadarHost
 
 from Modules.RoomControlModules.RoomControlHost import RoomControlHost
-
-import traceback
 
 from loguru import logger as logging
 
