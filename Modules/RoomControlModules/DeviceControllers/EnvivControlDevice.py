@@ -51,11 +51,18 @@ class EnvivControlDevice(RoomDevice):
         self.spin_value = 0
         self.spin_step = 0.5
         self.spin_box.setText(str(self.spin_value) + self.unit)
-
         # Move the spin box to left center
         self.spin_box.move(10, 20)
         self.spin_box.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.spin_box.hide()
+
+        self.directionality_button = QPushButton(self)
+        self.directionality_button.setFixedSize(90, 30)
+        self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
+        self.directionality_button.setText("Add + Sub")
+        self.directionality_button.clicked.connect(self.toggle_directionality)
+        self.directionality_button.setFont(parent.font)
+        self.directionality_button.hide()
 
         self.increase_button = QPushButton(self)
         self.increase_button.setFixedSize(35, 25)
@@ -131,6 +138,17 @@ class EnvivControlDevice(RoomDevice):
                                    f"{self.update_state()}</pre>")
         self.toggle_button.setText(f"{['Enable', 'Disable'][self.state['on']]}")
 
+        match self.state["directionality"]:
+            case 0:
+                self.directionality_button.setText("Add + Sub")
+                self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #4080FF")
+            case 1:
+                self.directionality_button.setText("Add Only")
+                self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: green")
+            case 2:
+                self.directionality_button.setText("Sub Only")
+                self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red")
+
     @staticmethod
     def float_format(value):
         # Round the value to 2 decimal places and make sure there are 2 characters before and after the decimal point
@@ -146,17 +164,21 @@ class EnvivControlDevice(RoomDevice):
                 # Hide the other buttons and rename the target selector button to "Submit"
                 self.toggle_button.hide()
                 self.target_selector_button.setText("Submit")
+                self.directionality_button.show()
                 self.spin_value = self.state["target_value"]
                 self.spin_box.setText(f"{self.float_format(self.spin_value)}{self.unit}")
                 self.increase_button.show()
                 self.decrease_button.show()
                 self.target_selector_button.move(self.width() - self.target_selector_button.width() - 10,
-                                                 self.spin_box.y())
+                                                 self.spin_box.y() - 15)
+                self.directionality_button.move(self.width() - self.directionality_button.width() - 10,
+                                                self.target_selector_button.y() + self.target_selector_button.height() + 5)
                 self.info_text.hide()
             else:
                 self.spin_box.hide()
                 self.increase_button.hide()
                 self.decrease_button.hide()
+                self.directionality_button.hide()
                 self.toggle_button.show()
                 self.target_selector_button.setText("Set Target")
                 self.target_selector_button.move(self.width() - self.target_selector_button.width() - 10, 40)
@@ -176,6 +198,10 @@ class EnvivControlDevice(RoomDevice):
 
     def set_target(self):
         command = {"target_value": self.spin_value}
+        self.send_command(command)
+
+    def toggle_directionality(self):
+        command = {"directionality": self.state['directionality'] + 1 if self.state['directionality'] < 2 else 0}
         self.send_command(command)
 
     def handle_failure(self, response):
