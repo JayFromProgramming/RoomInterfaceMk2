@@ -33,22 +33,23 @@ def wind_direction_arrow(degree):
         return (degree - check + 180 + 360) % 360 - 180
 
     if 22.5 >= offset(0) >= -22.5:
-        return "↑"
-    elif 22.5 >= offset(45) >= -22.5:
-        return "↗"
-    elif 22.5 >= offset(90) >= -22.5:
-        return "→"
-    elif 22.5 >= offset(135) >= -22.5:
-        return "↘"
-    elif 22.5 >= offset(180) >= -22.5:
         return "↓"
-    elif 22.5 >= offset(225) >= -22.5:
+    elif 22.5 >= offset(45) >= -22.5:
         return "↙"
-    elif 22.5 >= offset(270) >= -22.5:
+    elif 22.5 >= offset(90) >= -22.5:
         return "←"
-    elif 22.5 >= offset(315) >= -22.5:
+    elif 22.5 >= offset(135) >= -22.5:
         return "↖"
-    return ""
+    elif 22.5 >= offset(180) >= -22.5:
+        return "↑"
+    elif 22.5 >= offset(225) >= -22.5:
+        return "↗"
+    elif 22.5 >= offset(270) >= -22.5:
+        return "→"
+    elif 22.5 >= offset(315) >= -22.5:
+        return "↘"
+    print(f"Unknown wind direction: {degree}")
+    return "?"
 
 
 def mps_to_mph(mps):

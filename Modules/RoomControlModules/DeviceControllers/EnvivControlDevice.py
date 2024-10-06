@@ -29,7 +29,7 @@ class EnvivControlDevice(RoomDevice):
         self.info_text.setFont(parent.font)
 
         self.toggle_button = QPushButton(self)
-        self.toggle_button.setFixedSize(90, 30)
+        self.toggle_button.setFixedSize(95, 30)
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
         self.toggle_button.setText("?????")
         self.toggle_button.move(self.width() - self.toggle_button.width() - 10, 5)
@@ -37,7 +37,7 @@ class EnvivControlDevice(RoomDevice):
         self.toggle_button.setFont(parent.font)
 
         self.target_selector_button = QPushButton(self)
-        self.target_selector_button.setFixedSize(90, 30)
+        self.target_selector_button.setFixedSize(95, 30)
         self.target_selector_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
         self.target_selector_button.setText("Set Target")
         self.target_selector_button.move(self.width() - self.target_selector_button.width() - 10, 40)
@@ -57,9 +57,9 @@ class EnvivControlDevice(RoomDevice):
         self.spin_box.hide()
 
         self.directionality_button = QPushButton(self)
-        self.directionality_button.setFixedSize(90, 30)
+        self.directionality_button.setFixedSize(95, 30)
         self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: grey")
-        self.directionality_button.setText("Add + Sub")
+        self.directionality_button.setText("INC + DEC")
         self.directionality_button.clicked.connect(self.toggle_directionality)
         self.directionality_button.setFont(parent.font)
         self.directionality_button.hide()
@@ -140,14 +140,14 @@ class EnvivControlDevice(RoomDevice):
 
         match self.state["directionality"]:
             case 0:
-                self.directionality_button.setText("Add + Sub")
+                self.directionality_button.setText("INC + DEC")
                 self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #4080FF")
             case 1:
-                self.directionality_button.setText("Add Only")
-                self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: green")
-            case 2:
-                self.directionality_button.setText("Sub Only")
+                self.directionality_button.setText("INC Only")
                 self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red")
+            case 2:
+                self.directionality_button.setText("DEC Only")
+                self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: green")
 
     @staticmethod
     def float_format(value):
