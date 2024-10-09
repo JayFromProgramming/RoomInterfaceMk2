@@ -169,10 +169,9 @@ class EnvivControlDevice(RoomDevice):
                 self.spin_box.setText(f"{self.float_format(self.spin_value)}{self.unit}")
                 self.increase_button.show()
                 self.decrease_button.show()
-                self.target_selector_button.move(self.width() - self.target_selector_button.width() - 10,
-                                                 self.spin_box.y() - 15)
-                self.directionality_button.move(self.width() - self.directionality_button.width() - 10,
-                                                self.target_selector_button.y() + self.target_selector_button.height() + 5)
+                self.directionality_button.move(self.width() - self.target_selector_button.width() - 10, self.spin_box.y() - 15)
+                self.target_selector_button.move(self.width() - self.directionality_button.width() - 10,
+                                                 self.directionality_button.y() + self.directionality_button.height() + 5)
                 self.info_text.hide()
             else:
                 self.spin_box.hide()

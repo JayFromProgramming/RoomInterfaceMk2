@@ -50,7 +50,7 @@ class BlueStalkerControl(RoomDevice):
         elif health["fault"]:
             return f"Fault: {health['reason']}"
         else:
-            return "Watching"
+            return "Health: Watching"
 
     def parse_occupants(self, occupants):
         result = ""
@@ -75,7 +75,7 @@ class BlueStalkerControl(RoomDevice):
             health = self.parse_health(data['health'])
 
             self.info_text.setText(f"<pre>Last Scan: {last_scan}\nOccupants: {self.parse_occupants(occupants)}"
-                                   f"\nHealth: {health}</pre>")
+                                   f"\n{health}</pre>")
             # self.toggle_button.setText("Disable" if self.state["on"] else "Enable")
         except Exception as e:
             self.info_text.setText(f"<pre>Last Scan: UNKNOWN\nOccupants: N/A\nHealth: N/A</pre>")
