@@ -22,7 +22,7 @@ class BlueStalkerControl(RoomDevice):
         self.device_label.move(10, 0)
 
         self.info_text = QLabel(self)
-        self.info_text.setFixedSize(200, 75)
+        self.info_text.setFixedSize(275, 75)
         self.info_text.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.info_text.setStyleSheet(
             "color: black; font-size: 14px; font-weight: bold; border: none; background-color: transparent")
