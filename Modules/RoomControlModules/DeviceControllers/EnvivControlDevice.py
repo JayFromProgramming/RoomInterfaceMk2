@@ -23,8 +23,9 @@ class EnvivControlDevice(RoomDevice):
         self.info_text = QLabel(self)
         self.info_text.setFixedSize(250, 75)
         self.info_text.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.info_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none; background-color: transparent")
-        self.info_text.setText("<pre>Target: N/A\nCurrent: N/A\nState: UNKNOWN</pre>")
+        self.info_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;"
+                                     " background-color: transparent")
+        self.info_text.setText("<pre>Target:  N/A\nCurrent: N/A\nState: UNKNOWN</pre>")
         self.info_text.move(10, 20)
         self.info_text.setFont(parent.font)
 
@@ -46,7 +47,7 @@ class EnvivControlDevice(RoomDevice):
 
         self.spin_box = QLabel(self)
         self.spin_box.setFixedSize(90, 50)
-        self.spin_box.setStyleSheet("color: black; font-size: 17px; font-weight: bold; background-color: grey;"
+        self.spin_box.setStyleSheet("color: black; font-size: 19px; font-weight: bold; background-color: grey;"
                                     "border: none; border-radius: none;")
         self.spin_value = 0
         self.spin_step = 0.5
@@ -63,6 +64,7 @@ class EnvivControlDevice(RoomDevice):
         self.directionality_button.clicked.connect(self.toggle_directionality)
         self.directionality_button.setFont(parent.font)
         self.directionality_button.hide()
+        self.selected_directionality = 0
 
         self.increase_button = QPushButton(self)
         self.increase_button.setFixedSize(35, 25)
@@ -88,12 +90,12 @@ class EnvivControlDevice(RoomDevice):
 
     def active_text(self):
         if "active_increasers" not in self.state or "active_decreasers" not in self.state:
-            return "State: NORMAL"
+            return "State:   NORMAL"
         active_increasers = self.state["active_increasers"]
         active_decreasers = self.state["active_decreasers"]
         if active_increasers == 0 and active_decreasers == 0:
-            return "State: IDLE"
-        output = "State: ACTIVE "
+            return "State  : IDLE"
+        output = "State  : ACTIVE "
         # Use up arrow for increasers and down arrow for decreasers
         for _ in range(active_increasers):
             output += "▲"
@@ -101,8 +103,17 @@ class EnvivControlDevice(RoomDevice):
             output += "▼"
         # If there is both increasers and decreasers, display a conflict warning
         if active_increasers > 0 and active_decreasers > 0:
-            output = "State: CONFLICT ▲▼"
+            output = "State  : CONFLICT ▲▼"
         return output
+
+    def direction_arrow(self) -> str:
+        if self.state["directionality"] == 0:
+            return "|"
+        if self.state["directionality"] == 1:  # INC Only
+            return "▲"
+        if self.state["directionality"] == 2:  # DEC Only
+            return "▼"
+        return "???"
 
     def update_state(self):
         self.target_selector_button.show()
@@ -117,9 +128,9 @@ class EnvivControlDevice(RoomDevice):
         elif self.state["on"]:
             if self.data["health"]["down_devices"] == 0:
                 return self.active_text()
-            return f"State: DEGRADED[-{self.data['health']['down_devices']}]"
+            return f"State  : DEGRADED[-{self.data['health']['down_devices']}]"
         else:
-            return "State: STANDBY"
+            return "State  : STANDBY"
 
     def parse_data(self, data):
         self.unit = data["info"]["units"]
@@ -129,25 +140,14 @@ class EnvivControlDevice(RoomDevice):
 
         self.toggle_button.setStyleSheet(f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
         if self.state['current_value'] is None:
-            self.info_text.setText(f"<pre>Target:  {self.float_format(self.state['target_value'])}{self.unit}\n"
+            self.info_text.setText(f"<pre>Target{self.direction_arrow()}: {self.float_format(self.state['target_value'])}{self.unit}\n"
                                    f"Current: N/A\n"
                                    f"{self.update_state()}</pre>")
         else:
-            self.info_text.setText(f"<pre>Target:  {self.float_format(self.state['target_value'])}{self.unit}\n"
+            self.info_text.setText(f"<pre>Target{self.direction_arrow()}: {self.float_format(self.state['target_value'])}{self.unit}\n"
                                    f"Current: {self.float_format(self.state['current_value'])}{self.unit}\n"
                                    f"{self.update_state()}</pre>")
         self.toggle_button.setText(f"{['Enable', 'Disable'][self.state['on']]}")
-
-        match self.state["directionality"]:
-            case 0:
-                self.directionality_button.setText("INC + DEC")
-                self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #4080FF")
-            case 1:
-                self.directionality_button.setText("INC Only")
-                self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red")
-            case 2:
-                self.directionality_button.setText("DEC Only")
-                self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: green")
 
     @staticmethod
     def float_format(value):
@@ -169,6 +169,8 @@ class EnvivControlDevice(RoomDevice):
                 self.spin_box.setText(f"{self.float_format(self.spin_value)}{self.unit}")
                 self.increase_button.show()
                 self.decrease_button.show()
+                self.selected_directionality = self.state["directionality"]
+                self.display_directionality()
                 self.directionality_button.move(self.width() - self.target_selector_button.width() - 10, self.spin_box.y() - 15)
                 self.target_selector_button.move(self.width() - self.directionality_button.width() - 10,
                                                  self.directionality_button.y() + self.directionality_button.height() + 5)
@@ -183,6 +185,7 @@ class EnvivControlDevice(RoomDevice):
                 self.target_selector_button.move(self.width() - self.target_selector_button.width() - 10, 40)
                 self.info_text.show()
                 self.set_target()
+                self.set_directionality()
         except Exception as e:
             logging.error(e)
             logging.exception(e)
@@ -200,8 +203,24 @@ class EnvivControlDevice(RoomDevice):
         self.send_command(command)
 
     def toggle_directionality(self):
-        command = {"directionality": self.state['directionality'] + 1 if self.state['directionality'] < 2 else 0}
+        self.selected_directionality = (self.selected_directionality + 1) % 3
+        self.display_directionality()
+
+    def set_directionality(self):
+        command = {"directionality": self.selected_directionality}
         self.send_command(command)
+
+    def display_directionality(self):
+        match self.selected_directionality:
+            case 0:
+                self.directionality_button.setText("INC + DEC")
+                self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: #4080FF")
+            case 1:
+                self.directionality_button.setText("INC Only")
+                self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red")
+            case 2:
+                self.directionality_button.setText("DEC Only")
+                self.directionality_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: green")
 
     def handle_failure(self, response):
         error_string = str(response.error()).split(".")

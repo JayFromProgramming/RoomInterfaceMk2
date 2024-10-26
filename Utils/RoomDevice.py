@@ -88,6 +88,7 @@ class RoomDevice(QLabel):
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         payload = json.dumps(command)
         self.command_manager.post(request, payload.encode("utf-8"))
+        self.refresh_timer.start(500)
 
     def parse_data(self, data):
         raise NotImplementedError("This method must be implemented by the child class")
@@ -100,6 +101,8 @@ class RoomDevice(QLabel):
             self.toggling = True
             self.last_toggle_state = self.state["on"]
             self.toggle_time = time.time()
+            # Increase the refresh rate so that we can see the change faster
+            self.refresh_timer.start(500)
         self.send_command(command)
 
     def handle_response(self, response):
@@ -123,7 +126,10 @@ class RoomDevice(QLabel):
             logging.error(f"Error handling response: {e}")
             logging.exception(e)
         finally:
-            self.refresh_timer.start(4000 + random.randint(0, 1500))
+            if not self.toggling:
+                self.refresh_timer.start(4000 + random.randint(0, 1500))
+            else:
+                self.refresh_timer.start(1000)
             response.deleteLater()
 
     def handle_command(self, response):

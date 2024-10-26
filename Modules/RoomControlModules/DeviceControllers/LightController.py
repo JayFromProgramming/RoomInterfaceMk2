@@ -31,7 +31,7 @@ class LightController(RoomDevice):
         self.info_text.setFont(parent.font)
         self.info_text.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.info_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none; background-color: transparent")
-        self.info_text.setText("<pre>Color: N/A\nBrightness: N/A\nMode: N/A</pre>")
+        self.info_text.setText("<pre>Color: N/A\nLevel: N/A\nMode:  N/A</pre>")
         self.info_text.move(10, 20)
 
         self.toggle_button = QPushButton(self)
@@ -63,7 +63,7 @@ class LightController(RoomDevice):
             return
         color = self.state["color"] if not self.state["white_enabled"] else "Warm White"
         brightness = round(self.state["brightness"] / 255 * 100)
-        self.info_text.setText(f"<pre>Color: {color}\nBrightness: {brightness}%\nMode: {self.state['control_type']}</pre>")
+        self.info_text.setText(f"<pre>Color: {color}\nLevel: {brightness:03}%\nMode:  {self.state['control_type']}</pre>")
         self.toggle_button.setText("Turn Off" if self.state["on"] else "Turn On")
         button_color = "#4080FF" if self.state["on"] else "grey"
         self.toggle_button.setStyleSheet(f"background: {button_color}; font-size: 14px; font-weight: bold;")
