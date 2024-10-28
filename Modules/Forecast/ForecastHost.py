@@ -1,3 +1,4 @@
+import datetime
 import json
 import time
 
@@ -103,6 +104,15 @@ class ForecastHost(QLabel):
         self.scroll_reset_timer.timeout.connect(self.reset_scroll)
         self.scroll_reset_timer.start(500)
 
+        self.error_label = QLabel(self)
+        self.error_label.setFixedSize(600, 80)
+        self.error_label.setStyleSheet("color: white; font-size: 20px; font-weight: bold; border: none;")
+        self.error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # Center the error label
+        self.error_label.move((self.width() - self.error_label.width()) // 2,
+                              (self.height() - self.error_label.height()) // 2)
+        self.error_label.hide()
+
     def reset_scroll(self):
         if time.time() - self.last_scroll > 10 and self.forecast_focus.isHidden():
             self.scroll_offset -= 1
@@ -116,12 +126,25 @@ class ForecastHost(QLabel):
         request = QNetworkRequest(QUrl(f"http://{self.auth['host']}/weather/available_forecast"))
         self.forecast_manager.get(request)
 
+    def hide_all_widgets(self):
+        for widget in self.forecast_widgets:
+            widget.hide()
+        for line in self.lines:
+            line.hide()
+
     def handle_forecast_response(self, reply):
         try:
             if str(reply.error()) != "NetworkError.NoError":
                 logging.error(f"Error: {reply.error()}")
+                self.error_label.setText(f"Error fetching forecast\n{reply.error()}")
+                self.error_label.show()
+                # Hide all the forecast widgets
+                self.hide_all_widgets()
                 self.refresh_timer.start(5000)
                 return
+            self.error_label.hide()
+            for widget in self.forecast_widgets:
+                widget.show()
             data = reply.readAll()
             data = data.data().decode("utf-8")
             data = json.loads(data)
@@ -131,7 +154,8 @@ class ForecastHost(QLabel):
                 widget.deleteLater()
             self.forecast_widgets.clear()
             self.forecast_widgets = [ForecastEntry(self, forecast) for forecast in forecasts
-                                     if forecast > time.time()]
+                                     if datetime.datetime.fromisoformat(forecast) > datetime.datetime.now()]
+            logging.info(f"Loaded {len(self.forecast_widgets)} forecast widgets")
             reply.deleteLater()
             self.layout_widgets()
         except Exception as e:

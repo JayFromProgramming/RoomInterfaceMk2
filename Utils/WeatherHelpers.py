@@ -4,6 +4,8 @@ import math
 def kelvin_to_fahrenheit(kelvin):
     return (kelvin - 273.15) * 9 / 5 + 32
 
+def celcius_to_fahrenheit(celcius):
+    return celcius * 9 / 5 + 32
 
 def meters_to_miles(meters):
     return meters * 0.000621371
@@ -54,6 +56,9 @@ def wind_direction_arrow(degree):
 
 def mps_to_mph(mps):
     return mps * 2.23694
+
+def kph_to_mph(kph):
+    return kph * 0.621371
 
 
 def convert_relative_humidity(R1, T1, T2):

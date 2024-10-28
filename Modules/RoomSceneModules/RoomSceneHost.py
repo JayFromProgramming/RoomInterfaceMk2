@@ -61,6 +61,10 @@ class RoomSceneHost(ScrollableMenu):
             data = json.loads(data)
             # logging.debug(f"Data: {data}")
             self.retry_timer.stop()
+            if "error" in data:
+                logging.error(f"Error: {data['error']}")
+                self.retry_timer.start(5000)
+                return
             self.handle_scene_data(data["result"])
         except Exception as e:
             logging.error(f"Error handling network response: {e}")

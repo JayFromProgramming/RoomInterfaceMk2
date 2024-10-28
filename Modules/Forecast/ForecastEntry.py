@@ -1,3 +1,4 @@
+import datetime
 import json
 import random
 import time
@@ -8,8 +9,9 @@ from PyQt6.QtWidgets import QLabel
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from loguru import logger as logging
 
+from Modules.Forecast.WeatherCodeEnum import WeatherCodes
 from Utils.UtilMethods import load_no_image
-from Utils.WeatherHelpers import kelvin_to_fahrenheit, wind_direction_arrow, visibility_to_text, mps_to_mph
+from Utils.WeatherHelpers import kelvin_to_fahrenheit, wind_direction_arrow, visibility_to_text, mps_to_mph, celcius_to_fahrenheit, kph_to_mph
 
 
 class ForecastValue(QLabel):
@@ -105,7 +107,7 @@ class ForecastEntry(QLabel):
         self.wind_speed_label = ForecastValue(self, "N/A", "Wind", font)
         self.wind_speed_label.move(0, self.humidity_label.y() + self.humidity_label.height())
 
-        self.feels_like_label = ForecastValue(self, "N/A", "Feels", font)
+        self.feels_like_label = ForecastValue(self, "N/A", "Clouds", font)
         self.feels_like_label.move(0, self.wind_speed_label.y() + self.wind_speed_label.height())
 
         self.network_manager = QNetworkAccessManager()
@@ -141,6 +143,7 @@ class ForecastEntry(QLabel):
             if str(response.error()) != "NetworkError.NoError":
                 self.date_label.setText("NET")
                 self.time_label.setText("Error")
+                logging.error(f"Error: {response.error()}")
                 return
             data = response.readAll()
             data = data.data().decode("utf-8")
@@ -159,33 +162,32 @@ class ForecastEntry(QLabel):
         :return:
         """
         try:
-            reference_time = QDateTime.fromSecsSinceEpoch(data["reference_time"])
+            time_parsed = datetime.datetime.fromisoformat(data["time"])
+            reference_time = QDateTime.fromSecsSinceEpoch(int(time.mktime(time_parsed.timetuple())))
             # date is mm/dd
             self.date_label.setText(reference_time.toString("MM/dd"))
             self.time_label.setText(reference_time.toString("hAP"))
-            if data["status"] == "Snow" or data["status"] == "Rain":
-                # Get the first letter from the detailed status and add it so it shows as "L.Snow" or "L.Rain" ect
-                self.status_label.setText(f"{data['detailed_status'][0].upper()}.{data['status']}")
-            else:
-                self.status_label.setText(data["status"])
-            temperature = kelvin_to_fahrenheit(data["temperature"]["temp"])
+            self.status_label.setText(WeatherCodes.lookup(data["weathercode"]))
+            temperature = celcius_to_fahrenheit(data["temperature_2m"])
             self.temperature_label.setText(f"{round(temperature)}°F")
-            feels_like = kelvin_to_fahrenheit(data["temperature"]["feels_like"])
+            # feels_like = celcius_to_fahrenheit(data["temperature"]["feels_like"])
+            feels_like = temperature
             chance = data['precipitation_probability']
-            if chance > 0.2:
+            if chance > 20:
                 self.feels_like_label.upper_label.setText(f"Chance")
-                self.feels_like_label.lower_label.setText(f"{round(chance * 100)}%")
+                self.feels_like_label.lower_label.setText(f"{round(chance)}%")
             else:
-                self.feels_like_label.lower_label.setText(f"{round(feels_like)}°F")
+                self.feels_like_label.lower_label.setText(f"{data['cloudcover']:02.0f}%")
 
-            wind_speed = round(mps_to_mph(data["wind"]["speed"]), 2)
-            wind_direction = wind_direction_arrow(data["wind"]["deg"])
+            wind_speed = round(kph_to_mph(data["windspeed_10m"]), 2)
+            wind_direction = wind_direction_arrow(data["winddirection_10m"])
             self.wind_speed_label.lower_label.setText(f"{wind_direction}{round(wind_speed)}mph")
 
-            self.humidity_label.lower_label.setText(f"{data['humidity']:0.0f}%")
+            self.humidity_label.lower_label.setText(f"{data['relativehumidity_2m']:0.0f}%")
 
-            self.icon_manager.get_icon(data['weather_icon_name'], self.handle_icon_response)
-            self.repaint()
+            # self.icon_manager.get_icon(, self.handle_icon_response)
+            # self.repaint()
         except Exception as e:
             logging.error(f"Error parsing forecast data: {e}")
             logging.exception(e)
+            self.status_label.setText("Error")
