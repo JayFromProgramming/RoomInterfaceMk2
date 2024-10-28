@@ -167,7 +167,7 @@ class ForecastEntry(QLabel):
             # date is mm/dd
             self.date_label.setText(reference_time.toString("MM/dd"))
             self.time_label.setText(reference_time.toString("hAP"))
-            self.status_label.setText(WeatherCodes.lookup(data["weathercode"]))
+            self.status_label.setText(WeatherCodes.code_short_lookup(data["weathercode"]))
             temperature = celcius_to_fahrenheit(data["temperature_2m"])
             self.temperature_label.setText(f"{round(temperature)}°F")
             # feels_like = celcius_to_fahrenheit(data["temperature"]["feels_like"])
@@ -184,8 +184,8 @@ class ForecastEntry(QLabel):
             self.wind_speed_label.lower_label.setText(f"{wind_direction}{round(wind_speed)}mph")
 
             self.humidity_label.lower_label.setText(f"{data['relativehumidity_2m']:0.0f}%")
-
-            # self.icon_manager.get_icon(, self.handle_icon_response)
+            is_day = True if data["is_day"] == 1 else False
+            self.icon_manager.get_icon(WeatherCodes.code_to_icon(data['weathercode'], is_day), self.handle_icon_response)
             # self.repaint()
         except Exception as e:
             logging.error(f"Error parsing forecast data: {e}")

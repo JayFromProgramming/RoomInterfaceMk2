@@ -21,7 +21,7 @@ class IconManager(QNetworkAccessManager):
         self.icon_requests = {}  # {icon_id: [callbacks]}
         self.finished.connect(self.handle_response)
 
-    def get_icon(self, icon_id, callback):
+    def get_icon(self, icon_id: str, callback):
         if icon_id in self.icon_cache:
             # logging.info(f"Icon {icon_id} found in cache")
             callback(self.icon_cache[icon_id])
@@ -49,6 +49,7 @@ class IconManager(QNetworkAccessManager):
             self.icon_cache[icon_id] = pixmap
             for callback in callbacks:
                 callback(pixmap)
+            self.icon_requests.pop(icon_id)
         except Exception as e:
             logging.error(f"Error handling icon response: {e}")
             logging.exception(e)
