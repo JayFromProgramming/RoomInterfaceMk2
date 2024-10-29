@@ -81,3 +81,22 @@ def convert_relative_humidity(R1, T1, T2):
     R2 = Pv1 / Ps2 * 100
 
     return R2
+
+
+def calculate_real_feel(temp, wind_speed, humidity):
+    """
+    @param temp: Temperature in Celsius
+    @param wind_speed: Wind speed in m/s
+    @param humidity: Relative humidity as a percentage 0-1
+    @return: Real feel temperature in Celsius
+    """
+    # Calculate wind chill
+    wind_chill = 13.12 + 0.6215 * temp - 11.37 * wind_speed ** 0.16 + 0.3965 * temp * wind_speed ** 0.16
+
+    # Calculate heat index
+    heat_index = -8.78469475556 + 1.61139411 * temp + 2.33854883889 * humidity - 0.14611605 * temp * humidity - 0.012308094 * temp ** 2 - 0.0164248277778 * humidity ** 2 + 0.002211732 * temp ** 2 * humidity + 0.00072546 * temp * humidity ** 2 - 0.000003582 * temp ** 2 * humidity ** 2
+
+    # Calculate real feel
+    real_feel = (wind_chill + heat_index) / 2
+
+    return real_feel

@@ -11,7 +11,8 @@ from loguru import logger as logging
 
 from Modules.Forecast.WeatherCodeEnum import WeatherCodes
 from Utils.UtilMethods import load_no_image
-from Utils.WeatherHelpers import kelvin_to_fahrenheit, wind_direction_arrow, visibility_to_text, mps_to_mph, celcius_to_fahrenheit, kph_to_mph
+from Utils.WeatherHelpers import kelvin_to_fahrenheit, wind_direction_arrow, visibility_to_text, mps_to_mph, celcius_to_fahrenheit, kph_to_mph, \
+    calculate_real_feel
 
 
 class ForecastValue(QLabel):
@@ -107,7 +108,7 @@ class ForecastEntry(QLabel):
         self.wind_speed_label = ForecastValue(self, "N/A", "Wind", font)
         self.wind_speed_label.move(0, self.humidity_label.y() + self.humidity_label.height())
 
-        self.feels_like_label = ForecastValue(self, "N/A", "Clouds", font)
+        self.feels_like_label = ForecastValue(self, "N/A", "Feels", font)
         self.feels_like_label.move(0, self.wind_speed_label.y() + self.wind_speed_label.height())
 
         self.network_manager = QNetworkAccessManager()
@@ -171,13 +172,13 @@ class ForecastEntry(QLabel):
             temperature = celcius_to_fahrenheit(data["temperature_2m"])
             self.temperature_label.setText(f"{round(temperature)}°F")
             # feels_like = celcius_to_fahrenheit(data["temperature"]["feels_like"])
-            feels_like = temperature
+            feels_like = calculate_real_feel(data["temperature_2m"], data["relativehumidity_2m"], data["windspeed_10m"])
             chance = data['precipitation_probability']
             if chance > 20:
                 self.feels_like_label.upper_label.setText(f"Chance")
                 self.feels_like_label.lower_label.setText(f"{round(chance)}%")
             else:
-                self.feels_like_label.lower_label.setText(f"{data['cloudcover']:02.0f}%")
+                self.feels_like_label.lower_label.setText(f"{round(celcius_to_fahrenheit(feels_like))}°F")
 
             wind_speed = round(kph_to_mph(data["windspeed_10m"]), 2)
             wind_direction = wind_direction_arrow(data["winddirection_10m"])

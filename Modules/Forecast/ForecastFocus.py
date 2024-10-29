@@ -9,9 +9,10 @@ from PyQt6.QtWidgets import QLabel
 
 from loguru import logger as logging
 
+from Modules.Forecast.WeatherCodeEnum import WeatherCodes
 from Utils.UtilMethods import load_no_image
 from Utils.WeatherHelpers import kelvin_to_fahrenheit, mps_to_mph, wind_direction_arrow, convert_relative_humidity, \
-    visibility_to_text, mm_to_inches
+    visibility_to_text, mm_to_inches, celcius_to_fahrenheit, kph_to_mph
 
 
 def ordinal(n):
@@ -36,7 +37,7 @@ class ForecastFocus(QLabel):
         self.header.setStyleSheet("color: #ffcd00; font-size: 25px; font-weight: bold; border: none;"
                                   " background-color: transparent")
         self.header.setText("Forecast for Loading...")
-        self.header.move(10, 0)
+        self.header.move(10, 5)
 
         self.icon_label = QLabel(self)
         self.icon_label.setFixedSize(100, 100)
@@ -62,6 +63,16 @@ class ForecastFocus(QLabel):
                                         " background-color: transparent")
         self.weather_info.setText("Loading...")
         self.weather_info.move(10, 65)
+
+        self.acquisition_time_label = QLabel(self)
+        self.acquisition_time_label.setFont(self.font)
+        self.acquisition_time_label.setFixedSize(300, 35)
+        self.acquisition_time_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom)
+        self.acquisition_time_label.setStyleSheet("color: grey; font-size: 10px; font-weight: bold; border: none;"
+                                                  " background-color: transparent")
+        self.acquisition_time_label.setText("Acquired: ???")
+        self.acquisition_time_label.move(self.width() - self.acquisition_time_label.width() - 10,
+                                         self.height() - self.acquisition_time_label.height() - 10)
 
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_forecast_response)
@@ -98,10 +109,10 @@ class ForecastFocus(QLabel):
             return
         try:
             self.current_reference_time = reference_time
-            ref_time = datetime.datetime.fromtimestamp(reference_time)
+            ref_time = datetime.datetime.fromisoformat(reference_time)
             date_suffix = ordinal(ref_time.day)
             # Display the reference time as Day Month Day(suffix), Time AM/PM
-            if reference_time <= 30:
+            if ref_time.timestamp() <= 30:
                 reference_time_str = "\"The Beginning of Time\""
             else:
                 reference_time_str = ref_time.strftime(f"%A, %B {date_suffix}, %I%p")
@@ -118,49 +129,54 @@ class ForecastFocus(QLabel):
     def parse_forecast(self, data):
         output = ""
         try:
-            self.detailed_status.setText(f"Expect: {data['detailed_status'].capitalize()}")
-            temp = data["temperature"]
-            output += f"The temperature will be {round(kelvin_to_fahrenheit(temp['temp']), 2)}°F "
-            output += f"with a feels like of {round(kelvin_to_fahrenheit(temp['feels_like']), 2)}°F.\n"
 
-            humidity = data["humidity"]
-            indoor_humidity = convert_relative_humidity(humidity, temp["temp"] - 273.15, 16.6667)
+            if 'acquisition_time' in data and data['acquisition_time'] is not None:
+                acquisition_time = datetime.datetime.fromtimestamp(data['acquisition_time'])
+                date_suffix = ordinal(acquisition_time.day)
+                acquisition_time_str = acquisition_time.strftime(f"%A, %B {date_suffix}, %I:%M%p")
+                self.acquisition_time_label.setText(f"Acquired: {acquisition_time_str}")
+            else:
+                self.acquisition_time_label.setText("Acquired: Not Available")
+
+            self.detailed_status.setText(f"Expect: {WeatherCodes.code_detailed_lookup(data['weathercode'])}")
+            output += f"The temperature will be {round(celcius_to_fahrenheit(data['temperature_2m']), 2)}°F "
+            output += f"with a feels like of {round(celcius_to_fahrenheit(data['temperature_2m']), 2)}°F.\n"
+
+            humidity = data["relativehumidity_2m"]
+            indoor_humidity = convert_relative_humidity(humidity, data["temperature_2m"], 16.6667)
             output += f"The humidity will be {humidity}% (~{round(indoor_humidity, 2)}% indoors).\n"
 
-            if data["clouds"] == 0:
+            if data["cloudcover"] == 0:
                 output += "There will be no cloud cover.\n"
             else:
-                output += f"There will be {data['clouds']}% cloud cover.\n"
+                output += f"There will be {data['cloudcover']}% cloud cover.\n"
 
-            wind = data["wind"]
-            wind_speed = round(mps_to_mph(wind["speed"]), 2)
-            direction = wind_direction_arrow(wind["deg"])
+            wind_speed = round(kph_to_mph(data["windspeed_10m"]), 2)
+            direction = wind_direction_arrow(data["winddirection_10m"])
             output += f"The wind will be blowing at {direction}{wind_speed} mph"
-            if "gust" in wind:
-                gust_speed = round(mps_to_mph(wind["gust"]), 2)
-                output += f" with gusts up to {gust_speed} mph.\n"
-            else:
-                output += ".\n"
 
-            visibility = data["visibility_distance"]
+            gust_speed = round(kph_to_mph(data["windgusts_10m"]), 2)
+            output += f" with gusts up to {gust_speed} mph.\n"
+
+            visibility = data["visibility"]
             output += f"The expected visibility will be {visibility_to_text(visibility)}.\n"
 
-            rain, snow, percip = data["rain"].get("1h", 0), data["snow"].get("1h", 0), ""
-            if rain > 0:
-                percip = f"{mm_to_inches(rain)}in of rain"
-            elif snow > 0:
-                percip = f"{mm_to_inches(snow)}in of snow"
-            else:
-                percip = "precipitation"
+            # rain, snow, percip = data["rain"].get("1h", 0), data["snow"].get("1h", 0), ""
+            # if rain > 0:
+            #     percip = f"{mm_to_inches(rain)}in of rain"
+            # elif snow > 0:
+            #     percip = f"{mm_to_inches(snow)}in of snow"
+            # else:
+            #     percip = "precipitation"
 
-            if data['precipitation_probability'] > 0:
-                output += f"There is a {round(data['precipitation_probability'] * 100)}% chance of " \
-                          f"{percip}\n"
+            if data['precipitation_probability'] > 10:
+                output += f"There is a {data['precipitation_probability']}% chance of " \
+                    # f"{percip}\n"
             else:
                 output += "There is no chance of precipitation.\n"
-
+            icon = WeatherCodes.code_to_icon(data['weathercode'], True)
             self.icon_manager.get(
-                QNetworkRequest(QUrl(f"http://openweathermap.org/img/wn/{data['weather_icon_name']}@2x.png")))
+                QNetworkRequest(QUrl(f"http://openweathermap.org/img/wn/{icon}@2x.png")))
         except Exception as e:
             logging.error(f"Error parsing forecast: {e}")
             logging.exception(e)
@@ -197,4 +213,3 @@ class ForecastFocus(QLabel):
             logging.exception(e)
         finally:
             response.deleteLater()
-

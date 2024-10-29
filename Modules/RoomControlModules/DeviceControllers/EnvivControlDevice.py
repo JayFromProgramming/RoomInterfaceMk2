@@ -117,6 +117,8 @@ class EnvivControlDevice(RoomDevice):
 
     def update_state(self):
         self.target_selector_button.show()
+        if self.data is None:
+            return "State  : UNKNOWN"
         if not self.data["health"]["online"]:
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red")
             return "OFFLINE"

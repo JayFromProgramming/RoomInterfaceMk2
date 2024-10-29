@@ -17,12 +17,40 @@ class WeatherCodes:
         "L.Snow": 71,
         "Snow": 73,
         "H.Snow": 75,
-        "Storm": [80, 81, 82],
-        "T-Storm": [95, 96, 97, 98],
+        "T-Storm": [80, 81, 82],
+        "Hail": [95, 96, 97, 98],
+    }
+
+    detailed_lookup_table = {
+        "Clear Sky": 0,
+        "Few Clouds": 1,
+        "Partly Cloudy": 2,
+        "Overcast Clouds": 3,
+        "Fog": [45, 48],
+        "Light Drizzle": 51,
+        "Moderate Drizzle": 53,
+        "Heavy Drizzle": 55,
+        "Light Freezing Drizzle": 56,
+        "Heavy Freezing Drizzle": 57,
+        "Light Rain": 61,
+        "Rain": 63,
+        "Heavy Rain": 65,
+        "Freezing Rain": 66,
+        "Intense Freezing Rain": 67,
+        "Light Snow": 71,
+        "Snow": 73,
+        "Heavy Snow": 75,
+        "Snow Grains": 77,  # Not sure what this is
+        "Light Rain Showers": 80,
+        "Rain Showers": 81,
+        "Violent Rain Showers": 82,
+        "Snow Showers": 85,
+        "Heavy Snow Showers": 87,
+        "Thunderstorm": [95, 96, 97, 98],
     }
 
     owm_icon_conversion = {
-        "01": 0,  # Clear Sky
+        "01": [0, 1],  # Clear Sky
         "02": 2,  # Few Clouds
         "03": 2,  # Scattered Clouds
         "04": 3,  # Broken Clouds
@@ -53,4 +81,12 @@ class WeatherCodes:
                 return f"{key}d" if is_day else f"{key}n"
         return ""
 
-
+    @staticmethod
+    def code_detailed_lookup(code: int) -> str:
+        for key, value in WeatherCodes.detailed_lookup_table.items():
+            if isinstance(value, list):
+                if code in value:
+                    return key
+            elif value == code:
+                return key
+        return str(code)
