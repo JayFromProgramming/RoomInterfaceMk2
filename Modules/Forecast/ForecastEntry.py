@@ -162,7 +162,7 @@ class ForecastEntry(QLabel):
         :return:
         """
         try:
-            time_parsed = datetime.datetime.fromisoformat(data["time"]) # The timezone is already included in the time but it's utc
+            time_parsed = datetime.datetime.fromisoformat(data["time"])  # The timezone is already included in the time but it's utc
             # Convert the time to the local timezone
             time_parsed = time_parsed.replace(tzinfo=datetime.timezone.utc).astimezone(tz=None)
             reference_time = QDateTime.fromSecsSinceEpoch(int(time.mktime(time_parsed.timetuple())))

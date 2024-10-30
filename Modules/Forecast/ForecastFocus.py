@@ -110,6 +110,7 @@ class ForecastFocus(QLabel):
         try:
             self.current_reference_time = reference_time
             ref_time = datetime.datetime.fromisoformat(reference_time)
+            ref_time = ref_time.replace(tzinfo=datetime.timezone.utc).astimezone(tz=None)
             date_suffix = ordinal(ref_time.day)
             # Display the reference time as Day Month Day(suffix), Time AM/PM
             if ref_time.timestamp() <= 30:
@@ -129,7 +130,7 @@ class ForecastFocus(QLabel):
     def parse_forecast(self, data):
         output = ""
         try:
-
+            print(data)
             if 'acquisition_time' in data and data['acquisition_time'] is not None:
                 acquisition_time = datetime.datetime.fromtimestamp(data['acquisition_time'])
                 date_suffix = ordinal(acquisition_time.day)
