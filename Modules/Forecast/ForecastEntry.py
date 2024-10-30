@@ -172,14 +172,14 @@ class ForecastEntry(QLabel):
             self.status_label.setText(WeatherCodes.code_short_lookup(data["weathercode"]))
             temperature = celcius_to_fahrenheit(data["temperature_2m"])
             self.temperature_label.setText(f"{round(temperature)}°F")
-            # feels_like = celcius_to_fahrenheit(data["temperature"]["feels_like"])
-            feels_like = calculate_real_feel(data["temperature_2m"], data["relativehumidity_2m"], data["windspeed_10m"])
+            feels_like = celcius_to_fahrenheit(data["apparent_temperature"])
+            # feels_like = calculate_real_feel(data["temperature_2m"], data["relativehumidity_2m"], data["windspeed_10m"])
             chance = data['precipitation_probability']
             if chance > 20:
                 self.feels_like_label.upper_label.setText(f"Chance")
                 self.feels_like_label.lower_label.setText(f"{round(chance)}%")
             else:
-                self.feels_like_label.lower_label.setText(f"{round(celcius_to_fahrenheit(feels_like))}°F")
+                self.feels_like_label.lower_label.setText(f"{round(feels_like)}°F")
 
             wind_speed = round(kph_to_mph(data["windspeed_10m"]), 2)
             wind_direction = wind_direction_arrow(data["winddirection_10m"])

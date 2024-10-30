@@ -141,7 +141,7 @@ class ForecastFocus(QLabel):
 
             self.detailed_status.setText(f"Expect: {WeatherCodes.code_detailed_lookup(data['weathercode'])}")
             output += f"The temperature will be {round(celcius_to_fahrenheit(data['temperature_2m']), 2)}°F "
-            output += f"with a feels like of {round(celcius_to_fahrenheit(data['temperature_2m']), 2)}°F.\n"
+            output += f"with a feels like of {round(celcius_to_fahrenheit(data['apparent_temperature']), 2)}°F.\n"
 
             humidity = data["relativehumidity_2m"]
             indoor_humidity = convert_relative_humidity(humidity, data["temperature_2m"], 16.6667)
@@ -162,20 +162,20 @@ class ForecastFocus(QLabel):
             visibility = data["visibility"]
             output += f"The expected visibility will be {visibility_to_text(visibility)}.\n"
 
-            # rain, snow, percip = data["rain"].get("1h", 0), data["snow"].get("1h", 0), ""
-            # if rain > 0:
-            #     percip = f"{mm_to_inches(rain)}in of rain"
-            # elif snow > 0:
-            #     percip = f"{mm_to_inches(snow)}in of snow"
-            # else:
-            #     percip = "precipitation"
+            rain, snow, percip = data["precipitation"], data["snowfall"], ""
+            if snow > 0:
+                percip = f"{mm_to_inches(snow, round_to=3)}in of snow"
+            elif rain > 0:
+                percip = f"{mm_to_inches(rain, round_to=3)}in of rain"
+            else:
+                percip = "precipitation"
 
             if data['precipitation_probability'] > 10:
                 output += f"There is a {data['precipitation_probability']}% chance of " \
-                    # f"{percip}\n"
+                    f"{percip}\n"
             else:
                 output += "There is no chance of precipitation.\n"
-            icon = WeatherCodes.code_to_icon(data['weathercode'], True)
+            icon = WeatherCodes.code_to_icon(data['weathercode'], True if data['is_day'] == 1 else False)
             self.icon_manager.get(
                 QNetworkRequest(QUrl(f"http://openweathermap.org/img/wn/{icon}@2x.png")))
         except Exception as e:
