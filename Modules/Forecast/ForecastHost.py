@@ -156,7 +156,7 @@ class ForecastHost(QLabel):
                 widget.deleteLater()
             self.forecast_widgets.clear()
             self.forecasts = forecasts
-            self.forecast_widgets = [ForecastEntry(self, forecast) for forecast in forecasts
+            self.forecast_widgets = [ForecastEntry(self, forecast) for forecast in forecasts[:84]
                                      if datetime.datetime.fromisoformat(forecast) > datetime.datetime.utcnow()]
             logging.info(f"Loaded {len(self.forecast_widgets)} forecast widgets")
             reply.deleteLater()

@@ -25,12 +25,14 @@ class RoomDevice(QLabel):
         self.priority = priority
         self.host = parent.host
         self.auth = auth
+        self.device_type = False
         if large:
             self.setFixedSize(295, 75)
         else:
             self.setFixedSize(145, 75)
         self.setStyleSheet("background-color: #ffcd00; border: 2px solid #ffcd00; border-radius: 10px")
         self.not_found = False
+
         self.toggle_button = None
 
         self.device_label = QLabel(self)
@@ -105,6 +107,21 @@ class RoomDevice(QLabel):
             self.refresh_timer.start(500)
         self.send_command(command)
 
+    def check_device_type(self, data):
+        try:
+            if "type" in data:
+                if self.device_type is False:  # If the device type is not set (false instead of None because None is a valid type)
+                    self.device_type = data["type"]
+                else:
+                    if self.device_type != data["type"]:
+                        logging.error(f"Device type mismatch: {self.device_type} != {data['type']}")
+                        self.parent.widgets_rebuild()  # Rebuild the widgets to fix the type mismatch
+            else:
+                logging.error(f"Device type not found in data: {data}")
+        except Exception as e:
+            logging.error(f"Error checking device type: {e}")
+            logging.exception(e)
+
     def handle_response(self, response):
         try:
             if str(response.error()) != "NetworkError.NoError":
@@ -119,6 +136,7 @@ class RoomDevice(QLabel):
             data = json.loads(str(data, 'utf-8'))
             self.data = data
             self.state = data["state"]
+            self.check_device_type(data)
             if self.toggling and self.state["on"] != self.last_toggle_state:
                 self.toggling = False
             self.parse_data(data)

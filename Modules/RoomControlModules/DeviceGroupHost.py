@@ -56,6 +56,9 @@ class DeviceGroupHost(QLabel):
 
         self.layout_widgets()
 
+        self.device_names = []
+        self.delete_on_rebuild = False
+
         self.type_manager = QNetworkAccessManager()
         self.type_manager.finished.connect(self.create_widget)
 
@@ -97,8 +100,35 @@ class DeviceGroupHost(QLabel):
         self.device_widgets.append(widget)
         self.layout_widgets()
 
+    def widgets_delete(self):
+        logging.warning(f"Deleting widgets for {self.group_name}")
+        for widget in self.device_widgets:
+            widget.hide()
+            widget.deleteLater()
+        self.device_widgets.clear()
+        self.layout_widgets()
+
+    def widgets_rebuild(self):
+        """
+        Called by a widget when it determines that it's type does not match the server's type.
+        This will remove all widgets and re-request the device types. This is useful when the server is restarted and
+        the device types either change or are not yet loaded.
+        :return:
+        """
+        try:
+            logging.warning(f"Rebuilding widgets for {self.group_name}")
+            self.delete_on_rebuild = True
+            for device in self.device_names:
+                self.add_device(device, refresh=True)  # Request the device types again
+        except Exception as e:
+            logging.error(f"Error rebuilding widgets: {e}")
+            logging.exception(e)
+
     def create_widget(self, response):
         try:
+            if self.delete_on_rebuild:
+                self.widgets_delete()
+                self.delete_on_rebuild = False
             original_query = response.request().url().toString()
             priority = response.request().rawHeader(b"Priority").data().decode("utf-8")
             # Get the device name from the query
@@ -124,10 +154,12 @@ class DeviceGroupHost(QLabel):
         finally:
             response.deleteLater()
 
-    def add_device(self, device: str, priority: int = 0):
+    def add_device(self, device: str, priority: int = 0, refresh: bool = False):
         request = QNetworkRequest(QUrl(f"http://{self.host}/get_type/{device}"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         request.setRawHeader(b"Priority", bytes(str(priority), 'utf-8'))
+        if not refresh:  # Prevents getting stuck in an infinite loop if we are rebuilding widgets
+            self.device_names.append(device)
         self.type_manager.get(request)
 
     def sort_widgets(self):
