@@ -12,7 +12,7 @@ from Utils.UtilMethods import has_internet
 
 
 class ToggleDevice(RoomDevice):
-    supported_types = ["VoiceMonkeyDevice", "abstract_toggle_device", "satellite_Relay", "satellite_Radiator"]
+    supported_types = ["VoiceMonkeyDevice", "abstract_toggle_device", "satellite_Relay"]
 
     def __init__(self, parent=None, device=None, priority=0):
         super().__init__(parent.auth, parent, device, False, priority)
