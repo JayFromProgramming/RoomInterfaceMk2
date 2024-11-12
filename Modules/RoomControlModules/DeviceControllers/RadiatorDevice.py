@@ -33,11 +33,13 @@ class RadiatorDevice(ToggleDevice, RoomDevice):
             self.toggle_button.setStyleSheet(
                 "color: black; font-size: 14px; font-weight: bold; background-color: orange;")
         else:
-            if self.state['state'] in ['IDLE', 'WARMUP', 'ACTIVE', 'COOLDOWN']:
+            if self.state['state'] in ['IDLE', ]:
                 self.device_text.setText(f"<pre>Online: {self.state['state']}</pre>")
             elif self.state['state'] in ['OPENING VALVE', 'CLOSING VALVE']:
                 self.device_text.setText(f"<pre>{self.state['state']}{self.spinner()}</pre>")
-                self.text_update_timer.start(500)
+                self.text_update_timer.start(250)
+            elif self.state['state'] in ['ACTIVE', 'WARMUP', 'COOLDOWN']:
+                self.device_text.setText(f"<pre>{self.state['state']} {self.state['radiator_temp']:.02f}°F</pre>")
             else:
                 self.device_text.setText(f"<pre>{self.state['state']}</pre>")
                 self.toggle_button.setStyleSheet(
