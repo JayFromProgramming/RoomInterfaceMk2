@@ -20,6 +20,8 @@ class RadarTile(QLabel):
         self.setFixedSize(256, 256)
         self.tile_x = x
         self.tile_y = y
+        self.screen_x = 0
+        self.screen_y = 0
         self.setPixmap(QPixmap(f"Assets/MapTiles/{self.tile_x}-{self.tile_y}.png").
                        scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio,
                               Qt.TransformationMode.SmoothTransformation))
@@ -55,21 +57,26 @@ class RadarTile(QLabel):
         self.outstanding_parses = 0
         self.loading = False
 
-        # self.visibility_timer = QTimer(self)
-        # self.visibility_timer.timeout.connect(self.start_loading)
+        self.visibility_timer = QTimer(self)
+        self.visibility_timer.timeout.connect(self.start_loading)
+
+    def position(self, x, y):
+        self.screen_x = x
+        self.screen_y = y
 
     def load_radar_overlays(self, timestamps):
         self.timestamps = timestamps
         self.start_loading()
-        # self.visibility_timer.start(100 + int(random.random() * 50))
+        self.visibility_timer.start(100 + int(random.random() * 50))
 
     def start_loading(self):
         # self.debug_title.setText(f"{self.tile_x}-{self.tile_y} [{self.on_screen()}]")
         # return
-        # if not self.on_screen():
-        #     return
+        if not self.on_screen():
+            return
         self.loading = True
-        # self.visibility_timer.stop()
+        self.visibility_timer.stop()
+        # logging.info(f"{self.tile_x}-{self.tile_y} is on screen")
         for timestamp in self.timestamps:
             self.outstanding_requests += 1
             self.total_frames += 1
@@ -137,12 +144,18 @@ class RadarTile(QLabel):
 
     def on_screen(self):
         # Check if the tile is visible on the main window (not just the parent widget)
-        main_window = self.window()
-        window_size = main_window.size()
-        if main_window is None:
+        # Get the parent surfaces X and Y coordinates
+        parent_x = self.parent.x()
+        parent_y = self.parent.y()
+        # Offset the parent's coordinates by the tile's coordinates
+        parent_x += self.x()
+        parent_y += self.y()
+        # If the value is negative, the tile is off the left or top of the screen
+        if parent_x < -256 or parent_y < -256:
             return False
-        global_pos = self.mapTo(main_window, self.pos())
-        # Check if some part of the tile is visible on the main window
-        return self.isVisibleTo(main_window)
+        # If the value is greater than the parent's parent's width or height, the tile is off the right or bottom
+        if parent_x > self.parent.parent().width() or parent_y > self.parent.parent().height():
+            return False
+        return True
 
 

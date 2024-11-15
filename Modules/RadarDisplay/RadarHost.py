@@ -124,15 +124,17 @@ class RadarHost(QLabel):
 
     def check_loading(self):
         # Compare the number of frames still loading to the total number of frames to be loaded
+        if all([map_tile.outstanding_requests == 0 and map_tile.outstanding_parses == 0
+                for map_tile in self.map_tiles]):
+            # self.loading_check_timer.stop()
+            self.loading_label.hide()
+        else:
+            self.loading_label.show()
         total_tiles = sum([map_tile.total_frames for map_tile in self.map_tiles])
         downloaded_frames = total_tiles - sum([map_tile.outstanding_requests for map_tile in self.map_tiles])
         loaded_frames = sum([len(map_tile.radar_images) for map_tile in self.map_tiles])
         self.loading_label.setText(f"Loading Radar Data [{downloaded_frames}/{total_tiles}]\n"
                                    f"Parsing Radar Data [{loaded_frames}/{total_tiles}]")
-        if all([map_tile.outstanding_requests == 0 and map_tile.outstanding_parses == 0
-                for map_tile in self.map_tiles]):
-            self.loading_check_timer.stop()
-            self.loading_label.hide()
 
     def last_frame(self):
         self.current_frame -= 2
@@ -184,6 +186,8 @@ class RadarHost(QLabel):
             for i, map_tile in enumerate(self.map_tiles):
                 map_tile.move((i % 4) * self.map_tiles[0].width(),
                               (i // 4) * self.map_tiles[0].height())
+                map_tile.position((i % 4) * self.map_tiles[0].width(),
+                                  (i // 4) * self.map_tiles[0].height())
             self.load_radartiles()
             # Adjust the position of the map tiles to keep the same point in the center
             self.maptile_surface.move(current_x * 2, current_y * 2)
@@ -274,13 +278,20 @@ class RadarHost(QLabel):
     def load_maptiles(self):
         # All map tiles are 256x256 pixels in size and are stored in 'Assets/MapTiles/{x}-{y}.png'
         # The map is 4 tiles wide and 3 tiles tall (15-18, 22-24)
+        center_tile_x, center_tile_y = 0, 0
         for y in range(self.min_y, self.max_y + 1):
             for x in range(self.min_x, self.max_x + 1):
                 self.map_tiles.append(RadarTile(self.host, self.maptile_surface, x, y))
         for i, map_tile in enumerate(self.map_tiles):
             map_tile.move((i % self.range_x) * 256,
                           (i // self.range_x) * 256)
+            if map_tile.tile_x == 16 and map_tile.tile_y == 22:
+                center_tile_x, center_tile_y = map_tile.x(), map_tile.y()
             # Print where the tile was placed
             # logging.info(f"Placed tile {map_tile.tile_x}-{map_tile.tile_y} at {map_tile.x()},{map_tile.y()}")
-        self.maptile_surface.move(int(-2 * 256), int(-1.5 * 256))
+        # Center the map tile surface so that tile 16-22 is in the center of the screen
+        print(f"Center Tile: {center_tile_x}, {center_tile_y}")
+        new_x, new_y = -center_tile_x + round(self.width() / 2) - 50, -center_tile_y + round(self.height() / 2) - 128
+        self.maptile_surface.move(new_x, new_y)
+
         self.load_radartiles()
