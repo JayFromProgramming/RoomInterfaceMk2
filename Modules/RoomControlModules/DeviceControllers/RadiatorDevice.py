@@ -39,7 +39,10 @@ class RadiatorDevice(ToggleDevice, RoomDevice):
                 self.device_text.setText(f"<pre>{self.state['state']}{self.spinner()}</pre>")
                 self.text_update_timer.start(250)
             elif self.state['state'] in ['ACTIVE', 'WARMUP', 'COOLDOWN']:
-                self.device_text.setText(f"<pre>{self.state['state']} {self.state['radiator_temp']:.02f}°F</pre>")
+                if self.state['radiator_temp'] is not None:
+                    self.device_text.setText(f"<pre>{self.state['state']} {self.state['radiator_temp']:.02f}°F</pre>")
+                else:
+                    self.device_text.setText(f"<pre>{self.state['state']} N/A°F</pre>")
             else:
                 self.device_text.setText(f"<pre>{self.state['state']}</pre>")
                 self.toggle_button.setStyleSheet(
