@@ -44,6 +44,12 @@ class RoomDevice(QLabel):
         self.network_manager.finished.connect(self.handle_response)
         self.command_manager = QNetworkAccessManager()
         self.command_manager.finished.connect(self.handle_command)
+
+        self.refresh_timer = QTimer(self)
+        self.refresh_timer.timeout.connect(self.get_data)
+        # self.refresh_timer.start(5000 + random.randint(0, 1000))
+        self.refresh_timer.setSingleShot(True)
+
         self.state = None
         self.data = None
         self.has_names = False
@@ -54,10 +60,6 @@ class RoomDevice(QLabel):
         self.toggle_time = 0
 
         # self.get_data()
-        self.refresh_timer = QTimer(self)
-        self.refresh_timer.timeout.connect(self.get_data)
-        # self.refresh_timer.start(5000 + random.randint(0, 1000))
-        self.refresh_timer.setSingleShot(True)
 
     def update_human_name(self, name):
         # print(f"Updating name to {name}")

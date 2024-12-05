@@ -116,10 +116,10 @@ class DeviceGroupHost(QLabel):
         :return:
         """
         try:
-            logging.warning(f"Rebuilding widgets for {self.group_name}")
+            logging.warning(f"Queueing rebuild for {self.group_name}")
             self.delete_on_rebuild = True
-            for device in self.device_names:
-                self.add_device(device, refresh=True)  # Request the device types again
+            for device in self.device_widgets:
+                self.add_device(device.device, device.priority, True)
         except Exception as e:
             logging.error(f"Error rebuilding widgets: {e}")
             logging.exception(e)

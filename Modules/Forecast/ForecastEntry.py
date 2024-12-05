@@ -166,9 +166,14 @@ class ForecastEntry(QLabel):
             # Convert the time to the local timezone
             time_parsed = time_parsed.replace(tzinfo=datetime.timezone.utc).astimezone(tz=None)
             reference_time = QDateTime.fromSecsSinceEpoch(int(time.mktime(time_parsed.timetuple())))
+            acq_time = data["acquisition_time"]
+            # If the acquisition time is more than 2 hours old, then the data is stale and mark it with an * next to the time
+            if time.time() - acq_time > 7200:
+                self.time_label.setText(reference_time.toString("hAP") + "*")
+            else:
+                self.time_label.setText(reference_time.toString("hAP"))
             # date is mm/dd
             self.date_label.setText(reference_time.toString("MM/dd"))
-            self.time_label.setText(reference_time.toString("hAP"))
             self.status_label.setText(WeatherCodes.code_short_lookup(data["weathercode"]))
             temperature = celcius_to_fahrenheit(data["temperature_2m"])
             self.temperature_label.setText(f"{round(temperature)}°F")
