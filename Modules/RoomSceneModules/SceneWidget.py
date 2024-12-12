@@ -10,9 +10,10 @@ from Modules.RoomSceneModules.SceneEditor.SceneEditorFlyout import SceneEditorFl
 
 class SceneWidget(QLabel):
 
-    def __init__(self, parent=None, scene_id=None, data=None):
+    def __init__(self, parent=None, scene_id=None, data=None, is_back_widget=False):
         super().__init__(parent)
         self.parent = parent
+        self.is_back_widget = is_back_widget
         self.host = parent.host
         self.auth = parent.auth
         self.scene_id = scene_id
@@ -31,6 +32,27 @@ class SceneWidget(QLabel):
                 "name": "Create New Scene",
                 "description": "Double click to edit",
                 "action": "",
+                "parent": None,
+                "data": "{}",
+                "triggers": [],
+                "trigger_type": "immediate"
+            }
+
+        self.parent_scene = self.data["parent"]
+
+        if self.data["data"] == "{\"folder\": \"\"}":
+            self.is_folder = True
+        else:
+            self.is_folder = False
+
+        if is_back_widget:
+            self.is_folder = True
+            self.is_new = False
+            self.data = {
+                "name": "Back",
+                "description": "Return to previous folder",
+                "action": "",
+                "parent": None,
                 "data": "{}",
                 "triggers": [],
                 "trigger_type": "immediate"
@@ -67,8 +89,11 @@ class SceneWidget(QLabel):
                                          "border: none; border-radius: 10px")
         if self.is_new:
             self.scene_trigger.setText("N/A")
+        elif self.is_folder:
+            self.scene_trigger.setText("Open")
         else:
             self.scene_trigger.setText("Run")
+
         self.scene_trigger.setFont(self.font)
         self.scene_trigger.clicked.connect(self.trigger_scene)
         self.scene_trigger.move(5, self.height() - self.scene_trigger.height() - 5)
@@ -114,6 +139,9 @@ class SceneWidget(QLabel):
 
     def trigger_scene(self):
         try:
+            if self.is_folder:
+                self.parent.open_folder(self.scene_id)
+                return
             request = QNetworkRequest(QUrl(f"http://{self.parent.host}/scene_action/execute_scene/{self.scene_id}"))
             request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
             self.scene_trigger.setStyleSheet("background-color: blue;")
@@ -138,7 +166,10 @@ class SceneWidget(QLabel):
             if self.double_click_primed:
                 self.double_click_primed = False
                 self.double_click_timer.stop()
-                if self.is_new:
+                if self.is_folder:
+                    self.parent.open_folder(self.scene_id)
+                    return
+                elif self.is_new:
                     flyout = SceneEditorFlyout(self.parent, None, None)
                 else:
                     flyout = SceneEditorFlyout(self.parent, self.scene_id, self.data)

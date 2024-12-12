@@ -21,6 +21,7 @@ class SceneEditorFlyout(QDialog):
         self.font = self.parent.font
 
         self.is_new = True if scene_id is None and data is None else False
+        self.is_new_folder = True if scene_id is None and data is not None and data["data"] == "{\"folder\":\"\"}" else False
         self.has_set_name = False
 
         # If both the scene_id and data are None, we are creating a new scene
@@ -28,6 +29,17 @@ class SceneEditorFlyout(QDialog):
             self.setWindowTitle("Create New Scene")
             self.starting_data = {
                 "name": "Unnamed Scene",
+                "description": "Double click to edit",
+                "parent": self.parent.current_top_folder,
+                "triggers": [],
+                "data": None
+            }
+            logging.debug(f"Creating new scene in folder {self.starting_data['parent']}")
+        elif self.is_new_folder:
+            self.setWindowTitle("Creating New Folder")
+            self.starting_data = {
+                "name": "Unnamed Folder",
+                "parent": data["parent"],
                 "triggers": [],
                 "data": None
             }
@@ -133,6 +145,19 @@ class SceneEditorFlyout(QDialog):
 
         self.get_schema()
 
+        # If a new folder is being created, then this window will be short lived.
+        # This window will send the request to create the folder and then close itself
+        if self.is_new_folder:
+            self.starting_data = {
+                "name": data["name"],
+                "parent": data["parent"],
+
+            }
+            self.setWindowTitle(f"Creating Folder: {self.starting_data['name']}")
+            self.send_save_request("add_scene", "{\"folder\":\"\"}",
+                                   [], scene_parent=self.starting_data['parent'])
+            return
+
         # Check if the main window is full screen, if so make this window full screen on top of it
         active_window = QApplication.instance().activeWindow()
         if active_window.isFullScreen():
@@ -229,6 +254,16 @@ class SceneEditorFlyout(QDialog):
         finally:
             reply.deleteLater()
 
+    def send_save_request(self, action, new_action_data, new_trigger_data, description=None, scene_parent=None):
+        request = QNetworkRequest(
+            QUrl(f"http://{self.host}/scene_action/{action}/{self.scene_id}"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        payload = {"scene_data": new_action_data, "triggers": new_trigger_data,
+                   "scene_name": self.starting_data['name'], "scene_description": description,
+                   "scene_parent": scene_parent}
+        print(f"Payload: {payload}")
+        self.scene_request.post(request, bytes(json.dumps(payload), 'utf-8'))
+
     def save_scene(self):
         try:
             if self.is_new and not self.has_set_name:
@@ -241,12 +276,9 @@ class SceneEditorFlyout(QDialog):
             for trigger in self.selected_trigger_list.trigger_labels:
                 new_trigger_data.append(trigger.trigger_data)
             action = "add_scene" if self.is_new else "update_scene"
-            request = QNetworkRequest(
-                QUrl(f"http://{self.host}/scene_action/{action}/{self.scene_id}"))
-            request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
-            payload = {"scene_data": new_action_data, "triggers": new_trigger_data,
-                       "scene_name": self.starting_data['name']}
-            self.scene_request.post(request, bytes(json.dumps(payload), 'utf-8'))
+            self.send_save_request(action, new_action_data, new_trigger_data,
+                                   description=self.starting_data['description'],
+                                   scene_parent=self.starting_data['parent'])
             # self.processing_request_dialog.show()
         except Exception as e:
             exception_window = QDialog(self)

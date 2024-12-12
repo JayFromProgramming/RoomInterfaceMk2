@@ -3,8 +3,9 @@ import os
 
 from PyQt6.QtCore import Qt, QTimer, QUrl
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QLabel, QMenu, QInputDialog
 
+from Modules.RoomSceneModules.SceneEditor.SceneEditorFlyout import SceneEditorFlyout
 from Modules.RoomSceneModules.SceneWidget import SceneWidget
 from Utils.ScrollableMenu import ScrollableMenu
 from loguru import logger as logging
@@ -15,6 +16,7 @@ class RoomSceneHost(ScrollableMenu):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent = parent
+        self.current_top_folder = None
         self.setFixedSize(parent.width(), parent.height() - self.y())
 
         self.setStyleSheet("border: 2px solid #ffcd00; border-radius: 10px")
@@ -32,6 +34,15 @@ class RoomSceneHost(ScrollableMenu):
                 }
                 json.dump(data, f)
                 raise Exception("Please fill out the auth.json file with the proper information")
+
+        self.menu = QMenu(self)
+        self.menu.setStyleSheet("color: white")
+        folder_action = self.menu.addAction("Create Folder")
+        folder_action.triggered.connect(self.create_folder)
+        new_scene_action = self.menu.addAction("Create New Scene")
+        new_scene_action.triggered.connect(lambda: SceneEditorFlyout(self, None, None).show())
+
+        self.back_widget = SceneWidget(self, None, None, is_back_widget=True)
 
         self.scene_widgets = []
 
@@ -75,6 +86,8 @@ class RoomSceneHost(ScrollableMenu):
 
     def reload(self):
         for widget in self.scene_widgets:
+            if widget.is_back_widget:
+                continue
             widget.hide()
             widget.deleteLater()
         self.scene_widgets = []
@@ -83,7 +96,7 @@ class RoomSceneHost(ScrollableMenu):
     def handle_scene_data(self, data):
         for scene_id, scene in data.items():
             self.scene_widgets.append(SceneWidget(self, scene_id, scene))
-        self.scene_widgets.append(SceneWidget(self, None, None))
+        self.scene_widgets.append(self.back_widget)
         self.layout_widgets()
 
     def resizeEvent(self, a0) -> None:
@@ -97,10 +110,47 @@ class RoomSceneHost(ScrollableMenu):
             widget.move(widget.x(), widget.y() + offset)
         self.scroll_offset = 0
 
-    def layout_widgets(self):
+    def create_folder(self):
+        """
+        Create a popup asking for the folder name and then create a folder scene
+        :return:
+        """
+        try:
+            diag = QInputDialog()
+            diag.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+            diag.setLabelText("Enter the folder name:")
+            diag.setOkButtonText("Create")
+            diag.setCancelButtonText("Cancel")
+            diag.exec()
+            folder_name = diag.textValue()
+            if folder_name == "":
+                return
+            SceneEditorFlyout(self, None, {"name": folder_name, "data": "{\"folder\":\"\"}",
+                                           "parent": self.current_top_folder}).show()
+        except Exception as e:
+            logging.error(f"Error creating folder: {e}")
+            logging.exception(e)
 
+    def contextMenuEvent(self, ev):
+        try:
+            self.menu.exec(ev.globalPos())
+        except Exception as e:
+            logging.error(f"Error in contextMenuEvent: {e}")
+            logging.exception(e)
+
+    def open_folder(self, folder_id):
+        self.back_widget.scene_id = self.current_top_folder
+        self.current_top_folder = folder_id
+        self.layout_widgets()
+
+    def layout_widgets(self):
+        # Hide all the widgets
+        for widget in self.scene_widgets:
+            widget.hide()
+
+        current_widgets = [widget for widget in self.scene_widgets if widget.parent_scene == self.current_top_folder or widget.is_back_widget]
         # Sort the scenes by number of triggers (lowest to highest, excluding the new scene widget)
-        self.scene_widgets.sort(key=lambda x: len(x.data['triggers']) if x.scene_id is not None else 9999)
+        current_widgets.sort(key=lambda x: (x.is_back_widget, x.is_folder, len(x.data['triggers']) if not x.is_folder else 0))
 
         # Lay the widgets out row by row with a 10 pixel margin
         y_offset = 20
@@ -108,7 +158,7 @@ class RoomSceneHost(ScrollableMenu):
         center_offset = []
         row_num = 0
         # Start a new row when the widgets won't fit on the current row
-        for widget in self.scene_widgets:
+        for widget in current_widgets:
             widget.move(x_offset, y_offset)
             widget.row_num = row_num
             widget.show()
@@ -124,7 +174,5 @@ class RoomSceneHost(ScrollableMenu):
         row_num += 1
 
         # Center the widgets
-        for widget in self.scene_widgets:
+        for widget in current_widgets:
             widget.move(widget.x() + center_offset[widget.row_num], widget.y())
-
-
