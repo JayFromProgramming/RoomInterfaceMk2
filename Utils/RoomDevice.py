@@ -4,7 +4,7 @@ import time
 
 from PyQt6.QtCore import QUrl, QTimer, Qt
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QLabel, QMenu, QInputDialog
 from loguru import logger as logging
 
 from Utils.UtilMethods import has_internet
@@ -50,6 +50,10 @@ class RoomDevice(QLabel):
         # self.refresh_timer.start(5000 + random.randint(0, 1000))
         self.refresh_timer.setSingleShot(True)
 
+        self.context_menu = QMenu(self)
+        self.context_menu.addAction("Rename").triggered.connect(self.rename_device)
+        self.context_menu.setStyleSheet("color: white; background-color: black")
+
         self.state = None
         self.data = None
         self.has_names = False
@@ -93,6 +97,26 @@ class RoomDevice(QLabel):
         payload = json.dumps(command)
         self.command_manager.post(request, payload.encode("utf-8"))
         self.refresh_timer.start(500)
+
+    def rename_device(self):
+        try:
+            diag = QInputDialog()
+            diag.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+            diag.setLabelText("Enter a new name for the device:")
+            diag.setTextValue(self.human_name)
+            diag.setOkButtonText("Submit")
+            diag.setCancelButtonText("Cancel")
+            diag.exec()
+            new_name = diag.textValue()
+            if new_name == "":
+                return
+            request = QNetworkRequest(QUrl(f"http://{self.host}/set_name/{self.device}/{new_name}"))
+            request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+            self.command_manager.get(request)
+            QTimer.singleShot(500, self.parent.widgets_rebuild)
+        except Exception as e:
+            logging.error(f"Error renaming device: {e}")
+            logging.exception(e)
 
     def parse_data(self, data):
         raise NotImplementedError("This method must be implemented by the child class")
@@ -165,6 +189,9 @@ class RoomDevice(QLabel):
             logging.exception(e)
         finally:
             response.deleteLater()
+
+    def contextMenuEvent(self, ev):
+        self.context_menu.exec(ev.globalPos())
 
     def handle_failure(self, response):
         raise NotImplementedError("This method must be implemented by the child class")

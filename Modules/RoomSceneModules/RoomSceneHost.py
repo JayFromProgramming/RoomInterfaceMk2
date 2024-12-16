@@ -49,6 +49,15 @@ class RoomSceneHost(ScrollableMenu):
         self.network_manager = QNetworkAccessManager()
         self.network_manager.finished.connect(self.handle_network_response)
 
+        self.folder_level_label = QLabel(self)
+        self.folder_level_label.setFont(self.parent.get_font("JetBrainsMono-Regular"))
+        self.folder_level_label.setFixedSize(self.width(), 20)
+        self.folder_level_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
+        self.folder_level_label.setStyleSheet("color: white; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
+        self.folder_level_label.move(0, 2)
+        self.folder_level_label.setText("Loading Scene Data...")
+        self.folder_path = []
+
         self.hide()
 
         self.retry_timer = QTimer(self)
@@ -94,10 +103,15 @@ class RoomSceneHost(ScrollableMenu):
         self.make_request()
 
     def handle_scene_data(self, data):
+        self.scene_widgets.clear()
+        self.folder_path = ["Scenes"]
         for scene_id, scene in data.items():
             self.scene_widgets.append(SceneWidget(self, scene_id, scene))
         self.scene_widgets.append(self.back_widget)
         self.layout_widgets()
+
+    def update_path_text(self):
+        self.folder_level_label.setText(" -> ".join(self.folder_path))
 
     def resizeEvent(self, a0) -> None:
         super().resizeEvent(a0)
@@ -150,6 +164,13 @@ class RoomSceneHost(ScrollableMenu):
             logging.exception(e)
 
     def open_folder(self, folder_id):
+        folder_name = [widget.data["name"] for widget in self.scene_widgets if widget.scene_id == folder_id][0]
+        if folder_name == "Back":
+            if len(self.folder_path) == 1:
+                return
+            self.folder_path.pop()
+        else:
+            self.folder_path.append(folder_name)
         self.back_widget.scene_id = self.current_top_folder
         self.current_top_folder = folder_id
         self.layout_widgets()
@@ -166,24 +187,28 @@ class RoomSceneHost(ScrollableMenu):
         for widget in self.scene_widgets:
             widget.hide()
 
+        self.update_path_text()
+
         self.find_orphans()
         current_widgets = [widget for widget in self.scene_widgets if widget.parent_scene == self.current_top_folder or widget.is_back_widget]
         # Sort the scenes by number of triggers (lowest to highest, excluding the new scene widget)
         current_widgets.sort(key=lambda x: (x.is_back_widget, x.is_folder, len(x.data['triggers']) if not x.is_folder else 0))
 
         # Lay the widgets out row by row with a 10 pixel margin
-        y_offset = 20
+        y_offset = 22
         x_offset = 5
         center_offset = []
         row_num = 0
+        widget_num = 0
         # Start a new row when the widgets won't fit on the current row
         for widget in current_widgets:
             widget.move(x_offset, y_offset)
             widget.row_num = row_num
             widget.show()
             x_offset += widget.width() + 7
+            widget_num += 1
             # Wrap around to the next row if the widget won't fit on the current row
-            if x_offset + widget.width() > self.width():
+            if x_offset + widget.width() > self.width() or widget_num == len(current_widgets) - 1:
                 center_offset.append(round((self.width() - x_offset - 5) / 2))
                 row_num += 1
                 x_offset = 5

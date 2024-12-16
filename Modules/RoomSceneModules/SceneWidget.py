@@ -163,6 +163,9 @@ class SceneWidget(QLabel):
             logging.exception(e)
 
     def move_scene(self, folder_id):
+        if isinstance(folder_id, int):
+            logging.error(f"Invalid folder_id: {folder_id}")
+            return
         try:
             print(f"Moving scene {self.scene_id} to folder {folder_id}")
             request = QNetworkRequest(QUrl(f"http://{self.parent.host}/scene_action/update_scene/{self.scene_id}"))
@@ -199,7 +202,7 @@ class SceneWidget(QLabel):
         self.submenu.clear()
         for scene_id, name in self.parent.get_available_folders():
             print(scene_id, name)
-            self.submenu.addAction(name).triggered.connect(lambda x=scene_id: self.move_scene(scene_id))
+            self.submenu.addAction(name).triggered.connect(lambda checked, x=scene_id: self.move_scene(x))
         self.menu.exec(a0.globalPos())
 
     def mousePressEvent(self, a0) -> None:
