@@ -4,11 +4,14 @@ import math
 def kelvin_to_fahrenheit(kelvin):
     return (kelvin - 273.15) * 9 / 5 + 32
 
+
 def celcius_to_fahrenheit(celcius):
     return celcius * 9 / 5 + 32
 
+
 def meters_to_miles(meters):
     return meters * 0.000621371
+
 
 def mm_to_inches(mm, round_to=2):
     return round(mm * 0.0393701, round_to)
@@ -16,11 +19,11 @@ def mm_to_inches(mm, round_to=2):
 
 def visibility_to_text(visibility):
     visibility = meters_to_miles(visibility)
-    if visibility > 6:
+    if round(visibility, 2) > 6:
         visibility = "Clear"
-    elif visibility % 1 == 0:
+    elif round(visibility, 2) % 1 == 0:
         visibility = f"{int(visibility)} mi"
-    elif visibility > 1:
+    elif round(visibility, 2) > 1:
         visibility = f"{round(visibility, 2)} mi"
     elif len(str(float(round(visibility, 2)).as_integer_ratio()[0])) > 4:
         visibility = f"{round(visibility, 2)} mi"
@@ -56,6 +59,7 @@ def wind_direction_arrow(degree):
 
 def mps_to_mph(mps):
     return mps * 2.23694
+
 
 def kph_to_mph(kph):
     return kph * 0.621371

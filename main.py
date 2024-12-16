@@ -154,6 +154,8 @@ class MainWindow(QMainWindow):
             if a0.key() == 82:
                 self.room_control.reload_schema()
                 self.forecast.refresh_forecast()
+                self.scene_control.reload()
+                self.weather.make_request()
             super().keyReleaseEvent(a0)
         except Exception as e:
             logging.exception(e)
