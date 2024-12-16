@@ -131,6 +131,17 @@ class RoomSceneHost(ScrollableMenu):
             logging.error(f"Error creating folder: {e}")
             logging.exception(e)
 
+    def get_available_folders(self):
+        """
+        Returns the folders in the currently viewed folder that a scene could be moved to
+        :return: List of folder scene ids and names
+        """
+        available_folders = []
+        for widget in self.scene_widgets:
+            if widget.is_folder and widget.parent_scene == self.current_top_folder:
+                available_folders.append((widget.scene_id, widget.data["name"]))
+        return available_folders
+
     def contextMenuEvent(self, ev):
         try:
             self.menu.exec(ev.globalPos())
@@ -143,11 +154,19 @@ class RoomSceneHost(ScrollableMenu):
         self.current_top_folder = folder_id
         self.layout_widgets()
 
+    def find_orphans(self):
+        for widget in self.scene_widgets:
+            if widget.parent_scene is not None:
+                if not any([scene.scene_id == widget.parent_scene for scene in self.scene_widgets]):
+                    logging.warning(f"Scene {widget.scene_id} has a parent that does not exist")
+                    widget.orphaned()
+
     def layout_widgets(self):
         # Hide all the widgets
         for widget in self.scene_widgets:
             widget.hide()
 
+        self.find_orphans()
         current_widgets = [widget for widget in self.scene_widgets if widget.parent_scene == self.current_top_folder or widget.is_back_widget]
         # Sort the scenes by number of triggers (lowest to highest, excluding the new scene widget)
         current_widgets.sort(key=lambda x: (x.is_back_widget, x.is_folder, len(x.data['triggers']) if not x.is_folder else 0))

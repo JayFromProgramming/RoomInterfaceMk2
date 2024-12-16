@@ -3,7 +3,7 @@ import re
 
 from PyQt6.QtCore import Qt, QUrl, QTimer
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel, QPushButton
+from PyQt6.QtWidgets import QLabel, QPushButton, QMenu
 from loguru import logger as logging
 from Modules.RoomSceneModules.SceneEditor.SceneEditorFlyout import SceneEditorFlyout
 
@@ -125,17 +125,15 @@ class SceneWidget(QLabel):
         self.scene_caller = QNetworkAccessManager()
         self.scene_caller.finished.connect(self.handle_scene_response)
 
-        # self.request_names()
+        self.menu = QMenu(self)
+        self.submenu = self.menu.addMenu("Move Scene")
+        self.menu.setStyleSheet("color: white; background-color: black")
+        self.submenu.setStyleSheet("color: white; background-color: black")
+        self.menu.addAction("Delete Folder" if self.is_folder else "Delete Scene").triggered.connect(self.delete_scene)
 
-    # def request_names(self):
-    #     # Find all the device names in the action
-    #     # Send a request for each device name
-    #     regex = r"\[(.*?)\]"
-    #     matches = re.findall(regex, self.description)
-    #     for match in matches:
-    #         request = QNetworkRequest(QUrl(f"http://{self.parent.host}/name/{match}"))
-    #         request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
-    #         self.device_name_getter.get(request)
+    def orphaned(self):
+        self.parent_scene = None
+        self.data["parent"] = None
 
     def trigger_scene(self):
         try:
@@ -151,14 +149,58 @@ class SceneWidget(QLabel):
             logging.error(f"Error triggering scene: {e}")
             logging.exception(e)
 
+    def delete_scene(self):
+        try:
+            request = QNetworkRequest(QUrl(f"http://{self.parent.host}/scene_action/delete_scene/{self.scene_id}"))
+            request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
+            self.scene_trigger.setStyleSheet("background-color: red;")
+            payload = {}
+            self.scene_caller.post(request, bytes(json.dumps(payload), 'utf-8'))
+            # Wait .5 seconds before reloading
+            QTimer.singleShot(500, self.reload)
+        except Exception as e:
+            logging.error(f"Error deleting scene: {e}")
+            logging.exception(e)
+
+    def move_scene(self, folder_id):
+        try:
+            print(f"Moving scene {self.scene_id} to folder {folder_id}")
+            request = QNetworkRequest(QUrl(f"http://{self.parent.host}/scene_action/update_scene/{self.scene_id}"))
+            request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
+            self.scene_trigger.setStyleSheet("background-color: blue;")
+            payload = {
+                "scene_data": self.data["data"],
+                "scene_name": self.data["name"],
+                "scene_description": self.data["description"],
+                "scene_parent": folder_id,
+                "triggers": self.data["triggers"],
+            }
+            self.scene_caller.post(request, bytes(json.dumps(payload), 'utf-8'))
+            # Wait .5 seconds before reloading
+            QTimer.singleShot(500, self.reload)
+        except Exception as e:
+            logging.error(f"Error moving scene: {e}")
+            logging.exception(e)
+
     def handle_scene_response(self, reply):
         try:
+            if str(reply.error()) != "NetworkError.NoError":
+                logging.error(f"Error: {reply.error()}")
+                return
             self.scene_trigger.setStyleSheet(
                 "background-color: grey; color: white; font-size: 14px; font-weight: bold;")
         except Exception as e:
             pass
         finally:
             reply.deleteLater()
+
+    def contextMenuEvent(self, a0) -> None:
+        self.double_click_primed = False
+        self.submenu.clear()
+        for scene_id, name in self.parent.get_available_folders():
+            print(scene_id, name)
+            self.submenu.addAction(name).triggered.connect(lambda x=scene_id: self.move_scene(scene_id))
+        self.menu.exec(a0.globalPos())
 
     def mousePressEvent(self, a0) -> None:
         # Manually check for double click events

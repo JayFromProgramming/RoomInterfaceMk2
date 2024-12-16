@@ -261,7 +261,6 @@ class SceneEditorFlyout(QDialog):
         payload = {"scene_data": new_action_data, "triggers": new_trigger_data,
                    "scene_name": self.starting_data['name'], "scene_description": description,
                    "scene_parent": scene_parent}
-        print(f"Payload: {payload}")
         self.scene_request.post(request, bytes(json.dumps(payload), 'utf-8'))
 
     def save_scene(self):
