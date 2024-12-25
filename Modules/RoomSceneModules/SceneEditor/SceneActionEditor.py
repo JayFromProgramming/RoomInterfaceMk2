@@ -14,11 +14,11 @@ class SceneActionEditor(QWidget):
 
     def __init__(self, device_name, action_payload: dict = None):
         super().__init__()
-        self.setFixedSize(320, 400)
+        self.setFixedSize(330, 440)
         self.scroll_area = QScrollArea(self)
-        self.scroll_area.setFixedSize(300, 320)
+        self.scroll_area.setFixedSize(310, 350)
         self.scroll_panel = QLabel(self)
-        self.scroll_panel.setFixedSize(300, 600)
+        self.scroll_panel.setFixedSize(310, 600)
         self.scroll_area.setWidget(self.scroll_panel)
         self.scroll_area.move(10, 10)
         self.setWindowTitle("Scene Action Editor")
@@ -27,7 +27,7 @@ class SceneActionEditor(QWidget):
         self.actions = []
 
         self.device_name_label = QLabel(self)
-        self.device_name_label.setFixedSize(300, 20)
+        self.device_name_label.setFixedSize(310, 20)
         self.device_name_label.move(10, 330)
         self.device_name_label.setText(f"Editing actions for {self.device_name}")
 
@@ -44,19 +44,24 @@ class SceneActionEditor(QWidget):
         self.action_type_selector.move(self.add_new_button.x() + self.add_new_button.width() + 5,
                                        self.add_new_button.y())
 
+        self.paste_data_button = QPushButton(self)
+        self.paste_data_button.setFixedSize(50, 22)
+        self.paste_data_button.move(self.width() - self.paste_data_button.width() - 10,
+                                    self.height() - self.paste_data_button.height() - 2)
+        self.paste_data_button.setText("Paste")
+        self.paste_data_button.clicked.connect(self.paste_data)
+
         self.copy_data_button = QPushButton(self)
-        self.copy_data_button.setFixedSize(50, 20)
-        self.copy_data_button.move(self.width() - self.copy_data_button.width() - 10,
-                                   self.height() - self.copy_data_button.height() - 25)
+        self.copy_data_button.setFixedSize(50, 22)
+        self.copy_data_button.move(self.paste_data_button.x(), self.paste_data_button.y() - self.copy_data_button.height() - 2)
         self.copy_data_button.setText("Copy")
         self.copy_data_button.clicked.connect(self.copy_data)
 
-        self.paste_data_button = QPushButton(self)
-        self.paste_data_button.setFixedSize(50, 20)
-        self.paste_data_button.move(self.copy_data_button.x(),
-                                    self.copy_data_button.y() + self.copy_data_button.height() + 2)
-        self.paste_data_button.setText("Paste")
-        self.paste_data_button.clicked.connect(self.paste_data)
+        self.revert_button = QPushButton(self)
+        self.revert_button.setFixedSize(50, 22)
+        self.revert_button.move(self.copy_data_button.x(), self.copy_data_button.y() - self.revert_button.height() - 2)
+        self.revert_button.setText("Revert")
+        self.revert_button.clicked.connect(self.create_actions)
 
         self.create_actions()
 
@@ -67,17 +72,17 @@ class SceneActionEditor(QWidget):
         self.actions = []
         if self.action_payload is not None:
             for action in self.action_payload.items():
-                action_label = SceneAction(self.scroll_panel, self.delete_action, action)
+                action_label = SceneAction.create_action(self.scroll_panel, self.delete_action, action)
                 self.actions.append(action_label)
         self.layout_actions()
 
     def add_new_action(self):
-        action = SceneAction.supported_actions[self.action_type_selector.currentIndex()]
+        action = SceneAction.supported_actions()[self.action_type_selector.currentIndex()]
         self.add_action(action)
 
     def add_action(self, action: tuple):
         action_payload = (action[0], action[2])
-        action_label = SceneAction(self.scroll_panel, self.delete_action, action_payload)
+        action_label = SceneAction.create_action(self.scroll_panel, self.delete_action, action_payload)
         self.actions.append(action_label)
         self.layout_actions()
 

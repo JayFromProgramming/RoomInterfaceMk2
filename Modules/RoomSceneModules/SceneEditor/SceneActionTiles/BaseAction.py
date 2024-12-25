@@ -21,7 +21,6 @@ class BaseAction(QLabel):
         self.action_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
         self.action_input_object = None
-        self.create_action_input()
 
         self.delete_button = QPushButton(self)
         self.delete_button.setFixedSize(20, 20)
@@ -29,6 +28,12 @@ class BaseAction(QLabel):
                                 self.height() - self.delete_button.height())
         self.delete_button.setText("X")
         self.delete_button.clicked.connect(self.delete_action)
+        try:
+            self.create_action_input()
+        except Exception as e:
+            logging.error(f"Error creating action input: {e}")
+            logging.exception(e)
+        self.delete_button.raise_()
 
     def create_action_input(self):
         self.action_input_object = QLabel(self)
@@ -38,18 +43,7 @@ class BaseAction(QLabel):
         self.action_input_object.show()
 
     def get_payload(self):
-        match self.act:
-            case "on":
-                return self.action_input_object.currentIndex() == 0
-            case "brightness":
-                return self.action_input_object.value()
-            case "color":
-                return [self.action_input_object.children()[i].value() for i in range(3)]
-            case "fade":
-                return {'target': [self.action_input_object.children()[i].value() for i in range(4)],
-                        'time': self.action_input_object.children()[5].value()}
-            case _:
-                return None
+        raise NotImplementedError("get_payload must be implemented")
 
     def delete_action(self):
         try:

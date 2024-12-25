@@ -19,3 +19,6 @@ class ColorAction(BaseAction):
             color_box.show()
         self.action_label.setText("Set color:")
         self.action_input_object.move(self.width() - self.action_input_object.width() - 5, 5)
+
+    def get_payload(self):
+        return [self.action_input_object.children()[i].value() for i in range(3)]

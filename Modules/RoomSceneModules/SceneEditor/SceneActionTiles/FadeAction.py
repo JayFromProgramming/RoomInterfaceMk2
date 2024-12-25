@@ -31,3 +31,9 @@ class FadeAction(BaseAction):
 
         self.action_label.setText("Fade to:")
         self.action_input_object.move(self.width() - self.action_input_object.width() - 5, 5)
+
+    def get_payload(self):
+        return {
+            'target': [self.action_input_object.children()[i].value() for i in range(4)],
+            'time': self.action_input_object.children()[5].value()
+        }
