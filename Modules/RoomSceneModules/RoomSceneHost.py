@@ -118,6 +118,7 @@ class RoomSceneHost(ScrollableMenu):
     def resizeEvent(self, a0) -> None:
         super().resizeEvent(a0)
         self.setFixedSize(self.parent.width(), self.height())
+        self.folder_level_label.setFixedSize(self.width(), 20)
         self.layout_widgets()
 
     def move_widgets(self, offset):

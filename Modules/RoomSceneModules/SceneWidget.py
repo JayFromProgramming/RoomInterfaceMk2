@@ -126,6 +126,7 @@ class SceneWidget(QLabel):
         self.scene_caller.finished.connect(self.handle_scene_response)
 
         self.menu = QMenu(self)
+        self.menu.addAction("Copy Scene").triggered.connect(lambda: self.parent.copy_scene(self.scene_id))
         self.submenu = self.menu.addMenu("Move Scene")
         self.menu.setStyleSheet("color: white; background-color: black")
         self.submenu.setStyleSheet("color: white; background-color: black")
