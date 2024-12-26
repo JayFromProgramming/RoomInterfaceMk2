@@ -12,7 +12,7 @@ class SceneActionEditor(QWidget):
     Each action will be added to a scrollable list of labels.
     """
 
-    def __init__(self, device_name, action_payload: dict = None):
+    def __init__(self, device_name, supported_actions, action_payload: dict = None):
         super().__init__()
         self.setFixedSize(310, 375)
         self.scroll_area = QScrollArea(self)
@@ -29,6 +29,7 @@ class SceneActionEditor(QWidget):
         self.actions = []
 
         self.submit_slot = None
+        self.device_supported_actions = supported_actions
 
         self.device_name_label = QLabel(self)
         self.device_name_label.setFixedSize(310, 20)
@@ -42,19 +43,19 @@ class SceneActionEditor(QWidget):
         self.submit_button.setText("Submit")
         self.submit_button.clicked.connect(self.submit_action)
 
-        self.add_new_button = QPushButton(self)
-        self.add_new_button.setFixedSize(70, 30)
-        self.add_new_button.move(self.submit_button.x(),
-                                 self.submit_button.y() + self.submit_button.height() + 2)
-        self.add_new_button.setText("Add Action")
-        self.add_new_button.clicked.connect(self.add_new_action)
-
-        self.action_type_selector = QComboBox(self)
-        for action in SceneAction.supported_actions():
-            self.action_type_selector.addItem(action[1])
-        self.action_type_selector.setFixedSize(100, 30)
-        self.action_type_selector.move(self.add_new_button.x() + self.add_new_button.width() + 2,
-                                       self.add_new_button.y())
+        # self.add_new_button = QPushButton(self)
+        # self.add_new_button.setFixedSize(70, 30)
+        # self.add_new_button.move(self.submit_button.x(),
+        #                          self.submit_button.y() + self.submit_button.height() + 2)
+        # self.add_new_button.setText("Add Action")
+        # self.add_new_button.clicked.connect(self.add_new_action)
+        #
+        # self.action_type_selector = QComboBox(self)
+        # for action in [action for action in SceneAction.supported_actions() if action[0] in self.device_supported_actions]:
+        #     self.action_type_selector.addItem(action[1])
+        # self.action_type_selector.setFixedSize(100, 30)
+        # self.action_type_selector.move(self.add_new_button.x() + self.add_new_button.width() + 2,
+        #                                self.add_new_button.y())
 
         self.paste_data_button = QPushButton(self)
         self.paste_data_button.setFixedSize(50, 22)
@@ -84,19 +85,21 @@ class SceneActionEditor(QWidget):
         self.actions = []
         if self.action_payload is not None:
             for action in self.action_payload.items():
-                action_label = SceneAction.create_action(self.scroll_panel, self.delete_action, action)
+                action_label = SceneAction.create_action(self.scroll_panel, True, action)
                 self.actions.append(action_label)
+        self.add_remaining_actions()
         self.layout_actions()
 
-    def add_new_action(self):
-        action = SceneAction.supported_actions()[self.action_type_selector.currentIndex()]
-        self.add_action(action)
-
-    def add_action(self, action: tuple):
-        action_payload = (action[0], action[2])
-        action_label = SceneAction.create_action(self.scroll_panel, self.delete_action, action_payload)
-        self.actions.append(action_label)
-        self.layout_actions()
+    def add_remaining_actions(self):
+        """
+        This method will add any actions that are supported by the device but not present in the action payload.
+        :return:
+        """
+        for action in self.device_supported_actions:
+            if action not in [act.act for act in self.actions]:
+                payload = (action, SceneAction.get_action_default_payload(action))
+                action_label = SceneAction.create_action(self.scroll_panel, False, payload)
+                self.actions.append(action_label)
 
     def delete_action(self, action):
         self.actions.remove(action)
@@ -106,7 +109,8 @@ class SceneActionEditor(QWidget):
         try:
             payload = {}
             for action in self.actions:
-                payload[action.act] = action.get_payload()
+                if action.enabled_button.isChecked():
+                    payload[action.act] = action.get_payload()
             return payload
         except Exception as e:
             logging.error(f"Error getting payload: {e}")

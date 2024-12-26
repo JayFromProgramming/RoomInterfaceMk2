@@ -1,16 +1,15 @@
 import os
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QLabel, QPushButton
+from PyQt6.QtWidgets import QLabel, QPushButton, QCheckBox
 from loguru import logger as logging
 
 
 class BaseAction(QLabel):
     supported_action = []
 
-    def __init__(self, parent, delete_callback, action: tuple):
+    def __init__(self, parent, enabled, action: tuple):
         super().__init__(parent)
-        self.delete_callback = delete_callback
         self.setFixedSize(270, 50)
         self.act = action[0]
         self.payload = action[1]
@@ -22,18 +21,17 @@ class BaseAction(QLabel):
 
         self.action_input_object = None
 
-        self.delete_button = QPushButton(self)
-        self.delete_button.setFixedSize(20, 20)
-        self.delete_button.move(self.width() - self.delete_button.width(),
-                                self.height() - self.delete_button.height())
-        self.delete_button.setText("X")
-        self.delete_button.clicked.connect(self.delete_action)
+        self.enabled_button = QCheckBox(self)
+        self.enabled_button.setFixedSize(20, 20)
+        self.enabled_button.move(self.width() - self.enabled_button.width(),
+                                 self.height() - self.enabled_button.height())
+        self.enabled_button.setChecked(enabled)
         try:
             self.create_action_input()
         except Exception as e:
             logging.error(f"Error creating action input: {e}")
             logging.exception(e)
-        self.delete_button.raise_()
+        self.enabled_button.raise_()
 
     def create_action_input(self):
         self.action_input_object = QLabel(self)
@@ -44,11 +42,3 @@ class BaseAction(QLabel):
 
     def get_payload(self):
         raise NotImplementedError("get_payload must be implemented")
-
-    def delete_action(self):
-        try:
-            self.delete_callback(self)
-            self.hide()
-        except Exception as e:
-            logging.error(f"Error deleting action: {e}")
-            logging.exception(e)

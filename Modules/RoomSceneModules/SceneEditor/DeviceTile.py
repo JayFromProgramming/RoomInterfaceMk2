@@ -34,6 +34,7 @@ class DeviceTile(QLabel):
         self.human_name = None
         self.data = None
         self.type = "Unknown"
+        self.supported_actions = []
         self.action_data = action_data
 
         self.font = parent.font
@@ -57,15 +58,6 @@ class DeviceTile(QLabel):
                                        "background-color: transparent")
         self.action_text.setText("Actions: Not Set")
         self.action_text.move(2, 17)
-
-        # self.device_text = QLabel(self)
-        # self.device_text.setFont(self.font)
-        # self.device_text.setFixedSize(280, 20)
-        # self.device_text.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom)
-        # self.device_text.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;"
-        #                                "background-color: transparent")
-        # self.device_text.setText("<pre>Status: ???</pre>")
-        # self.device_text.move(0, 35)
 
         self.parent.make_name_request(device)
 
@@ -163,6 +155,7 @@ class DeviceTile(QLabel):
                 return
             self.data = json.loads(str(data, 'utf-8'))
             self.type = self.data["type"]
+            self.supported_actions = self.data["actions"]
             self.update_device_text()
             if self.action_data is None:
                 self.generate_action_data()
@@ -211,7 +204,7 @@ class DeviceTile(QLabel):
             self.double_click_occurred = True
             if self.edit_dialog is not None:
                 return
-            self.edit_dialog = SceneActionEditor(self.device, self.action_data)
+            self.edit_dialog = SceneActionEditor(self.device, self.supported_actions, self.action_data)
             self.edit_dialog.set_submit_slot(self.edit_device_action)
             self.edit_dialog.destroyed.connect(self.edit_dialog_closed)
             self.edit_dialog.show()

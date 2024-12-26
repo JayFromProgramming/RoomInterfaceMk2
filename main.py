@@ -51,39 +51,32 @@ class MainWindow(QMainWindow):
         self.setStyleSheet("background-color: black;")
 
         self.clock = DisplayClock(self)
+        self.weather = CurrentWeather(self)
+        self.forecast = ForecastHost(self)
+        self.room_control = RoomControlHost(self)
+        self.scene_control = RoomSceneHost(self)
+        self.system_control = SystemControlHost(self)
+        self.webcam_layout = WebcamLayout(self)
+        self.radar_host = RadarHost(self)
+        self.menu_bar = MenuBar(self)
+
         # Move the clock to the upper right corner (dynamic, so it will always be in the upper right corner)
         self.clock.move(self.width() - self.clock.width(), 0)
-
-        # Setup all main modules of the interface
-        self.weather = CurrentWeather(self)
         self.weather.move(0, 0)
-
-        self.forecast = ForecastHost(self)
         self.forecast.move(0, 90)  # These moves have fixed upper left corners, so they don't need to be dynamic
-
-        self.room_control = RoomControlHost(self)
         self.room_control.move(0, self.forecast.height() + self.forecast.y() + 10)
-
-        self.scene_control = RoomSceneHost(self)
         self.scene_control.move(0, 90)
-
-        self.system_control = SystemControlHost(self)
         self.system_control.move(0, 90)
-
-        self.webcam_layout = WebcamLayout(self)
         self.webcam_layout.move(0, 90)
-
-        self.radar_host = RadarHost(self)
         self.radar_host.move(0, 90)
         self.radar_host.hide()
 
-        self.menu_bar = MenuBar(self)
         # Move the menu bar to the very bottom of the window
         self.menu_bar.move(0, self.height() - self.menu_bar.height())
 
         # Add the menu bar buttons and link them to the appropriate modules
         self.menu_bar.add_flyout_button("System Control", self.system_control, 60)
-        self.menu_bar.add_flyout_button("Routines", self.scene_control, 15)
+        self.menu_bar.add_flyout_button("Routines", self.scene_control, 60)
         self.menu_bar.add_flyout_button("Room Control", self.room_control, 60)
         self.menu_bar.add_flyout_button("Webcams", self.webcam_layout, 120)
         self.menu_bar.add_flyout_button("Radar", self.radar_host, 75)

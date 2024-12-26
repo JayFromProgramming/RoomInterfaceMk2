@@ -97,15 +97,6 @@ class SceneEditorFlyout(QDialog):
         self.scene_request = QNetworkAccessManager()
         self.scene_request.finished.connect(self.handle_scene_response)
 
-        # self.processing_request_dialog = QProgressDialog()
-        # # self.processing_request_dialog.setFixedSize(400, 200)
-        # self.processing_request_dialog.setWindowTitle("Processing Request")
-        # self.processing_request_dialog.setLabelText("Please Wait...")
-        # self.processing_request_dialog.setCancelButton(None)
-        # # Set the progress to be indeterminate
-        # self.processing_request_dialog.setRange(0, 0)
-        # self.processing_request_dialog.hide()
-
         self.save_button = QPushButton(self)
         self.save_button.setFont(self.font)
         self.save_button.setFixedSize(195, 30)
