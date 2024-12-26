@@ -36,7 +36,13 @@ class FlyoutButton(QPushButton):
             logging.error(f"Failed to expand/collapse flyout: {e}")
             logging.exception(e)
 
-    def collapse(self):
+    def collapse(self, idle_timeout=False):
+        if hasattr(self.flyout, "focus_lock"):
+            if self.flyout.focus_lock and idle_timeout:
+                logging.info("Focus lock was active on idle timeout, keeping focus")
+                return True
+            if not idle_timeout:
+                self.flyout.focus_lock = False
         self.expanded = False
         self.flyout.set_focus(False)
         self.setText(f"↓{self.button_text}↓")
@@ -88,7 +94,9 @@ class MenuBar(QLabel):
 
     def collapse_all(self):
         for button in self.buttons:
-            button.collapse()
+            if button.collapse(True):
+                self.refocus_timer.start()
+                return
         self.current_focus = None
 
     def reset_focus_timer(self):
@@ -98,6 +106,13 @@ class MenuBar(QLabel):
 
     def start_focus_timer(self):
         self.refocus_timer.start(self.current_focus.idle_timeout)
+
+    def lock_focus(self):
+        logging.info("Locking focus")
+        self.refocus_timer.stop()
+
+    def unlock_focus(self):
+        self.reset_focus_timer()
 
     # def focus_room_control(self):
     #     self.parent.focus_scene_control(True)

@@ -16,6 +16,7 @@ class RoomSceneHost(ScrollableMenu):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent = parent
+        self.focus_lock = False
         self.current_top_folder = None
         self.setFixedSize(parent.width(), parent.height() - self.y())
 
@@ -43,7 +44,7 @@ class RoomSceneHost(ScrollableMenu):
         new_scene_action.triggered.connect(lambda: SceneEditorFlyout(self, None, None).show())
 
         self.back_widget = SceneWidget(self, None, None, is_back_widget=True)
-
+        self.scene_data = None
         self.scene_widgets = []
 
         self.network_manager = QNetworkAccessManager()
@@ -86,13 +87,33 @@ class RoomSceneHost(ScrollableMenu):
                 logging.error(f"Error: {data['error']}")
                 self.retry_timer.start(5000)
                 return
-            self.handle_scene_data(data["result"])
+            self.scene_data = data["result"]
+            self.handle_scene_data(self.scene_data)
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
             self.retry_timer.start(5000)
         finally:
             reply.deleteLater()
+
+    def hideEvent(self, a0):
+        # Delete all widgets to reduce memory usage when the host is hidden
+        for widget in [widget for widget in self.scene_widgets if not widget.is_back_widget]:
+            widget.hide()
+            widget.deleteLater()
+        self.scene_widgets = []
+        self.current_top_folder = None
+
+    def showEvent(self, a0):
+        try:
+            self.scene_widgets.clear()
+            self.handle_scene_data(self.scene_data)
+        except Exception as e:
+            logging.error(f"Error showing host: {e}")
+            logging.exception(e)
+
+    def lock_focus(self, lock):
+        self.focus_lock = lock
 
     def reload(self):
         for widget in self.scene_widgets:

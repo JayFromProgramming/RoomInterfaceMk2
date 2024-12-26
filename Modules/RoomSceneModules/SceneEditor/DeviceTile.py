@@ -77,9 +77,7 @@ class DeviceTile(QLabel):
         self.single_click_timer.timeout.connect(self.mouseSingleClickEvent)
         self.double_click_occurred = False
 
-        self.temporary_edit_dialog = QInputDialog()
-        self.temporary_edit_dialog.setFixedSize(300, 200)
-        self.temporary_edit_dialog.hide()
+        self.destroyed.connect(self.on_destroy)
 
         self.edit_dialog = None
 
@@ -214,16 +212,9 @@ class DeviceTile(QLabel):
             if self.edit_dialog is not None:
                 return
             self.edit_dialog = SceneActionEditor(self.device, self.action_data)
+            self.edit_dialog.set_submit_slot(self.edit_device_action)
             self.edit_dialog.destroyed.connect(self.edit_dialog_closed)
             self.edit_dialog.show()
-            # Setup the dialog
-            # self.temporary_edit_dialog.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
-            # self.temporary_edit_dialog.setWindowTitle(f"Edit {self.human_name} [{self.device}]")
-            # self.temporary_edit_dialog.setLabelText(f"Enter the action data for {self.human_name} [{self.device}]")
-            # self.temporary_edit_dialog.setTextValue(json.dumps(self.action_data))
-            # self.temporary_edit_dialog.accepted.connect(self.edit_device_action)
-            # self.temporary_edit_dialog.rejected.connect(self.cancel_edit)
-            # self.temporary_edit_dialog.exec()
         except Exception as e:
             logging.error(f"Error")
             logging.exception(e)
@@ -231,30 +222,20 @@ class DeviceTile(QLabel):
     def edit_dialog_closed(self):
         self.edit_dialog = None
 
-    def cancel_edit(self):
-        self.temporary_edit_dialog.hide()
-        self.temporary_edit_dialog.accepted.disconnect(self.edit_device_action)
-        self.temporary_edit_dialog.rejected.disconnect(self.cancel_edit)
-
-    def edit_device_action(self):
-        new_action = self.temporary_edit_dialog.textValue()
+    def edit_device_action(self, action):
         # Validate the input
-        try:
-            dict_data = json.loads(new_action)
-        except json.JSONDecodeError:
-            logging.error(f"Error decoding JSON: {new_action}")
-            # Relaunch the dialog with the entered text to allow the user to correct it
-            self.temporary_edit_dialog.setTextValue(new_action)
-            self.temporary_edit_dialog.exec()
-            return
-        self.action_data = dict_data
+        self.action_data = action
         self.update_action_text()
-        self.temporary_edit_dialog.hide()
-        self.temporary_edit_dialog.accepted.disconnect(self.edit_device_action)
-        self.temporary_edit_dialog.rejected.disconnect(self.cancel_edit)
-        # self.parent.make_name_request(self.device, new_name)
-        # self.parent.layout_widgets()
-        # self.parent.update_device_name(self.device, new_name)
-        # self.parent.update_device_action_data(self.device, self.action_data)
-        # self.parent.save_device_data()
+
+    def hideEvent(self, a0):
+        if self.edit_dialog is not None:
+            self.edit_dialog.close()
+            self.edit_dialog = None
+
+    def on_destroy(self):
+        if self.edit_dialog is not None:
+            self.edit_dialog.close()
+            self.edit_dialog = None
+        self.deleteLater()
+        self.hide()
 

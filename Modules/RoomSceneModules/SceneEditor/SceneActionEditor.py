@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QLabel, QWidget, QScrollArea, QComboBox, QPushButton, QApplication
+from PyQt6.QtWidgets import QLabel, QWidget, QScrollArea, QComboBox, QPushButton, QApplication, QListView
 from loguru import logger as logging
 import json
 
@@ -14,11 +14,13 @@ class SceneActionEditor(QWidget):
 
     def __init__(self, device_name, action_payload: dict = None):
         super().__init__()
-        self.setFixedSize(330, 440)
+        self.setFixedSize(310, 375)
         self.scroll_area = QScrollArea(self)
-        self.scroll_area.setFixedSize(310, 350)
+        self.scroll_area.setFixedSize(300, 275)
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_panel = QLabel(self)
-        self.scroll_panel.setFixedSize(310, 600)
+        self.scroll_panel.setFixedSize(300, 0)
         self.scroll_area.setWidget(self.scroll_panel)
         self.scroll_area.move(10, 10)
         self.setWindowTitle("Scene Action Editor")
@@ -26,14 +28,24 @@ class SceneActionEditor(QWidget):
         self.action_payload = action_payload
         self.actions = []
 
+        self.submit_slot = None
+
         self.device_name_label = QLabel(self)
         self.device_name_label.setFixedSize(310, 20)
-        self.device_name_label.move(10, 330)
+        self.device_name_label.move(10, self.scroll_area.y() + self.scroll_area.height() + 5)
         self.device_name_label.setText(f"Editing actions for {self.device_name}")
+
+        self.submit_button = QPushButton(self)
+        self.submit_button.setFixedSize(70, 30)
+        self.submit_button.move(10,
+                                self.scroll_area.y() + self.scroll_area.height() + self.device_name_label.height() + 5)
+        self.submit_button.setText("Submit")
+        self.submit_button.clicked.connect(self.submit_action)
 
         self.add_new_button = QPushButton(self)
         self.add_new_button.setFixedSize(70, 30)
-        self.add_new_button.move(10, 350)
+        self.add_new_button.move(self.submit_button.x(),
+                                 self.submit_button.y() + self.submit_button.height() + 2)
         self.add_new_button.setText("Add Action")
         self.add_new_button.clicked.connect(self.add_new_action)
 
@@ -41,7 +53,7 @@ class SceneActionEditor(QWidget):
         for action in SceneAction.supported_actions():
             self.action_type_selector.addItem(action[1])
         self.action_type_selector.setFixedSize(100, 30)
-        self.action_type_selector.move(self.add_new_button.x() + self.add_new_button.width() + 5,
+        self.action_type_selector.move(self.add_new_button.x() + self.add_new_button.width() + 2,
                                        self.add_new_button.y())
 
         self.paste_data_button = QPushButton(self)
@@ -102,7 +114,7 @@ class SceneActionEditor(QWidget):
             return {}
 
     def layout_actions(self):
-        x_offset = 10
+        x_offset = 5
         y_offset = 5
         for action in self.actions:
             action.move(x_offset, y_offset)
@@ -127,6 +139,15 @@ class SceneActionEditor(QWidget):
             logging.error(f"Error pasting data: {e}")
             logging.exception(e)
             return
+
+    def set_submit_slot(self, slot):
+        self.submit_slot = slot
+
+    def submit_action(self):
+        if self.submit_slot is not None:
+            self.submit_slot(self.get_payload())
+        self.hide()
+        self.deleteLater()
 
     def closeEvent(self, a0):
         self.hide()

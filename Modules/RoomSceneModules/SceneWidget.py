@@ -220,6 +220,8 @@ class SceneWidget(QLabel):
                 else:
                     flyout = SceneEditorFlyout(self.parent, self.scene_id, self.data)
                 flyout.show()
+                flyout.destroyed.connect(lambda x: self.parent.lock_focus(False))
+                self.parent.lock_focus(True)
             else:
                 super(SceneWidget, self).mousePressEvent(a0)
                 self.double_click_primed = True
@@ -230,14 +232,6 @@ class SceneWidget(QLabel):
 
     def resetDoubleClick(self):
         self.double_click_primed = False
-
-    # def mouseDoubleClickEvent(self, a0) -> None:
-    #     try:
-    #         flyout = SceneEditorFlyout(self.parent, self.data)
-    #         flyout.exec()
-    #     except Exception as e:
-    #         logging.error(f"Error opening scene editor flyout: {e}")
-    #         logging.exception(e)
 
     def reload(self):
         self.parent.reload()
