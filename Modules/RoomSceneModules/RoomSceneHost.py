@@ -43,7 +43,7 @@ class RoomSceneHost(ScrollableMenu):
         new_scene_action = self.menu.addAction("Create New Scene")
         new_scene_action.triggered.connect(lambda: SceneEditorFlyout(self, None, None).show())
 
-        self.back_widget = SceneWidget(self, None, None, is_back_widget=True)
+        self.back_widget = SceneWidget(self, -1, None, is_back_widget=True)
         self.scene_data = None
         self.scene_widgets = []
 
@@ -178,6 +178,12 @@ class RoomSceneHost(ScrollableMenu):
         for widget in self.scene_widgets:
             if widget.is_folder and widget.parent_scene == self.current_top_folder:
                 available_folders.append((widget.scene_id, widget.data["name"]))
+        # Additionally look one level up to allow moving scenes out from a parent folder
+        if self.current_top_folder is not None:
+            outer_folder = self.folder_path_ids[-1]
+            for widget in self.scene_widgets:
+                if widget.is_folder and widget.scene_id == outer_folder:
+                    available_folders.append((widget.scene_id, widget.data["name"]))
         return available_folders
 
     def contextMenuEvent(self, ev):
@@ -189,13 +195,15 @@ class RoomSceneHost(ScrollableMenu):
 
     def open_folder(self, folder_id):
         folder_name = [widget.data["name"] for widget in self.scene_widgets if widget.scene_id == folder_id][0]
-        if folder_name == "Back":
+        if folder_id == -1:
             if len(self.folder_path_names) == 1:
                 return
+            self.back_widget.set_name(self.folder_path_names[-1])
             self.folder_path_names.pop()
             self.folder_path_ids.pop()
             self.current_top_folder = self.folder_path_ids[-1]
         else:
+            self.back_widget.set_name(self.folder_path_names[-1])
             self.folder_path_names.append(folder_name)
             self.folder_path_ids.append(folder_id)
             self.current_top_folder = folder_id

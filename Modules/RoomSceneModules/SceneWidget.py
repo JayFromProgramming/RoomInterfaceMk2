@@ -3,7 +3,7 @@ import re
 
 from PyQt6.QtCore import Qt, QUrl, QTimer
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel, QPushButton, QMenu
+from PyQt6.QtWidgets import QLabel, QPushButton, QMenu, QApplication
 from loguru import logger as logging
 from Modules.RoomSceneModules.SceneEditor.SceneEditorFlyout import SceneEditorFlyout
 
@@ -26,7 +26,7 @@ class SceneWidget(QLabel):
         self.is_new = False
 
         # If scene_id is None and data is None, this is a new scene
-        if scene_id is None and data is None:
+        if scene_id == -1 and data is None:
             self.is_new = True
             self.data = {
                 "name": "Create New Scene",
@@ -126,11 +126,15 @@ class SceneWidget(QLabel):
         self.scene_caller.finished.connect(self.handle_scene_response)
 
         self.menu = QMenu(self)
-        self.menu.addAction("Copy Scene").triggered.connect(lambda: self.parent.copy_scene(self.scene_id))
         self.submenu = self.menu.addMenu("Move Scene")
         self.menu.setStyleSheet("color: white; background-color: black")
         self.submenu.setStyleSheet("color: white; background-color: black")
+        self.menu.addAction("Copy Scene").triggered.connect(lambda: self.copy_scene())
         self.menu.addAction("Delete Folder" if self.is_folder else "Delete Scene").triggered.connect(self.delete_scene)
+
+    def set_name(self, name):
+        self.scene_name_label.setText(name)
+        self.data["name"] = name
 
     def orphaned(self):
         self.parent_scene = None
@@ -184,6 +188,14 @@ class SceneWidget(QLabel):
             QTimer.singleShot(500, self.reload)
         except Exception as e:
             logging.error(f"Error moving scene: {e}")
+            logging.exception(e)
+
+    def copy_scene(self):
+        try:
+            clipboard = QApplication.clipboard()
+            clipboard.setText(json.dumps(self.data))
+        except Exception as e:
+            logging.error(f"Error copying scene: {e}")
             logging.exception(e)
 
     def handle_scene_response(self, reply):

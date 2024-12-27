@@ -102,7 +102,7 @@ class SceneEditorFlyout(QDialog):
         self.save_button.setFixedSize(195, 30)
         self.save_button.setText(f"Save Scene{' As New' if self.is_new else ''}")
         self.save_button.move(10, self.available_trigger_list.y() + self.available_trigger_list.height() + 10)
-        self.save_button.setStyleSheet("background-color: green; border: none; border-radius: 10px; font-style: bold")
+        self.save_button.setStyleSheet("background-color: green; border: none; border-radius: 10px; font-style: bold; font-size: 12px")
         self.save_button.show()
         self.save_button.clicked.connect(self.save_scene)
 
@@ -111,7 +111,7 @@ class SceneEditorFlyout(QDialog):
         self.test_button.setFixedSize(195, 30)
         self.test_button.setText("Test Scene")
         self.test_button.move(10, self.save_button.y() + self.save_button.height() + 10)
-        self.test_button.setStyleSheet("background-color: #4080FF; border: none; border-radius: 10px; font-style: bold")
+        self.test_button.setStyleSheet("background-color: #4080FF; border: none; border-radius: 10px; font-style: bold; font-size: 12px")
         self.test_button.show()
 
         self.cancel_button = QPushButton(self)
@@ -120,7 +120,7 @@ class SceneEditorFlyout(QDialog):
         self.cancel_button.setText("Cancel Changes")
         self.cancel_button.move(self.save_button.x() + self.save_button.width() + 10, self.save_button.y())
         self.cancel_button.setStyleSheet(
-            "background-color: orange; border: none; border-radius: 10px; font-style: bold")
+            "background-color: orange; border: none; border-radius: 10px; font-style: bold; font-size: 12px")
         self.cancel_button.show()
         self.cancel_button.clicked.connect(self.close)
 
@@ -130,7 +130,7 @@ class SceneEditorFlyout(QDialog):
         self.delete_button.setText("Delete Scene")
         self.delete_button.move(self.cancel_button.x(),
                                 self.cancel_button.y() + self.cancel_button.height() + 10)
-        self.delete_button.setStyleSheet("background-color: red; border: none; border-radius: 10px")
+        self.delete_button.setStyleSheet("background-color: red; border: none; border-radius: 10px; font-style: bold; font-size: 12px")
         self.delete_button.show()
         self.delete_button.clicked.connect(self.delete_scene)
 

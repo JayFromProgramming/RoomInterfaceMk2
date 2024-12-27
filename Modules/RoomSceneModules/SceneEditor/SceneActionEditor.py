@@ -12,7 +12,7 @@ class SceneActionEditor(QWidget):
     Each action will be added to a scrollable list of labels.
     """
 
-    def __init__(self, device_name, supported_actions, action_payload: dict = None):
+    def __init__(self, device_name: tuple, supported_actions, action_payload: dict = None):
         super().__init__()
         self.setFixedSize(310, 375)
         self.scroll_area = QScrollArea(self)
@@ -24,59 +24,58 @@ class SceneActionEditor(QWidget):
         self.scroll_area.setWidget(self.scroll_panel)
         self.scroll_area.move(10, 10)
         self.setWindowTitle("Scene Action Editor")
-        self.device_name = device_name
+        self.device_id = device_name[0]
+        self.device_name = device_name[1]
         self.action_payload = action_payload
         self.actions = []
 
         self.submit_slot = None
         self.device_supported_actions = supported_actions
 
-        self.device_name_label = QLabel(self)
-        self.device_name_label.setFixedSize(310, 20)
-        self.device_name_label.move(10, self.scroll_area.y() + self.scroll_area.height() + 5)
-        self.device_name_label.setText(f"Editing actions for {self.device_name}")
-
         self.submit_button = QPushButton(self)
-        self.submit_button.setFixedSize(70, 30)
-        self.submit_button.move(10,
-                                self.scroll_area.y() + self.scroll_area.height() + self.device_name_label.height() + 5)
+        self.submit_button.setFixedSize(60, 35)
+        self.submit_button.move(10, self.scroll_area.y() + self.scroll_area.height() + 5)
         self.submit_button.setText("Submit")
         self.submit_button.clicked.connect(self.submit_action)
 
-        # self.add_new_button = QPushButton(self)
-        # self.add_new_button.setFixedSize(70, 30)
-        # self.add_new_button.move(self.submit_button.x(),
-        #                          self.submit_button.y() + self.submit_button.height() + 2)
-        # self.add_new_button.setText("Add Action")
-        # self.add_new_button.clicked.connect(self.add_new_action)
-        #
-        # self.action_type_selector = QComboBox(self)
-        # for action in [action for action in SceneAction.supported_actions() if action[0] in self.device_supported_actions]:
-        #     self.action_type_selector.addItem(action[1])
-        # self.action_type_selector.setFixedSize(100, 30)
-        # self.action_type_selector.move(self.add_new_button.x() + self.add_new_button.width() + 2,
-        #                                self.add_new_button.y())
+        self.cancel_button = QPushButton(self)
+        self.cancel_button.setFixedSize(60, 35)
+        self.cancel_button.move(self.submit_button.x(), self.submit_button.y() + self.submit_button.height() + 2)
+        self.cancel_button.setText("Cancel")
+        self.cancel_button.clicked.connect(self.deleteLater)
+
+        self.device_name_label = QLabel(self)
+        self.device_name_label.setFixedSize(280, 80)
+        self.device_name_label.move(self.submit_button.x() + self.submit_button.width() + 5, self.submit_button.y())
+        self.device_name_label.setText(f"<pre>Editing\nID:  {self.device_id}\nName:{self.device_name}</pre>")
+        self.device_name_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        self.device_name_label.setStyleSheet("font-size: 13px; font-weight: bold; border: none; background-color: transparent")
+
+        self.revert_button = QPushButton(self)
+        self.revert_button.setFixedSize(50, 22)
+        self.revert_button.move(self.width() - self.revert_button.width() - 10,
+                                self.scroll_area.y() + self.scroll_area.height() + 5)
+        self.revert_button.setText("Revert")
+        self.revert_button.clicked.connect(self.create_actions)
+
+        self.copy_data_button = QPushButton(self)
+        self.copy_data_button.setFixedSize(50, 22)
+        self.copy_data_button.move(self.width() - self.copy_data_button.width() - 10,
+                                   self.revert_button.y() + self.revert_button.height() + 5)
+        self.copy_data_button.setText("Copy")
+        self.copy_data_button.clicked.connect(self.copy_data)
 
         self.paste_data_button = QPushButton(self)
         self.paste_data_button.setFixedSize(50, 22)
         self.paste_data_button.move(self.width() - self.paste_data_button.width() - 10,
-                                    self.height() - self.paste_data_button.height() - 2)
+                                    self.copy_data_button.y() + self.copy_data_button.height() + 5)
         self.paste_data_button.setText("Paste")
         self.paste_data_button.clicked.connect(self.paste_data)
 
-        self.copy_data_button = QPushButton(self)
-        self.copy_data_button.setFixedSize(50, 22)
-        self.copy_data_button.move(self.paste_data_button.x(), self.paste_data_button.y() - self.copy_data_button.height() - 2)
-        self.copy_data_button.setText("Copy")
-        self.copy_data_button.clicked.connect(self.copy_data)
-
-        self.revert_button = QPushButton(self)
-        self.revert_button.setFixedSize(50, 22)
-        self.revert_button.move(self.copy_data_button.x(), self.copy_data_button.y() - self.revert_button.height() - 2)
-        self.revert_button.setText("Revert")
-        self.revert_button.clicked.connect(self.create_actions)
-
         self.create_actions()
+
+        # Remove the window frame
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
 
     def create_actions(self):
         if len(self.actions) > 0:

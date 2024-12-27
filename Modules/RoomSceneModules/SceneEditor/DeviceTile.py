@@ -204,7 +204,8 @@ class DeviceTile(QLabel):
             self.double_click_occurred = True
             if self.edit_dialog is not None:
                 return
-            self.edit_dialog = SceneActionEditor(self.device, self.supported_actions, self.action_data)
+            self.edit_dialog = SceneActionEditor((self.device, self.human_name),
+                                                 self.supported_actions, self.action_data)
             self.edit_dialog.set_submit_slot(self.edit_device_action)
             self.edit_dialog.destroyed.connect(self.edit_dialog_closed)
             self.edit_dialog.show()

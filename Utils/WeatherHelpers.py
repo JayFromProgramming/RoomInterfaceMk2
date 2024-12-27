@@ -18,6 +18,8 @@ def mm_to_inches(mm, round_to=2):
 
 
 def visibility_to_text(visibility):
+    if visibility is None:
+        return "ERR"
     visibility = meters_to_miles(visibility)
     if round(visibility, 2) > 6:
         visibility = "Clear"
