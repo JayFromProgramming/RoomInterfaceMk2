@@ -40,7 +40,7 @@ class NotInitalizedDevice(RoomDevice):
             return
         health = self.data["health"]
         if not health:
-            self.device_text.setText(f"<pre>NO DATA\nDevice Type\nUnknown</pre>")
+            self.device_text.setText(f"<pre>NO DATA\nDEVICE TYPE\nUNKNOWN</pre>")
             return
 
     def parse_data(self, data):

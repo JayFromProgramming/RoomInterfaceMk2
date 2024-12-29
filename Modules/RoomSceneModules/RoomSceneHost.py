@@ -98,16 +98,17 @@ class RoomSceneHost(ScrollableMenu):
 
     def hideEvent(self, a0):
         # Delete all widgets to reduce memory usage when the host is hidden
-        for widget in [widget for widget in self.scene_widgets if not widget.is_back_widget]:
-            widget.hide()
-            widget.deleteLater()
-        self.scene_widgets = []
+        # for widget in [widget for widget in self.scene_widgets if not widget.is_back_widget]:
+        #     widget.hide()
+        #     widget.deleteLater()
+        # self.scene_widgets = []
         self.current_top_folder = None
 
     def showEvent(self, a0):
         try:
-            self.scene_widgets.clear()
-            self.handle_scene_data(self.scene_data)
+            pass
+            # self.scene_widgets.clear()
+            # self.handle_scene_data(self.scene_data)
         except Exception as e:
             logging.error(f"Error showing host: {e}")
             logging.exception(e)
@@ -176,14 +177,17 @@ class RoomSceneHost(ScrollableMenu):
         """
         available_folders = []
         for widget in self.scene_widgets:
-            if widget.is_folder and widget.parent_scene == self.current_top_folder:
+            if widget.is_folder and widget.parent_scene == self.current_top_folder and not widget.is_back_widget:
                 available_folders.append((widget.scene_id, widget.data["name"]))
         # Additionally look one level up to allow moving scenes out from a parent folder
         if self.current_top_folder is not None:
-            outer_folder = self.folder_path_ids[-1]
-            for widget in self.scene_widgets:
-                if widget.is_folder and widget.scene_id == outer_folder:
-                    available_folders.append((widget.scene_id, widget.data["name"]))
+            outer_folder = self.folder_path_ids[-2]
+            if outer_folder is None:
+                available_folders.append((None, "Routines"))
+            else:
+                for widget in self.scene_widgets:
+                    if widget.is_folder and widget.scene_id == outer_folder and not widget.is_back_widget:
+                        available_folders.append((widget.scene_id, widget.data["name"]))
         return available_folders
 
     def contextMenuEvent(self, ev):

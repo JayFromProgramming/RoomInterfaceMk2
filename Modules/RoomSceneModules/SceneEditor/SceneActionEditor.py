@@ -14,7 +14,14 @@ class SceneActionEditor(QWidget):
 
     def __init__(self, device_name: tuple, supported_actions, action_payload: dict = None):
         super().__init__()
+        self.device_id = device_name[0]
+        self.device_name = device_name[1]
+        self.action_payload = action_payload
+        self.actions = []
+
         self.setFixedSize(310, 375)
+        self.setWindowTitle("Scene Action Editor")
+
         self.scroll_area = QScrollArea(self)
         self.scroll_area.setFixedSize(300, 275)
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -23,11 +30,12 @@ class SceneActionEditor(QWidget):
         self.scroll_panel.setFixedSize(300, 0)
         self.scroll_area.setWidget(self.scroll_panel)
         self.scroll_area.move(10, 10)
-        self.setWindowTitle("Scene Action Editor")
-        self.device_id = device_name[0]
-        self.device_name = device_name[1]
-        self.action_payload = action_payload
-        self.actions = []
+        self.no_actions_label = QLabel(self.scroll_panel)
+        self.no_actions_label.setFixedSize(300, 50)
+        self.no_actions_label.setText("Device supports no actions")
+        self.no_actions_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.no_actions_label.setStyleSheet("font-size: 14px; font-weight: bold; border: none; background-color: transparent")
+        self.no_actions_label.hide()
 
         self.submit_slot = None
         self.device_supported_actions = supported_actions
@@ -123,7 +131,12 @@ class SceneActionEditor(QWidget):
             action.move(x_offset, y_offset)
             action.show()
             y_offset = y_offset + action.height() + 5
-        self.scroll_panel.setFixedSize(self.scroll_panel.width(), y_offset + 5)
+        if len(self.actions) == 0:
+            self.no_actions_label.show()
+            self.scroll_panel.setFixedSize(self.scroll_panel.width(), 50)
+        else:
+            self.no_actions_label.hide()
+            self.scroll_panel.setFixedSize(self.scroll_panel.width(), y_offset + 5)
         self.scroll_area.setWidget(self.scroll_panel)
 
     def copy_data(self):
