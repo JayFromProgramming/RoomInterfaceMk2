@@ -1,3 +1,4 @@
+import gc
 import os
 import sys
 
@@ -149,6 +150,7 @@ class MainWindow(QMainWindow):
                 self.forecast.refresh_forecast()
                 self.scene_control.reload()
                 self.weather.make_request()
+                gc.collect()
             super().keyReleaseEvent(a0)
         except Exception as e:
             logging.exception(e)

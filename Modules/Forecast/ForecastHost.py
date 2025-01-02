@@ -79,7 +79,8 @@ class ForecastHost(QLabel):
 
         self.icon_manager = IconManager(self)
 
-        self.forecast_widgets = [ForecastEntry(self, i, True) for i in range(48)]
+        self.forecast_widgets = [ForecastEntry(self, i, True) for i in range(12)]
+        self.forecast_timestamps = []
         self.forecasts = []
         self.lines = []
         self.layout_widgets()
@@ -140,20 +141,15 @@ class ForecastHost(QLabel):
                 self.handle_forecast_error(reply)
                 return
             self.error_label.hide()
-            for widget in self.forecast_widgets:
-                widget.show()
             data = reply.readAll()
             data = data.data().decode("utf-8")
             data = json.loads(data)
             forecasts = data["weather_forecast_list"]
             for widget in self.forecast_widgets:
-                widget.release()
                 widget.deleteLater()
             self.forecast_widgets.clear()
-            self.forecasts = forecasts
-            self.forecast_widgets = [ForecastEntry(self, forecast) for forecast in forecasts[:84]
-                                     if datetime.datetime.fromisoformat(forecast) > datetime.datetime.utcnow()]
-            logging.info(f"Loaded {len(self.forecast_widgets)} forecast widgets")
+            self.forecasts = [forecast for forecast in forecasts
+                              if datetime.datetime.fromisoformat(forecast) > datetime.datetime.utcnow()]
             reply.deleteLater()
             self.layout_widgets()
         except Exception as e:
@@ -165,11 +161,26 @@ class ForecastHost(QLabel):
         finally:
             reply.deleteLater()
 
+    def build_visible_widgets(self):
+        """
+        Builds the forecast widgets that currently would fit on the screen
+        If the widget already exists, it will be reused
+        :return:
+        """
+        padding = 5
+        max_widgets = self.width() // (ForecastEntry.forecast_width + padding)
+        for i, forecast in enumerate(self.forecasts[self.scroll_offset:max_widgets + self.scroll_offset]):
+            if forecast in [widget.reference_time for widget in self.forecast_widgets]:
+                continue
+            self.forecast_widgets.append(ForecastEntry(self, forecast, False))
+        self.forecast_widgets.sort(key=lambda x: x.reference_time)
+
     def layout_widgets(self):
         """
         Lays out the forecast widgets
         :return:
         """
+        self.build_visible_widgets()
         for widget in self.forecast_widgets:
             widget.hide()
 

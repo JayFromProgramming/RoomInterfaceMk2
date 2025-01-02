@@ -46,11 +46,13 @@ class ForecastEntry(QLabel):
     Displays the information for a specific forecast entry
     """
 
+    forecast_width = 75
+
     def __init__(self, parent=None, reference_time=None, placeholder=False):
         super().__init__(parent)
         if reference_time is None:
             raise ValueError("reference_time must be set")
-        self.setFixedSize(75, 275)
+        self.setFixedSize(self.forecast_width, 275)
         self.parent = parent
         self.placeholder = placeholder
         self.loaded = False
@@ -118,10 +120,6 @@ class ForecastEntry(QLabel):
             return
         self.loaded = True
         self.make_request(self.reference_time)
-
-    def release(self):
-        # This forcast is about to be destroyed, so we need to release the resources
-        self.network_manager.deleteLater()
 
     def make_request(self, reference_time):
         request = QNetworkRequest(QUrl(f"http://{self.parent.auth['host']}/weather/forecast/{reference_time}"))
