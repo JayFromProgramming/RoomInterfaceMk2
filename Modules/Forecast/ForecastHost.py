@@ -137,12 +137,7 @@ class ForecastHost(QLabel):
     def handle_forecast_response(self, reply):
         try:
             if str(reply.error()) != "NetworkError.NoError":
-                logging.error(f"Error: {reply.error()}")
-                self.error_label.setText(f"Error fetching forecast\n{reply.error()}")
-                self.error_label.show()
-                # Hide all the forecast widgets
-                self.hide_all_widgets()
-                self.refresh_timer.start(5000)
+                self.handle_forecast_error(reply)
                 return
             self.error_label.hide()
             for widget in self.forecast_widgets:
@@ -313,3 +308,24 @@ class ForecastHost(QLabel):
             self.parent.resizeEvent(None)
             self.parent.update()
             self.last_scroll = time.time()
+
+    def handle_forecast_error(self, reply):
+        logging.error(f"Error: {reply.error()}")
+        base_text = "Error fetching forecast\n"
+        match reply.error():
+            case QNetworkReply.NetworkError.ConnectionRefusedError:
+                self.error_label.setText(f"{base_text}The server refused the connection")
+            case QNetworkReply.NetworkError.HostNotFoundError:
+                self.error_label.setText(f"{base_text}The server could not be found")
+            case QNetworkReply.NetworkError.RemoteHostClosedError:
+                self.error_label.setText(f"{base_text}The server aborted the connection")
+            case QNetworkReply.NetworkError.UnknownNetworkError:
+                self.error_label.setText(f"{base_text}A network timeout occurred")
+            case QNetworkReply.NetworkError.ServiceUnavailableError:
+                self.error_label.setText(f"{base_text}Forecast data is currently unavailable")
+            case _:
+                self.error_label.setText(f"{base_text}An unexpected error occurred")
+        self.error_label.show()
+        # Hide all the forecast widgets
+        self.hide_all_widgets()
+        self.refresh_timer.start(5000)

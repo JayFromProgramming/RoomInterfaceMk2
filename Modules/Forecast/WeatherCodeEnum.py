@@ -15,8 +15,8 @@ class WeatherCodes:
         "H.Rain": 65,
         "F.Rain": [66, 67],
         "L.Snow": 71,
-        "Snow": 73,
-        "H.Snow": 75,
+        "Snow": [73, 77, 85],
+        "H.Snow": [75, 87],
         "T-Storm": [80, 81, 82],
         "Hail": [95, 96, 97, 98],
     }
@@ -57,7 +57,7 @@ class WeatherCodes:
         "09": [61, 63, 65, 66, 67],  # Shower Rain
         "10": [51, 53, 55, 56, 57],  # Rain
         "11": [80, 81, 82, 95, 95, 97, 98],  # Thunderstorm
-        "13": [71, 73, 75],  # Snow
+        "13": [71, 73, 75, 85],  # Snow
         "50": [45, 48],  # Mist
     }
 

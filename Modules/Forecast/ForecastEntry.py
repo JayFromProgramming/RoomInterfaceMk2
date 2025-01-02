@@ -3,15 +3,13 @@ import json
 import random
 import time
 from PyQt6.QtCore import QUrl, QDateTime, Qt
-from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QLabel
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from loguru import logger as logging
 
 from Modules.Forecast.WeatherCodeEnum import WeatherCodes
 from Utils.UtilMethods import load_no_image
-from Utils.WeatherHelpers import kelvin_to_fahrenheit, wind_direction_arrow, visibility_to_text, mps_to_mph, celcius_to_fahrenheit, kph_to_mph, \
-    calculate_real_feel
+from Utils.WeatherHelpers import wind_direction_arrow, celcius_to_fahrenheit, kph_to_mph
 
 
 class ForecastValue(QLabel):
