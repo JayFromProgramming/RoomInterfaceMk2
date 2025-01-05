@@ -64,7 +64,7 @@ class BrightnessSliderPopup(PopupBase):
 
 
 class LevitonDevice(RoomDevice):
-    supported_types = ["LevitonDevice"]
+    supported_types = ["LIFXDevice"]
 
     def __init__(self, parent=None, device=None, priority=0):
         super().__init__(parent.auth, parent, device, False, priority)
@@ -110,18 +110,11 @@ class LevitonDevice(RoomDevice):
         if not health["online"]:
             self.device_text.setText(f"<pre>DEVICE OFFLINE</pre>")
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
-        elif "fault" in health and health["fault"]:
-            self.device_text.setText(f"<pre>Online: FAULT</pre>")
-            self.toggle_button.setStyleSheet(
-                "color: black; font-size: 14px; font-weight: bold; background-color: orange;")
         else:
-            if self.data["info"]["dimmable"]:
-                if self.state["on"]:
-                    self.device_text.setText(f"<pre>Brightness: {self.data['state']['brightness']}%</pre>")
-                else:
-                    self.device_text.setText(f"<pre>Brightness:  OFF</pre>")
+            if self.state["on"]:
+                self.device_text.setText(f"<pre>Brightness: {self.data['state']['brightness'] / 255 * 100:.0f}%</pre>")
             else:
-                self.device_text.setText(f"<pre>Online: IDLE</pre>")
+                self.device_text.setText(f"<pre>Brightness:  OFF</pre>")
 
     def parse_data(self, data):
         if not self.toggling:
