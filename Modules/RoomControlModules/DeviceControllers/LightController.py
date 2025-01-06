@@ -96,6 +96,12 @@ class LightController(RoomDevice):
 
     def set_color(self, color):
         logging.info(f"Setting color of light: {self.device} to {color.name()}")
+        # If R G and B are the same instead of setting the color we should set the white level
+        if color.red() == color.green() == color.blue():
+            logging.info(f"Setting white level of light: {self.device} to {color.red()}")
+            payload = json.dumps({"white": color.red()})
+            self.send_command(payload)
+            return
         # self.color_picker_button.setStyleSheet(f"background: {color.name()}; font-size: 14px; font-weight: bold;")
         payload = json.dumps({"color": [color.red(), color.green(), color.blue()]})
         self.send_command(payload)

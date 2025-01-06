@@ -129,6 +129,8 @@ class RoomSceneHost(ScrollableMenu):
         self.scene_widgets.clear()
         self.folder_path_names = ["Routines"]
         self.folder_path_ids = [None]
+        self.current_top_folder = None
+        self.back_widget.set_name("Routines")
         for scene_id, scene in data.items():
             self.scene_widgets.append(SceneWidget(self, scene_id, scene))
         self.scene_widgets.append(self.back_widget)

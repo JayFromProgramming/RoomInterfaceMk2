@@ -31,7 +31,7 @@ class BrightnessSliderPopup(PopupBase):
         self.slider.setFixedSize(150, 30)
         self.slider.move(self.width() // 2 - self.slider.width() // 2, 55)
         self.slider.setRange(0, 100)
-        self.slider.setValue(device.data["state"]["brightness"])
+        self.slider.setValue(round(device.data["state"]["brightness"] / 255 * 100))
         self.slider.valueChanged.connect(self.update_brightness)
         self.slider.setStyleSheet("background-color: white; border: none")
         self.slider.setTickPosition(QSlider.TickPosition.TicksBelow)
@@ -151,6 +151,8 @@ class LevitonDevice(RoomDevice):
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
 
     def set_brightness(self, brightness):
+        # Convert 0-100 to 0-255
+        brightness = round(brightness / 100 * 255)
         logging.info(f"Setting brightness of light: {self.device} to {brightness}")
         payload = json.dumps({"brightness": brightness})
         self.send_command(payload)
@@ -161,8 +163,8 @@ class LevitonDevice(RoomDevice):
             if self.double_click_primed:
                 self.double_click_primed = False
                 self.double_click_timer.stop()
-                if self.data["info"]["dimmable"]:
-                    self.popup = BrightnessSliderPopup(self)
+                # if self.data["info"]["dimmable"]:
+                self.popup = BrightnessSliderPopup(self)
             else:
                 self.double_click_primed = True
                 self.double_click_timer.start(500)
