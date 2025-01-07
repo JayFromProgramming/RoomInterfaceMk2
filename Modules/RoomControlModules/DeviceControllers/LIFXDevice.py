@@ -64,7 +64,7 @@ class BrightnessSliderPopup(PopupBase):
 
 
 class LevitonDevice(RoomDevice):
-    supported_types = ["LIFXDevice"]
+    supported_types = ["LIFXDevice", "TPLinkDevice"]
 
     def __init__(self, parent=None, device=None, priority=0):
         super().__init__(parent.auth, parent, device, False, priority)
