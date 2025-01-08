@@ -50,7 +50,7 @@ class RoomDevice(QLabel):
         self.refresh_timer.setSingleShot(True)
 
         self.name_update_timer = QTimer(self)
-        self.name_update_timer.timeout.connect(self.parent.make_name_request)
+        self.name_update_timer.timeout.connect(lambda: self.parent.make_name_request(self.device))
         self.name_update_timer.setSingleShot(True)
 
         self.context_menu = QMenu(self)
