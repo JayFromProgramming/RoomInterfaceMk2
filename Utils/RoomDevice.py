@@ -47,8 +47,11 @@ class RoomDevice(QLabel):
 
         self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self.get_data)
-        # self.refresh_timer.start(5000 + random.randint(0, 1000))
         self.refresh_timer.setSingleShot(True)
+
+        self.name_update_timer = QTimer(self)
+        self.name_update_timer.timeout.connect(self.parent.make_name_request)
+        self.name_update_timer.setSingleShot(True)
 
         self.context_menu = QMenu(self)
         self.context_menu.addAction("Rename").triggered.connect(self.rename_device)
@@ -63,13 +66,15 @@ class RoomDevice(QLabel):
         self.last_toggle_state = None
         self.toggle_time = 0
 
-        # self.get_data()
-
     def update_human_name(self, name):
         # print(f"Updating name to {name}")
         self.has_names = True
         self.human_name = name
         self.device_label.setText(name)
+        if not self.isHidden():
+            self.name_update_timer.start(300000 + random.randint(0, 60000))  # Update the name every 5-6 minutes
+        else:
+            self.name_update_timer.start(900000 + random.randint(0, 120000)) # Update the name every 15-17 minutes
 
     def hideEvent(self, a0):
         self.refresh_timer.stop()

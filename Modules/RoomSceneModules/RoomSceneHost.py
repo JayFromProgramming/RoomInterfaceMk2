@@ -65,9 +65,14 @@ class RoomSceneHost(ScrollableMenu):
         self.retry_timer = QTimer(self)
         self.retry_timer.timeout.connect(self.make_request)
         self.retry_timer.start(5000)
+
+        self.refresh_timer = QTimer(self)
+        self.refresh_timer.timeout.connect(self.make_request)
+
         self.make_request()
 
     def make_request(self):
+        logging.info("Requesting routine data")
         request = QNetworkRequest(QUrl(f"http://{self.host}/scene_get/scenes/null"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.network_manager.get(request)
@@ -89,6 +94,7 @@ class RoomSceneHost(ScrollableMenu):
                 return
             self.scene_data = data["result"]
             self.handle_scene_data(self.scene_data)
+            self.refresh_timer.start(60000)
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)
@@ -97,18 +103,15 @@ class RoomSceneHost(ScrollableMenu):
             reply.deleteLater()
 
     def hideEvent(self, a0):
-        # Delete all widgets to reduce memory usage when the host is hidden
-        # for widget in [widget for widget in self.scene_widgets if not widget.is_back_widget]:
-        #     widget.hide()
-        #     widget.deleteLater()
-        # self.scene_widgets = []
+        self.refresh_timer.start(60000)
         self.current_top_folder = None
+        self.folder_path_names = ["Routines"]
+        self.folder_path_ids = [None]
+        self.back_widget.set_name("Routines")
 
     def showEvent(self, a0):
         try:
-            pass
-            # self.scene_widgets.clear()
-            # self.handle_scene_data(self.scene_data)
+            self.refresh_timer.stop()
         except Exception as e:
             logging.error(f"Error showing host: {e}")
             logging.exception(e)
@@ -126,6 +129,11 @@ class RoomSceneHost(ScrollableMenu):
         self.make_request()
 
     def handle_scene_data(self, data):
+        for widget in self.scene_widgets:
+            if widget.is_back_widget:
+                continue
+            widget.hide()
+            widget.deleteLater()
         self.scene_widgets.clear()
         self.folder_path_names = ["Routines"]
         self.folder_path_ids = [None]
