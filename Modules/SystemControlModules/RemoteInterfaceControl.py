@@ -83,9 +83,9 @@ class RemoteInterfaceControl(InterfaceControl):
                 else "No Response"
             prog_uptime = self.format_uptime(data["uptime_controller"]) if data["uptime_controller"] \
                 else "No Response"
-            host_name = str(data["hostname"]).rjust(15, " ") if data["hostname"] else \
+            host_name = str(data["hostname"]).rjust(16, " ") if data["hostname"] else \
                 "Host Unreachable"
-            network_address = str(data["address"]).rjust(15, " ") if data["address"] else \
+            network_address = str(data["address"]).rjust(16, " ") if data["address"] else \
                 "Host Unreachable"
             text = f"CPU:  {cpu_percent}% | Temp: {cpu_temp}°C | RAM: {ram_percent}%\n"
             text += f"Disk: {disk_percent}% | Net: {network_usage}\n"
