@@ -29,14 +29,23 @@ class RadiatorDevice(ToggleDevice, RoomDevice):
             self.device_text.setText(f"<pre>DEVICE OFFLINE</pre>")
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
         elif health["fault"]:
-            self.device_text.setText(f"<pre>Online: FAULT</pre>")
+            self.device_text.setText(f"<pre>FAULT: {self.state['radiator_temp']:.02f}°F</pre>")
             self.toggle_button.setStyleSheet(
                 "color: black; font-size: 14px; font-weight: bold; background-color: orange;")
         else:
             if self.state['state'] in ['IDLE', ]:
-                self.device_text.setText(f"<pre>Online: {self.state['state']}</pre>")
-            elif self.state['state'] in ['OPENING VALVE', 'CLOSING VALVE']:
-                self.device_text.setText(f"<pre>{self.state['state']}{self.spinner()}</pre>")
+                self.device_text.setText(f"<pre>IDLE: {self.state['radiator_temp']:.02f}°F</pre>")
+            elif self.state['state'] in ['OPENING VALVE']:
+                if self.state['radiator_temp'] is not None:
+                    self.device_text.setText(f"<pre>START{self.spinner()}: {self.state['radiator_temp']:.02f}°F</pre>")
+                else:
+                    self.device_text.setText(f"<pre>START{self.spinner()}: N/A°F</pre>")
+                self.text_update_timer.start(250)
+            elif self.state['state'] in ['CLOSING VALVE']:
+                if self.state['radiator_temp'] is not None:
+                    self.device_text.setText(f"<pre>STOP{self.spinner()}: {self.state['radiator_temp']:.02f}°F</pre>")
+                else:
+                    self.device_text.setText(f"<pre>STOP{self.spinner()}: N/A°F</pre>")
                 self.text_update_timer.start(250)
             elif self.state['state'] in ['ACTIVE', 'WARMUP', 'COOLDOWN']:
                 if self.state['radiator_temp'] is not None:
