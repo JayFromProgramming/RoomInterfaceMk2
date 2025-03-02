@@ -52,6 +52,13 @@ class RadiatorDevice(ToggleDevice, RoomDevice):
                     self.device_text.setText(f"<pre>{self.state['state']} {self.state['radiator_temp']:.02f}°F</pre>")
                 else:
                     self.device_text.setText(f"<pre>{self.state['state']} N/A°F</pre>")
+            elif self.state['state'] in ['SHUTDOWN FAULT', 'STARTUP FAULT']:
+                if self.state['radiator_temp'] is not None:
+                    self.device_text.setText(f"<pre>FAULT: {self.state['radiator_temp']:.02f}°F</pre>")
+                else:
+                    self.device_text.setText(f"<pre>FAULT: N/A°F</pre>")
+                self.toggle_button.setStyleSheet(
+                    "color: black; font-size: 14px; font-weight: bold; background-color: orange;")
             else:
                 self.device_text.setText(f"<pre>{self.state['state']}</pre>")
                 self.toggle_button.setStyleSheet(
