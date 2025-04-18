@@ -7,8 +7,8 @@ from loguru import logger as logging
 
 try:
     from Modules.CameraPlayback.WebcamWindow import WebcamWindow
-except ImportError:
-    logging.error("Failed to import WebcamWindow")
+except ImportError as e:
+    logging.error(f"Failed to import WebcamWindow: {e}")
     WebcamWindow = None
 
 
@@ -49,6 +49,8 @@ class WebcamLayout(QLabel):
         self.clear_layout()
         self.webcams = []
         if WebcamWindow is None:
+            logging.error("WebcamWindow is not available. Cannot create webcam layout.")
+
             return
         logging.info(f"Starting webcam layout creation for {len(self.webcam_file)} webcams")
         self.current_webcam = 0
