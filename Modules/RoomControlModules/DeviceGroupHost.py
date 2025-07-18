@@ -39,7 +39,8 @@ class DeviceGroupHost(QLabel):
         self.group_label.setFont(self.font)
         self.group_label.setFixedSize(self.width() - 10, 20)
         self.group_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
-        self.group_label.setStyleSheet("color: white; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
+        self.group_label.setStyleSheet("color: white; font-size: 15px; font-weight: bold; border: none; "
+                                       "background-color: transparent")
         self.group_label.setText(f"{group_name}")
         # Move the group label to the middle of the top
         self.group_label.move(round((self.width() - self.group_label.width()) / 2), 0)

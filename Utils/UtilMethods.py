@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager
+from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
 import time
 
 network_check_timeout = 0
@@ -15,6 +15,27 @@ def format_net_error(message):
     message = f"Cause: {message}"
     return message
 
+def network_error_to_string(response, has_network):
+    if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
+        return f"SERVER DOWN"
+    elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and has_network:
+        return f"SERVER OFFLINE"
+    elif response.error() == QNetworkReply.NetworkError.InternalServerError:
+        return f"SERVER ERROR"
+    elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and not has_network:
+        return f"NETWORK ERROR"
+    elif response.error() == QNetworkReply.NetworkError.HostNotFoundError and not has_network:
+        return f"NO NETWORK"
+    elif response.error() == QNetworkReply.NetworkError.HostNotFoundError and has_network:
+        return f"SERVER NOT FOUND"
+    elif response.error() == QNetworkReply.NetworkError.TemporaryNetworkFailureError:
+        return f"NET FAILURE"
+    elif response.error() == QNetworkReply.NetworkError.UnknownNetworkError and not has_network:
+        return f"NET FAILURE"
+    elif response.error() == QNetworkReply.NetworkError.TimeoutError and has_network:
+        return f"SERVER TIMEOUT"
+    else:
+        return f"UNKNOWN ERROR"
 
 def load_no_image(size=None):
     if size is None:

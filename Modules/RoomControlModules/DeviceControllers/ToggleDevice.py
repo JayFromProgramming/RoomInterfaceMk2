@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QLabel, QPushButton
 from loguru import logger as logging
 
 from Utils.RoomDevice import RoomDevice
-from Utils.UtilMethods import has_internet
+from Utils.UtilMethods import has_internet, network_error_to_string
 
 
 class ToggleDevice(RoomDevice):
@@ -17,9 +17,6 @@ class ToggleDevice(RoomDevice):
     def __init__(self, parent=None, device=None, priority=0):
         super().__init__(parent.auth, parent, device, False, priority)
 
-        # self.device_label.setFont(parent.font)
-        # self.device_label.setFixedSize(135, 20)
-        # self.device_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
         self.device_label.setText(f"[{device}]")
 
@@ -82,23 +79,7 @@ class ToggleDevice(RoomDevice):
 
     def handle_failure(self, response):
         has_network = has_internet()
-        if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
-            self.device_text.setText(f"<pre>SERVER DOWN</pre>")
-        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and has_network:
-            self.device_text.setText(f"<pre>SERVER OFFLINE</pre>")
-        elif response.error() == QNetworkReply.NetworkError.InternalServerError:
-            self.device_text.setText(f"<pre>SERVER ERROR</pre>")
-        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and not has_network:
-            self.device_text.setText(f"<pre>NETWORK ERROR</pre>")
-        elif response.error() == QNetworkReply.NetworkError.HostNotFoundError and not has_network:
-            self.device_text.setText(f"<pre>NO NETWORK</pre>")
-        elif response.error() == QNetworkReply.NetworkError.HostNotFoundError and has_network:
-            self.device_text.setText(f"<pre>SERVER NOT FOUND</pre>")
-        elif response.error() == QNetworkReply.NetworkError.TemporaryNetworkFailureError:
-            self.device_text.setText(f"<pre>NET FAILURE</pre>")
-        elif response.error() == QNetworkReply.NetworkError.UnknownNetworkError and not has_network:
-            self.device_text.setText(f"<pre>NET FAILURE</pre>")
-        else:
-            self.device_text.setText(f"<pre>UNKNOWN ERROR</pre>")
+        error_message = network_error_to_string(response, has_network)
+        self.device_text.setText(f"<pre>{error_message}</pre>")
         self.toggle_button.setText("Turn ???")
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
