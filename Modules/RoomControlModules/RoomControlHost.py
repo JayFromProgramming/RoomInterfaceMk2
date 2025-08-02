@@ -151,14 +151,14 @@ class RoomControlHost(ScrollableMenu):
             self.scroll_velocity = 0
             self.scroll_offset = y
         # Determine if this movement would cause the starred device host to go below its original position
-        if self.starred_device_host.y() + y > -10:
-            y = -self.starred_device_host.y()
+        if self.device_group_hosts[0].y() + y > 10:
+            y = 5
             self.scroll_velocity = 0
             self.scroll_offset = y
 
         self.scroll_total_offset += y
-        self.starred_device_host.move(20, y)
-        y += self.starred_device_host.height() + 10
+        # self.starred_device_host.move(20, y)
+        # y += self.starred_device_host.height() + 10
         for widget in self.device_group_hosts:
             widget.move(20, y)
             y += widget.height() + 10
@@ -187,13 +187,13 @@ class RoomControlHost(ScrollableMenu):
             return
         else:
             # Layout each device group host out in a vertical line
-            y = 0
+            y = 5
             self.starred_device_host.center = False
             self.allow_scroll = True
             self.starred_device_host.layout_widgets()
-            self.starred_device_host.show()
-            self.starred_device_host.move(20, y)
-            y += self.starred_device_host.height() + 10
+            self.starred_device_host.hide()
+            # self.starred_device_host.move(20, y)
+            # y += self.starred_device_host.height() + 10
             for widget in self.device_group_hosts:
                 widget.show()
                 widget.move(20, y)

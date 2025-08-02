@@ -176,6 +176,7 @@ class RadarHost(QLabel):
         self.map_tiles.clear()
 
     def wheelEvent(self, a0) -> None:
+        return
         current_x, current_y = self.maptile_surface.x(), self.maptile_surface.y()
         if a0.angleDelta().y() > 0 and self.zoom_level < 2:
             self.zoom_level += 1
@@ -244,7 +245,7 @@ class RadarHost(QLabel):
             #     if timestamp < time.time():
             #         self.current_frame = len(self.timestamp_list) - i - 2
             #         break
-            logging.info(f"Loaded {len(self.timestamp_list)} radar frames")
+            # logging.info(f"Loaded {len(self.timestamp_list)} radar frames")
             for map_tile in self.map_tiles:
                 map_tile.load_radar_overlays(self.timestamp_list.__reversed__())
             self.next_frame()

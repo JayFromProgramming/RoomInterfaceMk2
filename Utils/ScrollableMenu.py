@@ -138,6 +138,11 @@ class ScrollableMenu(QLabel):
             logging.exception(e)
 
     def move_widgets(self, y):
+        """
+        Move the widgets by the given y offset.
+        This method should be implemented by the child class to handle the specific layout of widgets.
+        :param y: The y offset to move the widgets by.
+        """
         raise NotImplementedError("This method must be implemented by the child class")
 
     def layout_widgets(self):

@@ -128,7 +128,7 @@ class RadarTile(QLabel):
                 reply.deleteLater()  # Clean up the reply object
         # print(f"Parsed {len(self.radar_images) - starting_size} images in {time.time() - parse_start:.2f}s")
         if self.outstanding_requests == 0 and self.response_queue.empty() and self.loading:
-            logging.info(f"Finished parsing {len(self.radar_images)} images for {self.tile_x}-{self.tile_y}")
+            # logging.info(f"Finished parsing {len(self.radar_images)} images for {self.tile_x}-{self.tile_y}")
             self.parse_timer.stop()
 
     def change_size(self, factor):
