@@ -40,14 +40,6 @@ class InterfaceControl(QLabel):
         # self.interface_stats_update_timer.start(1000)
         self.last_network_bytes = 0
 
-        # self.action_title_label = QLabel(self)
-        # self.action_title_label.setFont(self.font)
-        # self.action_title_label.setFixedSize(430, 20)
-        # self.action_title_label.setText("Local Interface Actions")
-        # self.action_title_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
-        # self.action_title_label.setStyleSheet("color: black; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
-        # self.action_title_label.move(5, 70)
-
         self.reboot_button = QPushButton(self)
         self.reboot_button.setFont(self.font)
         self.reboot_button.setFixedSize(100, 30)
@@ -110,8 +102,6 @@ class InterfaceControl(QLabel):
                                              "border: none; border-radius: 10px")
             self.shutdown_button.setStyleSheet("color: red; font-size: 14px; font-weight: bold; background-color: grey;"
                                                "border: none; border-radius: 10px")
-
-
 
     def get_confirmation(self, message, sub_message=None):
         # Open a dialog box to confirm the action

@@ -81,7 +81,7 @@ class LocalInterfaceControl(InterfaceControl):
 
             # Get network address
             network_address = self.get_ip()
-            disk_usage = str(round(psutil.disk_usage('/').percent, 2)).rjust(5, " ")
+            disk_usage = str(round(psutil.disk_usage('/').percent, 3)).rjust(5, " ")
             ram_percent = str(round(psutil.virtual_memory().percent, 2)).rjust(5, " ")
             network_usage = psutil.net_io_counters().bytes_sent - self.last_network_bytes
             self.last_network_bytes = psutil.net_io_counters().bytes_sent

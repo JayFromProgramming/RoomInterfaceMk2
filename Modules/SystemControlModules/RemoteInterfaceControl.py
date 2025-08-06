@@ -62,22 +62,55 @@ class RemoteInterfaceControl(InterfaceControl):
             if "state" not in data:
                 logging.error(f"Invalid Response Received: {data}")
                 return
-            self.parse_interface_stats(data["state"])
+            if data["type"] == "SatelliteMonitor":
+                self.parse_interface_state_satellite(data["state"])
+            else:
+                self.parse_interface_stats_central(data["state"])
         except Exception as e:
             logging.error(f"Parsing Error: {e}")
             logging.exception(e)
         finally:
             reply.deleteLater()
 
-    def parse_interface_stats(self, data):
+    def parse_interface_state_satellite(self, data):
         try:
             self.title_label.setText(f"{data['name']} Info")
+            cpu_temp = str(round(data["temperature"], 2)).rjust(3, " ") if data["temperature"] else "N/A"
+            cpu_percent = str(round(data["cpu_usage"] / 10, 2)).rjust(5, " ") if data["cpu_usage"] else "N/A"
+            ram_percent = str(round(data["memory_usage"], 2)).rjust(5, " ") if data["memory_usage"] else "N/A"
+            boot_partition = data.get("boot_partition", "Unknown").upper()
+            mcu_uptime = self.format_uptime(data["uptime_mcu"]) if data["uptime_mcu"] \
+                else "No Response"
+            link_uptime = self.format_uptime(data["uptime_connection"]) if data["uptime_connection"] \
+                else "No Response"
+            network_address = str(data["address"]).rjust(16, " ") if data["address"] else \
+                "Host Unreachable"
+            firmware_version = data.get("firmware_version", "N/A")
+            firmware_version = str(firmware_version).rjust(13, " ") if firmware_version else "N/A"
+            text = f"CPU: {cpu_percent}% | Temp: {cpu_temp}°C | MEM: {ram_percent}B\n"
+            text += f"Reset#:   0 | Boot: {boot_partition}\n"
+            text += f"S.Uptime: {mcu_uptime} | Version: {firmware_version}\n"
+            text += f"L.Uptime: {link_uptime} | Addr: {network_address}\n"
 
+            self.interface_stats.setText(f"<pre>{text}</pre>")
+            if data["address"] is None:
+                # Set strike through on all the buttons if the host is unreachable
+                self.set_button_strike_through(True)
+            else:
+                self.set_button_strike_through(False)
+        except Exception as e:
+            self.interface_stats.setText(f"<pre>Error: {e}</pre>")
+            logging.error(f"Error parsing interface stats: {e}")
+            logging.exception(e)
+
+    def parse_interface_stats_central(self, data):
+        try:
+            self.title_label.setText(f"{data['name']} Info")
             cpu_temp = str(data["temperature"]).rjust(3, " ") if data["temperature"] else "N/A"
             cpu_percent = str(round(data["cpu_usage"], 2)).rjust(5, " ") if data["cpu_usage"] else "N/A"
             ram_percent = str(round(data["memory_usage"], 2)).rjust(5, " ") if data["memory_usage"] else "N/A"
             disk_percent = str(round(data["disk_usage"], 2)).rjust(5, " ") if data["disk_usage"] else "N/A"
-            network_usage = data["network_usage"]
+            network_usage = data.get("network_usage", 0)
             network_usage = humanize.naturalsize(network_usage, binary=True) if network_usage else "N/A"
             sys_uptime = self.format_uptime(data["uptime_system"]) if data["uptime_system"] \
                 else "No Response"
