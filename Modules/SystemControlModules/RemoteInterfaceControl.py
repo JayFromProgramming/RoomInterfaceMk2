@@ -76,19 +76,23 @@ class RemoteInterfaceControl(InterfaceControl):
         try:
             self.title_label.setText(f"{data['name']} Info")
             cpu_temp = str(round(data["temperature"], 2)).rjust(3, " ") if data["temperature"] else "N/A"
-            cpu_percent = str(round(data["cpu_usage"] / 10, 2)).rjust(5, " ") if data["cpu_usage"] else "N/A"
-            ram_percent = str(round(data["memory_usage"], 2)).rjust(5, " ") if data["memory_usage"] else "N/A"
-            boot_partition = data.get("boot_partition", "Unknown").upper()
+            cpu_percent = str(round(data["cpu_usage"], 2)).rjust(5, " ") if data["cpu_usage"] else "  N/A"
+            ram_percent = data["memory_usage"]if data["memory_usage"] else "N/A"
+            boot_partition = data.get("boot_partition", "Unknown").upper().ljust(7, " ")
             mcu_uptime = self.format_uptime(data["uptime_mcu"]) if data["uptime_mcu"] \
                 else "No Response"
-            link_uptime = self.format_uptime(data["uptime_connection"]) if data["uptime_connection"] \
-                else "No Response"
-            network_address = str(data["address"]).rjust(16, " ") if data["address"] else \
-                "Host Unreachable"
+            if not data.get("online", False):
+                link_uptime = "Link Down"
+                network_address = "Host Unreachable"
+            else:
+                link_uptime = self.format_uptime(data["uptime_connection"]) if data["uptime_connection"] \
+                    else "No Response"
+                network_address = str(data["address"]).rjust(16, " ") if data["address"] else \
+                    "Host Unreachable"
             firmware_version = data.get("firmware_version", "N/A")
             firmware_version = str(firmware_version).rjust(13, " ") if firmware_version else "N/A"
             text = f"CPU: {cpu_percent}% | Temp: {cpu_temp}°C | MEM: {ram_percent}B\n"
-            text += f"Reset#:   0 | Boot: {boot_partition}\n"
+            text += f"Reset#:   0 | Boot: {boot_partition} | Sig: {data['signal_strength']}dBm\n"
             text += f"S.Uptime: {mcu_uptime} | Version: {firmware_version}\n"
             text += f"L.Uptime: {link_uptime} | Addr: {network_address}\n"
 

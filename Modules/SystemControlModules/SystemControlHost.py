@@ -42,12 +42,27 @@ class SystemControlHost(ScrollableMenu):
         self.retry_timer = QTimer(self)
         self.retry_timer.timeout.connect(self.make_request)
         self.retry_timer.start(5000)
+
+        self.refresh_timer = QTimer(self)
+        self.refresh_timer.timeout.connect(self.refresh_interfaces)
+        self.refresh_timer.start(300000)  # Refresh every 5 minutes
         self.make_request()
+
+    def refresh_interfaces(self):
+        if self.isHidden(): # Only refresh the interface objects if the host is not visible
+            logging.info("Refreshing system interfaces")
+            self.make_request()
 
     def make_request(self):
         request = QNetworkRequest(QUrl(f"http://{self.host}/get_system_monitors"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.network_manager.get(request)
+
+    def clear_remote_widgets(self):
+        for widget in self.system_widgets:
+            if isinstance(widget, RemoteInterfaceControl):
+                widget.deleteLater()
+        self.system_widgets = [widget for widget in self.system_widgets if not isinstance(widget, RemoteInterfaceControl)]
 
     def handle_network_response(self, reply):
         try:
@@ -59,6 +74,7 @@ class SystemControlHost(ScrollableMenu):
             data = data.data().decode("utf-8")
             data = json.loads(data)
             self.retry_timer.stop()
+            self.clear_remote_widgets()
             for name in data["system_monitors"]:
                 self.system_widgets.append(RemoteInterfaceControl(self, name))
         except Exception as e:
@@ -67,9 +83,6 @@ class SystemControlHost(ScrollableMenu):
             self.retry_timer.start(5000)
         finally:
             reply.deleteLater()
-
-    def handle_system_data(self, data):
-        pass
 
     def showEvent(self, a0) -> None:
         for widget in self.system_widgets:

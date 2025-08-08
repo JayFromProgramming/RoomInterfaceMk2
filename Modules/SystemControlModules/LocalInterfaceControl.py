@@ -23,8 +23,8 @@ class LocalInterfaceControl(InterfaceControl):
 
         self.latest = None
 
-        self.version_check_timer = QTimer(self)
-        self.version_check_timer.timeout.connect(self.check_version)
+        # self.version_check_timer = QTimer(self)
+        # self.version_check_timer.timeout.connect(self.check_version)
         # self.version_check_timer.start(1000 * 60)  # Check for updates every minute
         # self.check_version()
 
@@ -32,12 +32,12 @@ class LocalInterfaceControl(InterfaceControl):
 
     def hideEvent(self, a0):
         super().hideEvent(a0)
-        self.version_check_timer.stop()
+        # self.version_check_timer.stop()
         self.interface_stats_update_timer.stop()
 
     def showEvent(self, a0):
         super().showEvent(a0)
-        self.version_check_timer.start(1000 * 60)
+        # self.version_check_timer.start(1000 * 60)
         self.interface_stats_update_timer.start(1000)
         # self.check_version()
 

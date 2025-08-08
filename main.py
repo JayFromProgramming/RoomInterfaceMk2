@@ -76,9 +76,9 @@ class MainWindow(QMainWindow):
         self.menu_bar.move(0, self.height() - self.menu_bar.height())
 
         # Add the menu bar buttons and link them to the appropriate modules
-        self.menu_bar.add_flyout_button("System Control", self.system_control, 60)
-        self.menu_bar.add_flyout_button("Routines", self.scene_control, 60)
-        self.menu_bar.add_flyout_button("Room Control", self.room_control, 60)
+        self.menu_bar.add_flyout_button("System Control", self.system_control, 120)
+        self.menu_bar.add_flyout_button("Routines", self.scene_control, 120)
+        self.menu_bar.add_flyout_button("Room Control", self.room_control, 90)
         self.menu_bar.add_flyout_button("Webcams", self.webcam_layout, 120)
         self.menu_bar.add_flyout_button("Radar", self.radar_host, 75)
         self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
