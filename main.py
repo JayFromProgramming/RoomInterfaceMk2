@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
         self.room_control.set_activity_timer_callback(self.menu_bar.reset_focus_timer)
         self.radar_host.set_activity_timer_callback(self.menu_bar.reset_focus_timer)
 
-        # Setup debug text timer so I can see the current CPU and memory usage (validate no memory leaks)
+        # Setup debug text timer, so I can see the current CPU and memory usage (validate no memory leaks)
         self.window_title_update_timer = QTimer()
         self.window_title_update_timer.timeout.connect(self.update_window_title)
 
