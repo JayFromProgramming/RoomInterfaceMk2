@@ -4,7 +4,7 @@ from PyQt6.QtCore import QTimer
 
 
 class RadiatorDevice(ToggleDevice, RoomDevice):
-    supported_types = ["satellite_Radiator"]
+    supported_types = ["Radiator"]
 
     def __init__(self, parent=None, device=None, priority=0):
         super().__init__(parent, device, priority)
