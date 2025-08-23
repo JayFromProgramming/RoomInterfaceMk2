@@ -40,18 +40,22 @@ class UPSDevice(RoomDevice):
         self.context_menu.addAction("Self-Test: Extended").triggered.connect(self.extended_self_test)
         self.context_menu.addAction("Alarm: Silence").triggered.connect(self.mute_alarm)
 
-        # self.toggle_button = QPushButton(self)
-        # self.toggle_button.setText("Silence")
-        # self.toggle_button.move(self.width() - self.toggle_button.width() - 10, 5)
-        # self.toggle_button.clicked.connect(self.mute_alarm)
-        # self.toggle_button.setFont(parent.font)
+        self.silence_button = QPushButton(self)
+        self.silence_button.setFixedSize(90, 30)
+        self.silence_button.setText("Silence")
+        self.silence_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold;"
+                                         "background-color: grey")
+        self.silence_button.move(self.width() - self.silence_button.width() - 10, 5)
+        self.silence_button.clicked.connect(self.mute_alarm)
+        self.silence_button.setFont(parent.font)
+        self.silence_button.hide()
 
 
     def parse_data(self, data):
         if not data['health']['online']:
             self.info_text.setText(f"<pre>SERVER REPORTS\nUPS OFFLINE\n{data['health']['reason']}</pre>")
-            self.toggle_button.setText("Turn ???")
-            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
+            self.silence_button.setText("Turn ???")
+            self.silence_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
             # self.color_picker_button.setStyleSheet("color: black; font-size: 14px; "
             #                                        "font-weight: bold; background-color: red")
             return
@@ -65,7 +69,7 @@ class UPSDevice(RoomDevice):
         battery_charge = round(data["state"]["battery_charge"])
         battery_voltage = data["state"]["battery_voltage"]
         input_voltage = round(data["state"]["input_voltage"])
-        # beeper_status = data["state"]["beeper_status"]
+        beeper_status = data["state"]["beeper_status"]
 
         if input_voltage == 0:
             input_voltage = "FAIL"
@@ -75,12 +79,16 @@ class UPSDevice(RoomDevice):
 
         if "Runtime Calibration" in status:
             grid_tie = "-|>"
+            self.silence_button.hide()
         elif "Online" in status:
             grid_tie = "-->"
+            self.silence_button.hide()
         elif "Discharging" in status:
             grid_tie = "X->"
-            # if beeper_status == "enabled":
-            #     self.toggle_button.show()
+            if beeper_status == "enabled":
+                self.silence_button.show()
+            elif beeper_status == "muted":
+                self.silence_button.hide()
         else:
             grid_tie = "-?-"
 
@@ -93,8 +101,8 @@ class UPSDevice(RoomDevice):
         has_network = has_internet()
         error_message = network_error_to_string(response, has_network)
         self.info_text.setText(f"<pre>{error_message}</pre>")
-        self.toggle_button.setText("Turn ???")
-        self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
+        self.silence_button.setText("Turn ???")
+        self.silence_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
 
     def quick_self_test(self):
         command = {
@@ -118,6 +126,5 @@ class UPSDevice(RoomDevice):
         command = {
             "preform_action": "silence_alarm"
         }
-        self.toggle_button.hide()
         self.send_command(command)
 

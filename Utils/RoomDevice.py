@@ -33,7 +33,7 @@ class RoomDevice(QLabel):
         self.setStyleSheet("background-color: #ffcd00; border: 2px solid #ffcd00; border-radius: 10px")
         self.not_found = False
 
-        self.toggle_button = None
+        self.silence_button = None
 
         self.device_label = QLabel(self)
         self.device_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
@@ -128,8 +128,8 @@ class RoomDevice(QLabel):
 
     def toggle_device(self):
         command = {"on": not self.state["on"]}
-        if self.toggle_button is not None:
-            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold;"
+        if self.silence_button is not None:
+            self.silence_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold;"
                                              " background-color: blue;")
             self.toggling = True
             self.last_toggle_state = self.state["on"]
