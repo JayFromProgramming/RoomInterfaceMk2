@@ -35,6 +35,7 @@ class UPSDevice(RoomDevice):
         self.info_text.setText("<pre>Color: N/A\nLevel: N/A\nMode:  N/A</pre>")
         self.info_text.move(10, 20)
 
+        self.context_menu.addAction("Cancel Self-Test").triggered.connect(self.cancel_self_test)
         self.context_menu.addAction("Quick Self-Test").triggered.connect(self.quick_self_test)
         self.context_menu.addAction("Extended Self-Test").triggered.connect(self.extended_self_test)
         self.context_menu.addAction("Mute Alarm").triggered.connect(self.mute_alarm)
@@ -94,6 +95,12 @@ class UPSDevice(RoomDevice):
     def extended_self_test(self):
         command = {
             "preform_action": "self_test_extended"
+        }
+        self.send_command(command)
+
+    def cancel_self_test(self):
+        command = {
+            "preform_action": "self_test_cancel"
         }
         self.send_command(command)
 
