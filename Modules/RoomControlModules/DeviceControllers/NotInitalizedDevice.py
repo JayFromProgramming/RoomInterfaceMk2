@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QLabel, QPushButton
 from loguru import logger as logging
 
 from Utils.RoomDevice import RoomDevice
+from Utils.UtilMethods import has_internet, network_error_to_string
 
 
 class NotInitalizedDevice(RoomDevice):
@@ -47,7 +48,6 @@ class NotInitalizedDevice(RoomDevice):
         self.update_status()
 
     def handle_failure(self, response):
-        self.device_text.setText(f"<pre>Server Error</pre>")
-        # self.toggle_button.setText("Turn ???")
-        self.device_text.setText(f"<pre>Network Error</pre>")
-        # self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
+        has_network = has_internet()
+        error_message = network_error_to_string(response, has_network)
+        self.device_text.setText(f"<pre>{error_message}</pre>")

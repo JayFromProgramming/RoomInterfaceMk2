@@ -73,7 +73,7 @@ class RoomControlHost(ScrollableMenu):
         self.make_request()
 
     def make_request(self):
-        request = QNetworkRequest(QUrl(f"http://{self.host}/get_schema"))
+        request = QNetworkRequest(QUrl(f"http://{self.host}/get_schema?interface_name=testing"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.network_manager.get(request)
 
@@ -151,10 +151,16 @@ class RoomControlHost(ScrollableMenu):
             self.scroll_velocity = 0
             self.scroll_offset = y
         # Determine if this movement would cause the starred device host to go below its original position
-        if self.device_group_hosts[0].y() + y > 10:
-            y = 5
-            self.scroll_velocity = 0
-            self.scroll_offset = y
+        if len(self.device_group_hosts) == 0:
+            if self.ungrouped_device_host.y() + y > 10:
+                y = 5
+                self.scroll_velocity = 0
+                self.scroll_offset = y
+        else:
+            if self.device_group_hosts[0].y() + y > 10:
+                y = 5
+                self.scroll_velocity = 0
+                self.scroll_offset = y
 
         self.scroll_total_offset += y
         # self.starred_device_host.move(20, y)
