@@ -11,7 +11,7 @@ from Modules.RoomSceneModules.SceneEditor.SceneActionEditor import SceneActionEd
 class DeviceTile(QLabel):
     valid_actions = [
         'on', 'target_value', 'color',
-        'white', 'brightness'
+        'white', 'brightness', ''
     ]  # Temporary until the server will return only valid actions in "state" field and other info in "info" field
 
     device_type_translation = {
@@ -19,17 +19,18 @@ class DeviceTile(QLabel):
         "VoiceMonkeyDevice": "Toggleable",
         "abstract_toggle_device": "Toggleable",
         "abstract_rgb": "Light",
+        "LIFXDevice": "Light",
+        "TPLinkDevice": "Light",
         "environment_controller": "Environment",
         "LevitonDevice": "Switch",
     }
 
-    def __init__(self, parent, device, group, action_data=None):
+    def __init__(self, parent, device, action_data=None):
         super().__init__(parent)
         self.parent = parent
         self.auth = parent.auth
         self.host = parent.host
         self.device = device
-        self.group = group
 
         self.human_name = None
         self.data = None
@@ -153,6 +154,9 @@ class DeviceTile(QLabel):
             if data == b"Device not found":
                 # self.device_text.setText("<pre>Status: Device not found</pre>")
                 return
+            if str(data, 'utf-8').find("Internal Server Error") != -1:
+                logging.error(f"Error retrieving info for device {self.device}: {data}")
+                return
             self.data = json.loads(str(data, 'utf-8'))
             self.type = self.data["type"]
             self.supported_actions = self.data["actions"]
@@ -172,6 +176,8 @@ class DeviceTile(QLabel):
         self.info_getter.get(request)
 
     def update_human_name(self, name):
+        if name == "Device Not Found":
+            name = self.device
         self.device_label.setText(f"{self.device_type_translation.get(self.type, self.type)}: {name}")
         self.human_name = name
 

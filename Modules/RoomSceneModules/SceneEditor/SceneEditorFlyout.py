@@ -26,7 +26,7 @@ class SceneEditorFlyout(QDialog):
 
         # If both the scene_id and data are None, we are creating a new scene
         if self.is_new:
-            self.setWindowTitle("Create New Scene")
+            self.setWindowTitle("Create New Routine")
             self.starting_data = {
                 "name": "Unnamed Scene",
                 "description": "Double click to edit",
@@ -47,7 +47,7 @@ class SceneEditorFlyout(QDialog):
         # This is a flyout (popup) that will be used to edit a scene
         self.setStyleSheet("background-color: transparent")
         self.setFixedSize(1024, 600)
-        self.setWindowTitle(f"Scene Editor: {self.starting_data['name']}")
+        self.setWindowTitle(f"Routine Editor: {self.starting_data['name']}")
         # self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint)
 
@@ -56,7 +56,7 @@ class SceneEditorFlyout(QDialog):
         self.title_label.setFixedSize(1024, 20)
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)
         self.title_label.setStyleSheet("color: #ffcd00; font-size: 16px; font-weight: bold; border: none;")
-        self.title_label.setText(f"Editing Scene: {self.starting_data['name']}")
+        self.title_label.setText(f"Editing Routine: {self.starting_data['name']}")
         self.title_label.mousePressEvent = self.titleClicked
 
         self.selected_trigger_list = TriggerColumn(self, "Selected Automatic Triggers")
@@ -100,7 +100,7 @@ class SceneEditorFlyout(QDialog):
         self.save_button = QPushButton(self)
         self.save_button.setFont(self.font)
         self.save_button.setFixedSize(195, 30)
-        self.save_button.setText(f"Save Scene{' As New' if self.is_new else ''}")
+        self.save_button.setText(f"Save Routine{' As New' if self.is_new else ''}")
         self.save_button.move(10, self.available_trigger_list.y() + self.available_trigger_list.height() + 10)
         self.save_button.setStyleSheet("background-color: green; border: none; border-radius: 10px; font-style: bold; font-size: 12px")
         self.save_button.show()
@@ -109,7 +109,7 @@ class SceneEditorFlyout(QDialog):
         self.test_button = QPushButton(self)
         self.test_button.setFont(self.font)
         self.test_button.setFixedSize(195, 30)
-        self.test_button.setText("Test Scene")
+        self.test_button.setText("Test Routine")
         self.test_button.move(10, self.save_button.y() + self.save_button.height() + 10)
         self.test_button.setStyleSheet("background-color: #4080FF; border: none; border-radius: 10px; font-style: bold; font-size: 12px")
         self.test_button.show()
@@ -127,7 +127,7 @@ class SceneEditorFlyout(QDialog):
         self.delete_button = QPushButton(self)
         self.delete_button.setFont(self.font)
         self.delete_button.setFixedSize(195, 30)
-        self.delete_button.setText("Delete Scene")
+        self.delete_button.setText("Delete Routine")
         self.delete_button.move(self.cancel_button.x(),
                                 self.cancel_button.y() + self.cancel_button.height() + 10)
         self.delete_button.setStyleSheet("background-color: red; border: none; border-radius: 10px; font-style: bold; font-size: 12px")
@@ -188,11 +188,13 @@ class SceneEditorFlyout(QDialog):
                 logging.error(f"Data: {data}")
                 # self.loading_label.setText(f"Error Loading Room Control Schema, Retrying...\n{e}")
                 return
-            for device, value in data.items():
+            devices = list(data.keys())
+            devices.append("RoutineController")
+            for device in devices:
                 # Check if the device is already in the action list
                 if self.action_device_list.has_device(device):
                     continue
-                self.available_device_list.add_device(device, value['group'])
+                self.available_device_list.add_device(device)
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             logging.exception(e)

@@ -2,11 +2,21 @@ from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
 import time
-
 network_check_timeout = 0
 internet_connected = False
 network_check_manager = QNetworkAccessManager()
 
+def get_auth():
+    with open("Config/auth.json", "r") as f:
+        import json
+        auth = json.load(f)
+        return auth["auth"]
+
+def get_host():
+    with open("Config/auth.json", "r") as f:
+        import json
+        auth = json.load(f)
+        return auth["host"]
 
 def format_net_error(message):
     message = str(str(message).split('.')[1])

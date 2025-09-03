@@ -12,7 +12,7 @@ from Utils.UtilMethods import has_internet, network_error_to_string
 
 
 class ToggleDevice(RoomDevice):
-    supported_types = ["satellite_MotionDetector"]
+    supported_types = ["MotionDetector"]
 
     def __init__(self, parent=None, device=None, priority=0):
         super().__init__(parent.auth, parent, device, False, priority)

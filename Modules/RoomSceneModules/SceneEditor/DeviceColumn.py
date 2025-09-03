@@ -10,6 +10,7 @@ from Utils.ScrollableMenu import ScrollableMenu
 class DeviceColumn(ScrollableMenu):
 
     sort_order = {
+        "RoutineController": -1,
         "abstract_rgb": 0,
         "VoiceMonkeyDevice": 1,
         "abstract_toggle_device": 2,
@@ -56,7 +57,7 @@ class DeviceColumn(ScrollableMenu):
         # logging.debug(f"Starting device ids: {starting_device_ids}")
         if starting_device_ids is not None:
             for device, action in starting_device_ids.items():
-                self.device_labels.append(DeviceTile(self, device, "Unknown", action))
+                self.device_labels.append(DeviceTile(self, device, action))
         # logging.debug(f"Device labels: {self.device_labels}")
 
         self.layout_widgets()

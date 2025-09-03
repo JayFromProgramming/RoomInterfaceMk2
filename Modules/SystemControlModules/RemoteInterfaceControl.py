@@ -82,7 +82,7 @@ class RemoteInterfaceControl(InterfaceControl):
             mcu_uptime = self.format_uptime(data["uptime_mcu"]) if data["uptime_mcu"] \
                 else "No Response"
             if not data.get("online", False):
-                link_uptime = "Link Down"
+                link_uptime = "Link Down  "
                 network_address = "Host Unreachable"
             else:
                 link_uptime = self.format_uptime(data["uptime_connection"]) if data["uptime_connection"] \
