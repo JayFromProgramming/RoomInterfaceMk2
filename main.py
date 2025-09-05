@@ -150,6 +150,7 @@ class MainWindow(QMainWindow):
                 self.forecast.refresh_forecast()
                 self.scene_control.reload()
                 self.weather.make_request()
+                self.system_control.refresh_interfaces()
                 gc.collect()
             super().keyReleaseEvent(a0)
         except Exception as e:
