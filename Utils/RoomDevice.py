@@ -7,7 +7,7 @@ from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel, QMenu, QInputDialog
 from loguru import logger as logging
 
-from Utils.UtilMethods import has_internet
+from Utils.UtilMethods import has_internet, get_auth, get_host
 
 
 class RoomDevice(QLabel):
@@ -18,13 +18,11 @@ class RoomDevice(QLabel):
     def supports_type(cls, device_type):
         return device_type in cls.supported_types
 
-    def __init__(self, auth, parent=None, device=None, large=False, priority=0):
+    def __init__(self, parent=None, device=None, large=False, priority=0):
         super().__init__(parent)
         self.parent = parent
         self.device = device
         self.priority = priority
-        self.host = parent.host
-        self.auth = auth
         self.device_type = False
         if large:
             self.setFixedSize(295, 75)
@@ -89,16 +87,16 @@ class RoomDevice(QLabel):
         super().showEvent(a0)
 
     def get_data(self):
-        request = QNetworkRequest(QUrl(f"http://{self.host}/get/{self.device}"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        request = QNetworkRequest(QUrl(f"http://{get_host()}/get/{self.device}"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         request.setTransferTimeout(5000)
         self.network_manager.get(request)
 
     def send_command(self, command):
-        request = QNetworkRequest(QUrl(f"http://{self.host}/set/{self.device}"))
+        request = QNetworkRequest(QUrl(f"http://{get_host()}/set/{self.device}"))
         # Add a json payload to the post request
         request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         payload = json.dumps(command)
         self.command_manager.post(request, payload.encode("utf-8"))
         self.refresh_timer.start(500)
@@ -115,8 +113,8 @@ class RoomDevice(QLabel):
             new_name = diag.textValue()
             if new_name == "":
                 return
-            request = QNetworkRequest(QUrl(f"http://{self.host}/set_name/{self.device}/{new_name}"))
-            request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+            request = QNetworkRequest(QUrl(f"http://{get_host()}/set_name/{self.device}/{new_name}"))
+            request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.command_manager.get(request)
             QTimer.singleShot(500, self.parent.widgets_rebuild)
         except Exception as e:

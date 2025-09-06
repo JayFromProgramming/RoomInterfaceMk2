@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QUrl, Qt
-from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager
+from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
 from PyQt6.QtWidgets import QLabel
 
 from loguru import logger as logging
@@ -8,6 +8,8 @@ from Modules.RoomControlModules.DeviceControllers.NotInitalizedDevice import Not
 from Utils.RoomDevice import RoomDevice
 
 import os
+
+from Utils.UtilMethods import get_host, get_auth
 
 if os.path.exists("Modules/RoomControlModules/DeviceControllers"):
     for file in os.listdir("Modules/RoomControlModules/DeviceControllers"):
@@ -21,8 +23,6 @@ class DeviceGroupHost(QLabel):
     def __init__(self, parent=None, group_name=None, center=False):
         super().__init__(parent)
         self.setStyleSheet("border: 2px solid #ffcd00; border-radius: 10px")
-        self.auth = parent.auth
-        self.host = parent.host
         self.group_name = group_name
         self.parent = parent
         self.center = center
@@ -67,19 +67,25 @@ class DeviceGroupHost(QLabel):
         self.name_manager.finished.connect(self.handle_name_response)
 
     def make_name_request(self, device):
-        request = QNetworkRequest(QUrl(f"http://{self.host}/name/{device}"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        request = QNetworkRequest(QUrl(f"http://{get_host()}/name/{device}"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.name_manager.get(request)
 
     def handle_name_response(self, reply):
         try:
-            if str(reply.error()) != "NetworkError.NoError":
-                logging.error(f"Name Error: {reply.error()}")
-                return
-            # Get the original query
             original_query = reply.request().url().toString()
-            # Get the device name from the query
             device = original_query.split("/")[-1]
+            match reply.error():
+                case QNetworkReply.NetworkError.NoError:
+                    pass  # No error
+                case QNetworkReply.NetworkError.ContentNotFoundError:
+                    logging.warning(f"Device name not found for: {device}")
+                    reply.deleteLater()
+                    return
+                case _:
+                    logging.error(f"Network error getting device name for {device}: {reply.errorString()}")
+                    reply.deleteLater()
+                    return
             # Get the data from the reply
             data = reply.readAll()
             for widget in self.device_widgets:
@@ -156,8 +162,8 @@ class DeviceGroupHost(QLabel):
             response.deleteLater()
 
     def add_device(self, device: str, priority: int = 0, refresh: bool = False):
-        request = QNetworkRequest(QUrl(f"http://{self.host}/get_type/{device}"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        request = QNetworkRequest(QUrl(f"http://{get_host()}/get_type/{device}"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         request.setRawHeader(b"Priority", bytes(str(priority), 'utf-8'))
         if not refresh:  # Prevents getting stuck in an infinite loop if we are rebuilding widgets
             self.device_names.append(device)

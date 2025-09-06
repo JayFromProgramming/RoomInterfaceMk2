@@ -11,7 +11,7 @@ class BlueStalkerControl(RoomDevice):
     supported_types = ["BlueStalker", "satellite_BlueStalker"]
 
     def __init__(self, parent=None, device=None, priority=0):
-        super().__init__(parent.auth, parent, device, True, priority)
+        super().__init__(parent, device, True, priority)
 
         self.device_label.setFont(parent.font)
         self.device_label.setFixedSize(300, 20)

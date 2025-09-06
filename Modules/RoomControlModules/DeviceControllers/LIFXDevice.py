@@ -67,7 +67,7 @@ class LIFXDevice(RoomDevice):
     supported_types = ["LIFXDevice", "TPLinkDevice"]
 
     def __init__(self, parent=None, device=None, priority=0):
-        super().__init__(parent.auth, parent, device, False, priority)
+        super().__init__(parent, device, False, priority)
 
         self.font = parent.font
         self.name = device
