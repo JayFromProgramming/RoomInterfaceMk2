@@ -2,13 +2,15 @@ import json
 import os
 
 from PyQt6.QtCore import Qt, QTimer, QUrl
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
+from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from PyQt6.QtWidgets import QLabel, QMenu, QInputDialog
 
 from Modules.RoomSceneModules.SceneEditor.SceneEditorFlyout import SceneEditorFlyout
 from Modules.RoomSceneModules.SceneWidget import SceneWidget
 from Utils.ScrollableMenu import ScrollableMenu
 from loguru import logger as logging
+
+from Utils.UtilMethods import get_host, get_auth
 
 
 class RoomSceneHost(ScrollableMenu):
@@ -21,20 +23,6 @@ class RoomSceneHost(ScrollableMenu):
         self.setFixedSize(parent.width(), parent.height() - self.y())
 
         self.setStyleSheet("border: 2px solid #ffcd00; border-radius: 10px")
-        if os.path.exists("Config/auth.json"):
-            with open("Config/auth.json", "r") as f:
-                data = json.load(f)
-                self.auth = data["auth"]
-                self.host = data["host"]
-        else:
-            os.makedirs("Config", exist_ok=True)
-            with open("Config/auth.json", "w") as f:
-                data = {
-                    "auth": "",
-                    "host": ""
-                }
-                json.dump(data, f)
-                raise Exception("Please fill out the auth.json file with the proper information")
 
         self.menu = QMenu(self)
         self.menu.setStyleSheet("color: white")
@@ -73,13 +61,13 @@ class RoomSceneHost(ScrollableMenu):
 
     def make_request(self):
         logging.info("Requesting routine data")
-        request = QNetworkRequest(QUrl(f"http://{self.host}/scene_get/scenes/null"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        request = QNetworkRequest(QUrl(f"http://{get_host()}/scene_get/scenes/null"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.network_manager.get(request)
 
     def handle_network_response(self, reply):
         try:
-            if str(reply.error()) != "NetworkError.NoError":
+            if reply.error() != QNetworkReply.NetworkError.NoError:
                 logging.error(f"Error: {reply.error()}")
                 self.retry_timer.start(5000)
                 return

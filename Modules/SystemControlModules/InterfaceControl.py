@@ -148,3 +148,6 @@ class InterfaceControl(QLabel):
 
     def shutdown(self):
         raise NotImplementedError
+
+    def update_interface_stats(self):
+        raise NotImplementedError

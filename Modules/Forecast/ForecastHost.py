@@ -10,6 +10,7 @@ from loguru import logger as logging
 
 from Modules.Forecast.ForecastEntry import ForecastEntry
 from Modules.Forecast.ForecastFocus import ForecastFocus
+from Utils.UtilMethods import get_host
 
 
 class IconManager(QNetworkAccessManager):
@@ -85,9 +86,6 @@ class ForecastHost(QLabel):
         self.lines = []
         self.layout_widgets()
 
-        with open("Config/auth.json", "r") as f:
-            self.auth = json.load(f)
-
         # Put the forecast focus on top of the forecast widgets and hide it
         self.forecast_focus.move(20, 20)
         self.forecast_focus.hide()
@@ -126,7 +124,7 @@ class ForecastHost(QLabel):
         self.make_request()
 
     def make_request(self):
-        request = QNetworkRequest(QUrl(f"http://{self.auth['host']}/weather/available_forecast"))
+        request = QNetworkRequest(QUrl(f"http://{get_host()}/weather/available_forecast"))
         self.forecast_manager.get(request)
 
     def hide_all_widgets(self):

@@ -1,8 +1,9 @@
 import json
 import os
 
-from PyQt6.QtCore import QTimer, QUrl
+from PyQt6.QtCore import QTimer, QUrl, Qt
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
+from PyQt6.QtWidgets import QLabel
 from loguru import logger as logging
 
 from Modules.SystemControlModules.LocalInterfaceControl import LocalInterfaceControl
@@ -15,6 +16,7 @@ class SystemControlHost(ScrollableMenu):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.parent = parent
         self.setFixedSize(parent.width(), parent.height() - self.y())
         self.setStyleSheet("border: 2px solid #ffcd00; border-radius: 10px")
 
@@ -25,6 +27,14 @@ class SystemControlHost(ScrollableMenu):
         self.network_manager.finished.connect(self.handle_network_response)
 
         self.hide()
+
+        self.title_label = QLabel("System Interface", self)
+        self.title_label.setStyleSheet("font-size: 18px; color: #ffcd00; background-color: transparent;"
+                                       " border: none; border-radius: 0px;")
+        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.title_label.setFixedSize(self.width(), 20)
+        self.title_label.move(round((self.width() - self.title_label.width()) / 2), 5)
+        self.title_label.setFont(parent.get_font("JetBrainsMono-Regular"))
 
         self.retry_timer = QTimer(self)
         self.retry_timer.timeout.connect(self.make_request)
@@ -92,7 +102,7 @@ class SystemControlHost(ScrollableMenu):
     def layout_widgets(self):
         try:
             # Lay the widgets out row by row with a 10 pixel margin
-            y_offset = 10
+            y_offset = 30
             x_offset = 10
             first_row_x_offset = 0
             # Sort the widgets by device name

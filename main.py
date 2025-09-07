@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
         self.menu_bar.add_flyout_button("Room Control", self.room_control, 90)
         self.menu_bar.add_flyout_button("Webcams", self.webcam_layout, 120)
         self.menu_bar.add_flyout_button("Radar", self.radar_host, 75)
-        self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
+        self.system_control.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
         self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
 
         # Allow modules to reset the focus timer on user interaction
@@ -174,6 +174,7 @@ class MainWindow(QMainWindow):
             self.webcam_layout.resizeEvent(event)
             self.forecast.setFixedSize(self.width(), self.forecast.height())
             self.forecast.layout_widgets()
+            self.system_control.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
             self.room_control.resizeEvent(event)
             self.scene_control.resizeEvent(event)
         except Exception as e:

@@ -9,7 +9,7 @@ from loguru import logger as logging
 
 import json
 
-from Utils.UtilMethods import load_no_image, format_net_error, has_internet
+from Utils.UtilMethods import load_no_image, format_net_error, has_internet, get_host
 from Utils.WeatherHelpers import wind_direction_arrow, kelvin_to_fahrenheit, visibility_to_text, mps_to_mph
 
 
@@ -65,9 +65,6 @@ class CurrentWeather(QLabel):
         # Set the size of the label
         self.setFixedSize(690, 200)
 
-        with open("Config/auth.json", "r") as f:
-            self.auth = json.load(f)
-
         # Create the network manager
         self.weather_manager = QNetworkAccessManager()
         self.icon_manager = QNetworkAccessManager()
@@ -83,7 +80,7 @@ class CurrentWeather(QLabel):
     def make_request(self):
         """Makes a request to the given URL"""
         # logging.info("Making request to get current weather")
-        request = QNetworkRequest(QUrl(f"http://{self.auth['host']}/weather/now"))
+        request = QNetworkRequest(QUrl(f"http://{get_host()}/weather/now"))
         request.setTransferTimeout(5000)  # 5 seconds
         self.weather_manager.get(request)
 

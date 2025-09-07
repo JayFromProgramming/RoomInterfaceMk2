@@ -6,6 +6,7 @@ from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt6.QtWidgets import QLabel, QPushButton, QMenu, QApplication
 from loguru import logger as logging
 from Modules.RoomSceneModules.SceneEditor.SceneEditorFlyout import SceneEditorFlyout
+from Utils.UtilMethods import get_host, get_auth
 
 
 class SceneWidget(QLabel):
@@ -14,8 +15,6 @@ class SceneWidget(QLabel):
         super().__init__(parent)
         self.parent = parent
         self.is_back_widget = is_back_widget
-        self.host = parent.host
-        self.auth = parent.auth
         self.scene_id = scene_id
         self.data = data
         self.font = self.parent.font
@@ -145,8 +144,8 @@ class SceneWidget(QLabel):
             if self.is_folder:
                 self.parent.open_folder(self.scene_id)
                 return
-            request = QNetworkRequest(QUrl(f"http://{self.parent.host}/scene_action/execute_scene/{self.scene_id}"))
-            request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
+            request = QNetworkRequest(QUrl(f"http://{get_host()}/scene_action/execute_scene/{self.scene_id}"))
+            request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.scene_trigger.setStyleSheet("background-color: blue;")
             payload = {}
             self.scene_caller.post(request, bytes(json.dumps(payload), 'utf-8'))
@@ -156,8 +155,8 @@ class SceneWidget(QLabel):
 
     def delete_scene(self):
         try:
-            request = QNetworkRequest(QUrl(f"http://{self.parent.host}/scene_action/delete_scene/{self.scene_id}"))
-            request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
+            request = QNetworkRequest(QUrl(f"http://{get_host()}/scene_action/delete_scene/{self.scene_id}"))
+            request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.scene_trigger.setStyleSheet("background-color: red;")
             payload = {}
             self.scene_caller.post(request, bytes(json.dumps(payload), 'utf-8'))
@@ -173,8 +172,8 @@ class SceneWidget(QLabel):
             return
         try:
             print(f"Moving scene {self.scene_id} to folder {folder_id}")
-            request = QNetworkRequest(QUrl(f"http://{self.parent.host}/scene_action/update_scene/{self.scene_id}"))
-            request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
+            request = QNetworkRequest(QUrl(f"http://{get_host()}/scene_action/update_scene/{self.scene_id}"))
+            request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.scene_trigger.setStyleSheet("background-color: blue;")
             payload = {
                 "scene_data": self.data["data"],
