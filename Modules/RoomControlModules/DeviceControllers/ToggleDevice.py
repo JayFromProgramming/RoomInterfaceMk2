@@ -1,8 +1,6 @@
-import json
 import time
 
-from PyQt6.QtCore import Qt, QTimer, QUrl
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QLabel, QPushButton
 
 from loguru import logger as logging

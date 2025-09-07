@@ -10,7 +10,7 @@ from Utils.RoomDevice import RoomDevice
 from Utils.UtilMethods import has_internet, network_error_to_string
 
 
-class NotInitalizedDevice(RoomDevice):
+class NotInitializedDevice(RoomDevice):
 
     supported_types = []
 

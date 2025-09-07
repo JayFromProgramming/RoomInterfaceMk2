@@ -78,7 +78,7 @@ class RemoteInterfaceControl(InterfaceControl):
             cpu_temp = str(round(data["temperature"], 2)).rjust(3, " ") if data["temperature"] else "N/A"
             cpu_percent = str(round(data["cpu_usage"], 2)).rjust(5, " ") if data["cpu_usage"] else "  N/A"
             ram_percent = data["memory_usage"]if data["memory_usage"] else "N/A"
-            boot_partition = data.get("boot_partition", "Unknown").upper().ljust(7, " ")
+            boot_partition = data.get("boot_partition", "Unknown").replace('\u0000', '').upper().ljust(7, " ")
             mcu_uptime = self.format_uptime(data["uptime_mcu"]) if data["uptime_mcu"] \
                 else "No Response"
             if not data.get("online", False):

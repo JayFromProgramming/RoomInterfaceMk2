@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QLabel
 
 from loguru import logger as logging
 
-from Modules.RoomControlModules.DeviceControllers.NotInitalizedDevice import NotInitalizedDevice
+from Modules.RoomControlModules.DeviceControllers.NotInitializedDevice import NotInitializedDevice
 from Utils.RoomDevice import RoomDevice
 
 import os
@@ -151,7 +151,7 @@ class DeviceGroupHost(QLabel):
                     found = True
                     break
             if not found:
-                widget = NotInitalizedDevice(self, device, priority)
+                widget = NotInitializedDevice(self, device, priority)
                 self.widget_add(widget)
                 logging.warning(f"Device ({device}) of type [{device_type}] not supported")
             self.layout_widgets()
