@@ -22,13 +22,7 @@ class LocalInterfaceControl(InterfaceControl):
         self.setFixedSize(430, 130)
 
         self.latest = None
-
-        # self.version_check_timer = QTimer(self)
-        # self.version_check_timer.timeout.connect(self.check_version)
-        # self.version_check_timer.start(1000 * 60)  # Check for updates every minute
-        # self.check_version()
-
-        # self.move(0, parent.height() - self.height())
+        self.title_label.setText("Local Interface Info")
 
     def hideEvent(self, a0):
         super().hideEvent(a0)

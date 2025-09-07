@@ -99,6 +99,8 @@ class SystemControlHost(ScrollableMenu):
         y_offset = 10
         x_offset = 10
         first_row_x_offset = 0
+        # Sort the widgets by device name
+        # sorted_widgets = sorted(self.system_widgets, key=lambda w: w.device_name)
         # Start a new row when the widgets won't fit on the current row
         for widget in self.system_widgets:
             widget.move(x_offset, y_offset)

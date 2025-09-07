@@ -46,6 +46,7 @@ class FlyoutButton(QPushButton):
         self.expanded = False
         self.flyout.set_focus(False)
         self.setText(f"↓{self.button_text}↓")
+        return None
 
 
 class MenuBar(QLabel):
@@ -67,8 +68,6 @@ class MenuBar(QLabel):
         self.refocus_timer.setSingleShot(True)
 
         self.current_focus = None
-
-        # self.calculate_button_positions()
 
     def calculate_button_positions(self):
         # All buttons should have equal spacing between them and the edges of the menu bar
@@ -113,18 +112,3 @@ class MenuBar(QLabel):
 
     def unlock_focus(self):
         self.reset_focus_timer()
-
-    # def focus_room_control(self):
-    #     self.parent.focus_scene_control(True)
-    #     self.parent.focus_system_control(True)
-    #     self.parent.focus_room_control(False)
-    #
-    # def focus_scene_control(self):
-    #     self.parent.focus_room_control(True)
-    #     self.parent.focus_system_control(True)
-    #     self.parent.focus_scene_control(False)
-    #
-    # def focus_system_control(self):
-    #     self.parent.focus_room_control(True)
-    #     self.parent.focus_scene_control(True)
-    #     self.parent.focus_system_control(False)
