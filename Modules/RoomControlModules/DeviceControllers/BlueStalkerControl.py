@@ -8,7 +8,7 @@ from loguru import logger as logging
 
 
 class BlueStalkerControl(RoomDevice):
-    supported_types = ["BlueStalker", "satellite_BlueStalker"]
+    supported_types = ["bluetooth_occupancy_scanner"]
 
     def __init__(self, parent=None, device=None, priority=0):
         super().__init__(parent, device, True, priority)
