@@ -63,6 +63,12 @@ def network_error_to_string(response, has_network):
     else:
         return f"UNKNOWN ERROR"
 
+def clean_error_type(error):
+    error_str = str(error).split('.')[-1]
+    # Split the string at each capital letter and join with a space
+    error_str = ''.join([char if char.islower() else f' {char}' for char in error_str])[1:].upper()
+    return error_str.replace('ERROR', '').strip()
+
 def load_no_image(size=None):
     if size is None:
         size = (40, 40)

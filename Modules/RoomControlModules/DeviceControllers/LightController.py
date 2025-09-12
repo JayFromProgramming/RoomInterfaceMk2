@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QLabel, QPushButton, QColorDialog
 from loguru import logger as logging
 
 from Utils.RoomDevice import RoomDevice
-from Utils.UtilMethods import has_internet
+from Utils.UtilMethods import has_internet, network_error_to_string, clean_error_type
 
 
 class LightController(RoomDevice):
@@ -70,26 +70,10 @@ class LightController(RoomDevice):
 
     def handle_failure(self, response):
         # I do want to generalize this to a global method but right now each device has a different way of handling failures
-        error_string = str(response.error()).split(".")
         has_network = has_internet()
-        if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
-            self.info_text.setText(f"<pre>SERVER DOWN\nCONNECTION REFUSED\nNETWORK:   OK</pre>")
-        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and has_network:
-            self.info_text.setText(f"<pre>SERVER OFFLINE\nCONNECTION TIMEOUT\nNETWORK:   OK</pre>")
-        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and not has_network:
-            self.info_text.setText(f"<pre>NETWORK ERROR\nCONNECTION TIMEOUT\nNETWORK: DOWN</pre>")
-        elif response.error() == QNetworkReply.NetworkError.InternalServerError:
-            self.info_text.setText(f"<pre>SERVER ERROR\nINTERNAL SERVER ERROR\n{error_string[-1]}</pre>")
-        elif response.error() == QNetworkReply.NetworkError.HostNotFoundError and has_network:
-            self.info_text.setText(f"<pre>SERVER NOT FOUND\nUNABLE TO RESOLVE HOST\nNETWORK:   OK</pre>")
-        elif response.error() == QNetworkReply.NetworkError.HostNotFoundError and not has_network:
-            self.info_text.setText(f"<pre>NETWORK ERROR\nNAME RESOLUTION FAILURE\nNETWORK: DOWN</pre>")
-        elif response.error() == QNetworkReply.NetworkError.TemporaryNetworkFailureError:
-            self.info_text.setText(f"<pre>NETWORK ERROR\nTEMPORARY NETWORK FAILURE\n{error_string[-1]}</pre>")
-        elif response.error() == QNetworkReply.NetworkError.UnknownNetworkError:
-            self.info_text.setText(f"<pre>NETWORK ERROR\nUNKNOWN NETWORK ERROR\n{error_string[-1]}</pre>")
-        else:
-            self.info_text.setText(f"<pre>UNKNOWN ERROR\n{error_string[-1]}</pre>")
+        error_message = network_error_to_string(response, has_network)
+        self.info_text.setText(f"<pre>{error_message}\n{clean_error_type(response.error())}\n"
+                               f"NETWORK: {'OFFLINE' if not has_network else 'ONLINE'}</pre>")
 
         self.toggle_button.setText("Turn ???")
         self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")

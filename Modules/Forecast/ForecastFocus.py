@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import QLabel
 from loguru import logger as logging
 
 from Modules.Forecast.WeatherCodeEnum import WeatherCodes
-from Utils.UtilMethods import load_no_image
+from Utils.UtilMethods import load_no_image, get_host
 from Utils.WeatherHelpers import kelvin_to_fahrenheit, mps_to_mph, wind_direction_arrow, convert_relative_humidity, \
     visibility_to_text, mm_to_inches, celcius_to_fahrenheit, kph_to_mph
 
@@ -124,7 +124,7 @@ class ForecastFocus(QLabel):
             logging.exception(e)
 
     def make_request(self, reference_time):
-        request = QNetworkRequest(QUrl(f"http://{self.parent.auth['host']}/weather/forecast/{reference_time}"))
+        request = QNetworkRequest(QUrl(f"http://{get_host()}/weather/forecast/{reference_time}"))
         self.network_manager.get(request)
 
     def parse_forecast(self, data):
