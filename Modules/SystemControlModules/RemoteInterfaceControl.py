@@ -10,6 +10,7 @@ import humanize
 from loguru import logger as logging
 
 from Modules.SystemControlModules.InterfaceControl import InterfaceControl
+from Utils.UtilMethods import get_host, get_auth
 
 
 class RemoteInterfaceControl(InterfaceControl):
@@ -17,7 +18,6 @@ class RemoteInterfaceControl(InterfaceControl):
     def __init__(self, parent=None, name=None):
         super().__init__(parent)
         self.parent = parent
-        self.auth = self.parent.auth
         self.name = name
         self.font = self.parent.font
         self.setStyleSheet("background-color: #ffcd00; border: 2px solid #ffcd00; border-radius: 10px")
@@ -29,19 +29,23 @@ class RemoteInterfaceControl(InterfaceControl):
         self.network_manager.finished.connect(self.handle_network_response)
 
     def send_command(self, command):
-        request = QNetworkRequest(QUrl(f"http://moldy.mug.loafclan.org/set/{self.name}"))
-        # Add a json payload to the post request
-        request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
-        payload = json.dumps(command)
-        self.network_manager.post(request, payload.encode("utf-8"))
+        try:
+            request = QNetworkRequest(QUrl(f"http://{get_host()}/set/{self.name}"))
+            # Add a json payload to the post request
+            request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
+            request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
+            payload = json.dumps(command)
+            self.network_manager.post(request, payload.encode("utf-8"))
+        except Exception as e:
+            logging.error(f"Error sending command to remote interface: {e}")
+            logging.exception(e)
 
     def update_interface_stats(self):
         self.make_request()
 
     def make_request(self):
-        request = QNetworkRequest(QUrl(f"http://{self.parent.host}/get/{self.name}"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.parent.auth, 'utf-8'))
+        request = QNetworkRequest(QUrl(f"http://{get_host()}/get/{self.name}"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.network_manager.get(request)
 
     def hideEvent(self, a0):
@@ -78,11 +82,11 @@ class RemoteInterfaceControl(InterfaceControl):
             cpu_temp = str(round(data["temperature"], 2)).rjust(3, " ") if data["temperature"] else "N/A"
             cpu_percent = str(round(data["cpu_usage"], 2)).rjust(5, " ") if data["cpu_usage"] else "  N/A"
             ram_percent = data["memory_usage"]if data["memory_usage"] else "N/A"
-            boot_partition = data.get("boot_partition", "Unknown").upper().ljust(7, " ")
+            boot_partition = data.get("boot_partition", "Unknown").replace('\u0000', '').upper().ljust(7, " ")
             mcu_uptime = self.format_uptime(data["uptime_mcu"]) if data["uptime_mcu"] \
                 else "No Response"
             if not data.get("online", False):
-                link_uptime = "Link Down"
+                link_uptime = "Link Down  "
                 network_address = "Host Unreachable"
             else:
                 link_uptime = self.format_uptime(data["uptime_connection"]) if data["uptime_connection"] \

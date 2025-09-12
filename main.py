@@ -22,6 +22,7 @@ from loguru import logger as logging
 
 from Modules.RoomSceneModules.RoomSceneHost import RoomSceneHost
 from Modules.SystemControlModules.SystemControlHost import SystemControlHost
+from Utils.UtilMethods import toggle_dev_server, is_using_dev_server
 
 
 class RoomInterface(QApplication):
@@ -81,7 +82,7 @@ class MainWindow(QMainWindow):
         self.menu_bar.add_flyout_button("Room Control", self.room_control, 90)
         self.menu_bar.add_flyout_button("Webcams", self.webcam_layout, 120)
         self.menu_bar.add_flyout_button("Radar", self.radar_host, 75)
-        self.system_control.setFixedSize(self.width(), self.room_control.y() - 90)
+        self.system_control.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
         self.scene_control.setFixedSize(self.width(), self.room_control.y() - 90)
 
         # Allow modules to reset the focus timer on user interaction
@@ -114,9 +115,10 @@ class MainWindow(QMainWindow):
             cpu_percent = self.process.cpu_percent() / psutil.cpu_count()
             cpu_percent = f"{cpu_percent:.2f}".rjust(5, " ")
             memory_usage = self.process.memory_info().rss
+            using_dev_server = " - Alternate Server" if is_using_dev_server() else ""
             # Add the current memory usage to the window title and the current cpu usage
             self.setWindowTitle(f"RoomInterfaceMk2[PID:{os.getpid()}] - CPU: {cpu_percent}% "
-                                f"- Memory: {round(memory_usage / 1024 / 1024, 2)}MB")
+                                f"- Memory: {round(memory_usage / 1024 / 1024, 2)}MB{using_dev_server}")
         except Exception as e:
             logging.exception(e)
             self.setWindowTitle("RoomInterfaceMk2 - Unable to get process info")
@@ -142,15 +144,23 @@ class MainWindow(QMainWindow):
             print(f"Failed to load the font: {name}.ttf")
             return QFont()
 
+    def reload_all(self):
+        self.room_control.reload_schema()
+        self.forecast.refresh_forecast()
+        self.scene_control.reload()
+        self.weather.make_request()
+        self.system_control.refresh_interfaces()
+        gc.collect()
+
     def keyReleaseEvent(self, a0) -> None:
         try:
-            # On 'R' key press, refresh all data from the server
-            if a0.key() == 82:
-                self.room_control.reload_schema()
-                self.forecast.refresh_forecast()
-                self.scene_control.reload()
-                self.weather.make_request()
-                gc.collect()
+            # On 'R' key press, refresh all data from the server 82
+            match a0.key():
+                case 68:  # D key
+                    toggle_dev_server()
+                    self.reload_all()
+                case 82:  # R key
+                    self.reload_all()
             super().keyReleaseEvent(a0)
         except Exception as e:
             logging.exception(e)
@@ -164,6 +174,7 @@ class MainWindow(QMainWindow):
             self.webcam_layout.resizeEvent(event)
             self.forecast.setFixedSize(self.width(), self.forecast.height())
             self.forecast.layout_widgets()
+            self.system_control.setFixedSize(self.width(), self.height() - 90 - self.menu_bar.height())
             self.room_control.resizeEvent(event)
             self.scene_control.resizeEvent(event)
         except Exception as e:

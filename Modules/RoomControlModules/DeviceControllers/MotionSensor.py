@@ -12,10 +12,10 @@ from Utils.UtilMethods import has_internet, network_error_to_string
 
 
 class ToggleDevice(RoomDevice):
-    supported_types = ["satellite_MotionDetector"]
+    supported_types = ["MotionDetector"]
 
     def __init__(self, parent=None, device=None, priority=0):
-        super().__init__(parent.auth, parent, device, False, priority)
+        super().__init__(parent, device, False, priority)
 
         self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
         self.device_label.setText(f"[{device}]")

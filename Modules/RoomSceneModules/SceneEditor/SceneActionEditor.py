@@ -20,7 +20,7 @@ class SceneActionEditor(QWidget):
         self.actions = []
 
         self.setFixedSize(310, 375)
-        self.setWindowTitle("Scene Action Editor")
+        self.setWindowTitle("Routine Action Editor")
 
         self.scroll_area = QScrollArea(self)
         self.scroll_area.setFixedSize(300, 275)

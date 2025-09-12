@@ -12,6 +12,7 @@ from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from loguru import logger as logging
 
 from Modules.RadarDisplay.RadarTile import RadarTile
+from Utils.UtilMethods import get_host
 
 
 class RadarHost(QLabel):
@@ -29,11 +30,6 @@ class RadarHost(QLabel):
         logging.info(f"Map Tile Range: {self.min_x}-{self.max_x}, {self.min_y}-{self.max_y} : {self.range_x}x{self.range_y}")
         self.maptile_surface.setFixedSize(256 * self.range_x, 256 * self.range_y)
         self.map_tiles = []
-
-        with open("Config/auth.json", "r") as f:
-            self.auth = json.load(f)
-
-        self.host = self.auth['host']
 
         self.focused = False
         self.playing = False
@@ -274,7 +270,7 @@ class RadarHost(QLabel):
     def load_radartiles(self):
         self.loading_label.setText("Acquiring Radar Frame List")
         self.loading_label.show()
-        self.network_manager.get(QNetworkRequest(QUrl(f"http://{self.host}/weather/available_radars")))
+        self.network_manager.get(QNetworkRequest(QUrl(f"http://{get_host()}/weather/available_radars")))
 
     def load_maptiles(self):
         # All map tiles are 256x256 pixels in size and are stored in 'Assets/MapTiles/{x}-{y}.png'
@@ -282,7 +278,7 @@ class RadarHost(QLabel):
         center_tile_x, center_tile_y = 0, 0
         for y in range(self.min_y, self.max_y + 1):
             for x in range(self.min_x, self.max_x + 1):
-                self.map_tiles.append(RadarTile(self.host, self.maptile_surface, x, y))
+                self.map_tiles.append(RadarTile(get_host(), self.maptile_surface, x, y))
         for i, map_tile in enumerate(self.map_tiles):
             map_tile.move((i % self.range_x) * 256,
                           (i // self.range_x) * 256)

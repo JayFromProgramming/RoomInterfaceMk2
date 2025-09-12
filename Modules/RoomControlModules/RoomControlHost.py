@@ -10,6 +10,7 @@ from Modules.RoomControlModules.DeviceGroupHost import DeviceGroupHost
 from loguru import logger as logging
 
 from Utils.ScrollableMenu import ScrollableMenu
+from Utils.UtilMethods import get_host, get_auth
 
 
 class RoomControlHost(ScrollableMenu):
@@ -31,20 +32,6 @@ class RoomControlHost(ScrollableMenu):
 
         self.has_schema = False
         self.setStyleSheet("border-radius: 10px")
-        if os.path.exists("Config/auth.json"):
-            with open("Config/auth.json", "r") as f:
-                data = json.load(f)
-                self.auth = data["auth"]
-                self.host = data["host"]
-        else:
-            os.makedirs("Config", exist_ok=True)
-            with open("Config/auth.json", "w") as f:
-                data = {
-                    "auth": "",
-                    "host": ""
-                }
-                json.dump(data, f)
-                raise Exception("Please fill out the auth.json file with the proper information")
 
         self.starred_device_host = DeviceGroupHost(self, "Starred Devices", center=True)
         self.device_group_hosts = []
@@ -73,8 +60,8 @@ class RoomControlHost(ScrollableMenu):
         self.make_request()
 
     def make_request(self):
-        request = QNetworkRequest(QUrl(f"http://{self.host}/get_schema"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        request = QNetworkRequest(QUrl(f"http://{get_host()}/get_schema?interface_name=testing"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.network_manager.get(request)
 
     def process_schema_response(self, data):
@@ -151,10 +138,16 @@ class RoomControlHost(ScrollableMenu):
             self.scroll_velocity = 0
             self.scroll_offset = y
         # Determine if this movement would cause the starred device host to go below its original position
-        if self.device_group_hosts[0].y() + y > 10:
-            y = 5
-            self.scroll_velocity = 0
-            self.scroll_offset = y
+        if len(self.device_group_hosts) == 0:
+            if self.ungrouped_device_host.y() + y > 10:
+                y = 5
+                self.scroll_velocity = 0
+                self.scroll_offset = y
+        else:
+            if self.device_group_hosts[0].y() + y > 10:
+                y = 5
+                self.scroll_velocity = 0
+                self.scroll_offset = y
 
         self.scroll_total_offset += y
         # self.starred_device_host.move(20, y)

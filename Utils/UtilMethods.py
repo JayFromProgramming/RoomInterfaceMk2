@@ -2,11 +2,37 @@ from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
 import time
-
 network_check_timeout = 0
 internet_connected = False
+use_dev_server = False
 network_check_manager = QNetworkAccessManager()
 
+def is_using_dev_server():
+    global use_dev_server
+    return use_dev_server
+
+def toggle_dev_server():
+    global use_dev_server
+    use_dev_server = not use_dev_server
+
+def get_auth():
+    global use_dev_server
+    with open("Config/auth.json", "r") as f:
+        import json
+        if use_dev_server:
+            auth = json.load(f)
+            return auth["dev_auth"]
+        auth = json.load(f)
+        return auth["auth"]
+
+def get_host():
+    global use_dev_server
+    with open("Config/auth.json", "r") as f:
+        import json
+        host = json.load(f)
+        if use_dev_server:
+            return host["dev_host"]
+        return host["host"]
 
 def format_net_error(message):
     message = str(str(message).split('.')[1])
@@ -36,6 +62,12 @@ def network_error_to_string(response, has_network):
         return f"SERVER TIMEOUT"
     else:
         return f"UNKNOWN ERROR"
+
+def clean_error_type(error):
+    error_str = str(error).split('.')[-1]
+    # Split the string at each capital letter and join with a space
+    error_str = ''.join([char if char.islower() else f' {char}' for char in error_str])[1:].upper()
+    return error_str.replace('ERROR', '').strip()
 
 def load_no_image(size=None):
     if size is None:

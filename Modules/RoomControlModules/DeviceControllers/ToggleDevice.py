@@ -1,8 +1,6 @@
-import json
 import time
 
-from PyQt6.QtCore import Qt, QTimer, QUrl
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QLabel, QPushButton
 
 from loguru import logger as logging
@@ -12,10 +10,10 @@ from Utils.UtilMethods import has_internet, network_error_to_string
 
 
 class ToggleDevice(RoomDevice):
-    supported_types = ["VoiceMonkeyDevice", "abstract_toggle_device", "satellite_Relay"]
+    supported_types = ["VoiceMonkeyDevice", "abstract_toggle_device", "Relay"]
 
     def __init__(self, parent=None, device=None, priority=0):
-        super().__init__(parent.auth, parent, device, False, priority)
+        super().__init__(parent, device, False, priority)
 
         self.device_label.setStyleSheet("color: black; font-size: 14px; font-weight: bold; border: none;")
         self.device_label.setText(f"[{device}]")
@@ -42,40 +40,53 @@ class ToggleDevice(RoomDevice):
         self.device_label.setText(name)
 
     def update_status(self):
-        health = self.data["health"]
-        if not health["online"]:
-            self.device_text.setText(f"<pre>DEVICE OFFLINE</pre>")
-            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
-        elif health["fault"]:
-            self.device_text.setText(f"<pre>Online: FAULT</pre>")
-            self.toggle_button.setStyleSheet(
-                "color: black; font-size: 14px; font-weight: bold; background-color: orange;")
-        else:
-            if "info" not in self.data or self.data["info"] is None:
-                self.device_text.setText(f"<pre>Online: REMOTE</pre>")
-                return
-            if "power" in self.data["info"] and self.state["on"]:
-                self.device_text.setText(f"<pre>DRAW: {self.data['info']['power']}W</pre>")
-            elif self.data["auto_state"]["is_auto"]:
-                self.device_text.setText(f"<pre>Online: AUTO</pre>")
+        try:
+            health = self.data["health"]
+            if not health["online"]:
+                self.device_text.setText(f"<pre>DEVICE OFFLINE</pre>")
+                self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
+            elif health["fault"]:
+                self.device_text.setText(f"<pre>Online: FAULT</pre>")
+                self.toggle_button.setStyleSheet(
+                    "color: black; font-size: 14px; font-weight: bold; background-color: orange;")
             else:
-                self.device_text.setText(f"<pre>Online: MANUAL</pre>")
+                if "info" not in self.data or self.data["info"] is None:
+                    self.device_text.setText(f"<pre>Online: REMOTE</pre>")
+                    return
+                if "power" in self.data["info"] and self.state["on"]:
+                    self.device_text.setText(f"<pre>DRAW: {self.data['info']['power']}W</pre>")
+                elif self.data["auto_state"]["is_auto"]:
+                    self.device_text.setText(f"<pre>Online: AUTO</pre>")
+                else:
+                    self.device_text.setText(f"<pre>Online: MANUAL</pre>")
+        except Exception as e:
+            logging.error(f"Error updating toggle device status for {self.device}: {e}")
+            self.device_text.setText("<pre>STATUS ERROR</pre>")
+            self.toggle_button.setText("Turn ???")
+            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
 
     def parse_data(self, data):
-        if self.state is None:
-            self.device_text.setText("<pre>DEVICE UNKNOWN</pre>")
-            return
-        if not self.toggling:
-            self.toggle_button.setText(f"Turn {['On', 'Off'][self.state['on']]}")
-            button_color = "#4080FF" if self.state["on"] else "grey"
-            self.toggle_button.setStyleSheet(
-                f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
-            self.update_status()
-        elif self.toggle_time < time.time() - 5:  # If the toggle has
-            self.toggling = False
-        else:
-            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold;"
-                                             " background-color: blue;")
+        try:
+            if self.state is None:
+                self.device_text.setText("<pre>DEVICE UNKNOWN</pre>")
+                return
+            if not self.toggling:
+                if 'on' in self.state:
+                    self.toggle_button.setText(f"Turn {['On', 'Off'][self.state['on']]}")
+                    button_color = "#4080FF" if self.state["on"] else "grey"
+                    self.toggle_button.setStyleSheet(
+                        f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
+                self.update_status()
+            elif self.toggle_time < time.time() - 5:  # If the toggle has
+                self.toggling = False
+            else:
+                self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold;"
+                                                 " background-color: blue;")
+        except Exception as e:
+            logging.error(f"Error parsing toggle device data for {self.device}: {e}")
+            self.device_text.setText("<pre>DATA ERROR</pre>")
+            self.toggle_button.setText("Turn ???")
+            self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
 
     def handle_failure(self, response):
         has_network = has_internet()

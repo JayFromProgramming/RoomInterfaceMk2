@@ -8,7 +8,7 @@ from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from loguru import logger as logging
 
 from Modules.Forecast.WeatherCodeEnum import WeatherCodes
-from Utils.UtilMethods import load_no_image
+from Utils.UtilMethods import load_no_image, get_host
 from Utils.WeatherHelpers import wind_direction_arrow, celcius_to_fahrenheit, kph_to_mph
 
 
@@ -122,7 +122,7 @@ class ForecastEntry(QLabel):
         self.make_request(self.reference_time)
 
     def make_request(self, reference_time):
-        request = QNetworkRequest(QUrl(f"http://{self.parent.auth['host']}/weather/forecast/{reference_time}"))
+        request = QNetworkRequest(QUrl(f"http://{get_host()}/weather/forecast/{reference_time}"))
         self.network_manager.get(request)
 
     def handle_icon_response(self, pixmap):

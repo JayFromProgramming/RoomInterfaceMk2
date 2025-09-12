@@ -23,7 +23,6 @@ class InterfaceControl(QLabel):
         self.title_label = QLabel(self)
         self.title_label.setFont(self.font)
         self.title_label.setFixedSize(430, 20)
-        self.title_label.setText("Local Interface Info")
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
         self.title_label.setStyleSheet("color: black; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
 
@@ -148,4 +147,7 @@ class InterfaceControl(QLabel):
         raise NotImplementedError
 
     def shutdown(self):
+        raise NotImplementedError
+
+    def update_interface_stats(self):
         raise NotImplementedError

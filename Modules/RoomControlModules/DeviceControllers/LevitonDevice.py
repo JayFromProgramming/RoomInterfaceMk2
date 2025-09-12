@@ -67,7 +67,7 @@ class LevitonDevice(RoomDevice):
     supported_types = ["LevitonDevice"]
 
     def __init__(self, parent=None, device=None, priority=0):
-        super().__init__(parent.auth, parent, device, False, priority)
+        super().__init__(parent, device, False, priority)
 
         # self.device_label.setFont(parent.font)
         # self.device_label.setFixedSize(135, 20)
