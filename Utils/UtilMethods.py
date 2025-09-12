@@ -3,6 +3,8 @@ import PyQt6.QtNetwork as QN
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
 import time
+import re
+from loguru import logger as logging
 
 network_check_timeout = 0
 internet_connected = False
@@ -20,17 +22,19 @@ def is_using_dev_server():
     global use_dev_server
     return use_dev_server
 
+def allow_unverified_ssl(allow: bool):
+    ssl_config = QN.QSslConfiguration.defaultConfiguration()
+    ssl_config.setPeerVerifyMode(QN.QSslSocket.PeerVerifyMode.VerifyNone if allow else QN.QSslSocket.PeerVerifyMode.VerifyPeer)
+    QN.QSslConfiguration.setDefaultConfiguration(ssl_config)
+
+def allowing_unverified_ssl() -> bool:
+    ssl_config = QN.QSslConfiguration.defaultConfiguration()
+    return ssl_config.peerVerifyMode() == QN.QSslSocket.PeerVerifyMode.VerifyNone
 
 def toggle_dev_server():
     global use_dev_server
     use_dev_server = not use_dev_server
-    ssl_config = QN.QSslConfiguration.defaultConfiguration()
-    if use_dev_server:
-        ssl_config.setPeerVerifyMode(QN.QSslSocket.PeerVerifyMode.VerifyNone)
-    else:
-        ssl_config.setPeerVerifyMode(QN.QSslSocket.PeerVerifyMode.VerifyPeer)
-    QN.QSslConfiguration.setDefaultConfiguration(ssl_config)
-
+    allow_unverified_ssl(use_dev_server)
 
 def get_auth():
     global use_dev_server
@@ -43,6 +47,11 @@ def get_host():
     global use_dev_server
     if use_dev_server:
         return auth["dev_host"]
+    # If the host is a local IP address enable unverified ssl
+    ip_regex = re.compile(r"^(?:http://|https://)?(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?$")
+    if ip_regex.match(auth["host"]) and not allowing_unverified_ssl():
+        logging.info("Using local IP address, allowing unverified SSL")
+        allow_unverified_ssl(True)
     return auth["host"]
 
 def network_error_to_string(response, has_network):
