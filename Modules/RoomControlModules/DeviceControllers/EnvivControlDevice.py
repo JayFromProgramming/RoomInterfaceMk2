@@ -69,7 +69,7 @@ class EnvivControlDevice(RoomDevice):
         self.increase_button = QPushButton(self)
         self.increase_button.setFixedSize(35, 25)
         self.increase_button.setStyleSheet("color: black; font-size: 16px; font-weight: bold; background-color: grey;"
-                                           "border: black; border-radius: 0px; boarder-width: 1px;")
+                                           "border: black; border-radius: 0px; border-width: 1px;")
         self.increase_button.setText("▲")
         self.increase_button.move(self.spin_box.x() + self.spin_box.width(), 20)
         self.increase_button.clicked.connect(self.increase_target)
@@ -78,7 +78,7 @@ class EnvivControlDevice(RoomDevice):
         self.decrease_button = QPushButton(self)
         self.decrease_button.setFixedSize(35, 25)
         self.decrease_button.setStyleSheet("color: black; font-size: 16px; font-weight: bold; background-color: grey;"
-                                           "border: black; border-radius: 0px; boarder-width: 1px;")
+                                           "border: black; border-radius: 0px; border-width: 1px;")
         self.decrease_button.setText("▼")
         self.decrease_button.move(self.increase_button.x(),
                                   self.increase_button.y() + self.increase_button.height())

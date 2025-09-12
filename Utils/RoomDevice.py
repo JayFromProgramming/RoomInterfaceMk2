@@ -58,7 +58,7 @@ class RoomDevice(QLabel):
         self.state = None
         self.data = None
         self.has_names = False
-        self.human_name = None
+        self.human_name = None  # type: str | None
 
         self.toggling = False
         self.last_toggle_state = None
@@ -106,7 +106,7 @@ class RoomDevice(QLabel):
             diag = QInputDialog()
             diag.setWindowFlags(Qt.WindowType.FramelessWindowHint)
             diag.setLabelText("Enter a new name for the device:")
-            diag.setTextValue(self.human_name)
+            diag.setTextValue(self.human_name.replace("|", "") if self.human_name is not None else "")
             diag.setOkButtonText("Submit")
             diag.setCancelButtonText("Cancel")
             diag.exec()
