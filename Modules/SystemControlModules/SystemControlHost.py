@@ -52,7 +52,7 @@ class SystemControlHost(ScrollableMenu):
 
     def make_request(self):
         try:
-            request = QNetworkRequest(QUrl(f"http://{get_host()}/get_system_monitors"))
+            request = QNetworkRequest(QUrl(f"{get_host()}/get_system_monitors"))
             request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.network_manager.get(request)
         except Exception as e:

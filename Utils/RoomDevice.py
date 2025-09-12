@@ -87,13 +87,13 @@ class RoomDevice(QLabel):
         super().showEvent(a0)
 
     def get_data(self):
-        request = QNetworkRequest(QUrl(f"http://{get_host()}/get/{self.device}"))
+        request = QNetworkRequest(QUrl(f"{get_host()}/get/{self.device}"))
         request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         request.setTransferTimeout(5000)
         self.network_manager.get(request)
 
     def send_command(self, command):
-        request = QNetworkRequest(QUrl(f"http://{get_host()}/set/{self.device}"))
+        request = QNetworkRequest(QUrl(f"{get_host()}/set/{self.device}"))
         # Add a json payload to the post request
         request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
         request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
@@ -113,7 +113,7 @@ class RoomDevice(QLabel):
             new_name = diag.textValue()
             if new_name == "":
                 return
-            request = QNetworkRequest(QUrl(f"http://{get_host()}/set_name/{self.device}/{new_name}"))
+            request = QNetworkRequest(QUrl(f"{get_host()}/set_name/{self.device}/{new_name}"))
             request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.command_manager.get(request)
             QTimer.singleShot(500, self.parent.widgets_rebuild)

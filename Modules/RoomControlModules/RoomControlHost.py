@@ -60,7 +60,7 @@ class RoomControlHost(ScrollableMenu):
         self.make_request()
 
     def make_request(self):
-        request = QNetworkRequest(QUrl(f"http://{get_host()}/get_schema?interface_name=testing"))
+        request = QNetworkRequest(QUrl(f"{get_host()}/get_schema?interface_name=testing"))
         request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.network_manager.get(request)
 

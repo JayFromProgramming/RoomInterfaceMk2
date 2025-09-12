@@ -144,7 +144,7 @@ class SceneWidget(QLabel):
             if self.is_folder:
                 self.parent.open_folder(self.scene_id)
                 return
-            request = QNetworkRequest(QUrl(f"http://{get_host()}/scene_action/execute_scene/{self.scene_id}"))
+            request = QNetworkRequest(QUrl(f"{get_host()}/scene_action/execute_scene/{self.scene_id}"))
             request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.scene_trigger.setStyleSheet("background-color: blue;")
             payload = {}
@@ -155,7 +155,7 @@ class SceneWidget(QLabel):
 
     def delete_scene(self):
         try:
-            request = QNetworkRequest(QUrl(f"http://{get_host()}/scene_action/delete_scene/{self.scene_id}"))
+            request = QNetworkRequest(QUrl(f"{get_host()}/scene_action/delete_scene/{self.scene_id}"))
             request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.scene_trigger.setStyleSheet("background-color: red;")
             payload = {}
@@ -172,7 +172,7 @@ class SceneWidget(QLabel):
             return
         try:
             print(f"Moving scene {self.scene_id} to folder {folder_id}")
-            request = QNetworkRequest(QUrl(f"http://{get_host()}/scene_action/update_scene/{self.scene_id}"))
+            request = QNetworkRequest(QUrl(f"{get_host()}/scene_action/update_scene/{self.scene_id}"))
             request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.scene_trigger.setStyleSheet("background-color: blue;")
             payload = {

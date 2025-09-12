@@ -63,7 +63,7 @@ class DeviceColumn(ScrollableMenu):
         self.layout_widgets()
 
     def make_name_request(self, device):
-        request = QNetworkRequest(QUrl(f"http://{self.host}/name/{device}"))
+        request = QNetworkRequest(QUrl(f"{self.host}/name/{device}"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.name_manager.get(request)
 

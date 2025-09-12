@@ -30,7 +30,7 @@ class RemoteInterfaceControl(InterfaceControl):
 
     def send_command(self, command):
         try:
-            request = QNetworkRequest(QUrl(f"http://{get_host()}/set/{self.name}"))
+            request = QNetworkRequest(QUrl(f"{get_host()}/set/{self.name}"))
             # Add a json payload to the post request
             request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
             request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
@@ -44,7 +44,7 @@ class RemoteInterfaceControl(InterfaceControl):
         self.make_request()
 
     def make_request(self):
-        request = QNetworkRequest(QUrl(f"http://{get_host()}/get/{self.name}"))
+        request = QNetworkRequest(QUrl(f"{get_host()}/get/{self.name}"))
         request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.network_manager.get(request)
 

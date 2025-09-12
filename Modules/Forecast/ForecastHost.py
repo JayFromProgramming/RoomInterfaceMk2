@@ -124,7 +124,7 @@ class ForecastHost(QLabel):
         self.make_request()
 
     def make_request(self):
-        request = QNetworkRequest(QUrl(f"http://{get_host()}/weather/available_forecast"))
+        request = QNetworkRequest(QUrl(f"{get_host()}/weather/available_forecast"))
         self.forecast_manager.get(request)
 
     def hide_all_widgets(self):

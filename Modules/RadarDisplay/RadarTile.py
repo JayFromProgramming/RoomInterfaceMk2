@@ -9,6 +9,8 @@ from PyQt6.QtWidgets import QLabel
 
 from loguru import logger as logging
 
+from Utils.UtilMethods import get_host
+
 
 class RadarTile(QLabel):
     MAX_PARSE_TIME = 0.01  # Maximum time to spend parsing responses in milliseconds per parse event
@@ -81,7 +83,7 @@ class RadarTile(QLabel):
             self.outstanding_requests += 1
             self.total_frames += 1
             self.network_manager.get(
-                QNetworkRequest(QUrl(f"http://{self.host}/weather/radar/{timestamp}/{self.tile_x}/{self.tile_y}/4")))
+                QNetworkRequest(QUrl(f"{get_host()}/weather/radar/{timestamp}/{self.tile_x}/{self.tile_y}/4")))
 
     def set_radar_overlay(self, timestamp):
         self.displayed_radar_image = timestamp

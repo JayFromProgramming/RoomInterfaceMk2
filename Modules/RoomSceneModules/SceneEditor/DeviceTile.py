@@ -171,7 +171,7 @@ class DeviceTile(QLabel):
             reply.deleteLater()
 
     def get_data(self):
-        request = QNetworkRequest(QUrl(f"http://{self.host}/get/{self.device}"))
+        request = QNetworkRequest(QUrl(f"{self.host}/get/{self.device}"))
         request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
         self.info_getter.get(request)
 

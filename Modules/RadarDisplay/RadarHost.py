@@ -270,7 +270,7 @@ class RadarHost(QLabel):
     def load_radartiles(self):
         self.loading_label.setText("Acquiring Radar Frame List")
         self.loading_label.show()
-        self.network_manager.get(QNetworkRequest(QUrl(f"http://{get_host()}/weather/available_radars")))
+        self.network_manager.get(QNetworkRequest(QUrl(f"{get_host()}/weather/available_radars")))
 
     def load_maptiles(self):
         # All map tiles are 256x256 pixels in size and are stored in 'Assets/MapTiles/{x}-{y}.png'

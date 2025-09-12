@@ -7,6 +7,11 @@ internet_connected = False
 use_dev_server = False
 network_check_manager = QNetworkAccessManager()
 
+with open("Config/auth.json", "r") as f:
+    import json
+    auth = json.load(f)
+
+
 def is_using_dev_server():
     global use_dev_server
     return use_dev_server
@@ -17,22 +22,15 @@ def toggle_dev_server():
 
 def get_auth():
     global use_dev_server
-    with open("Config/auth.json", "r") as f:
-        import json
-        if use_dev_server:
-            auth = json.load(f)
-            return auth["dev_auth"]
-        auth = json.load(f)
-        return auth["auth"]
+    if use_dev_server:
+        return auth["dev_auth"]
+    return auth["auth"]
 
 def get_host():
     global use_dev_server
-    with open("Config/auth.json", "r") as f:
-        import json
-        host = json.load(f)
-        if use_dev_server:
-            return host["dev_host"]
-        return host["host"]
+    if use_dev_server:
+        return auth["dev_host"]
+    return auth["host"]
 
 def format_net_error(message):
     message = str(str(message).split('.')[1])

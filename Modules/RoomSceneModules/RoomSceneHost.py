@@ -61,7 +61,7 @@ class RoomSceneHost(ScrollableMenu):
 
     def make_request(self):
         logging.info("Requesting routine data")
-        request = QNetworkRequest(QUrl(f"http://{get_host()}/scene_get/scenes/null"))
+        request = QNetworkRequest(QUrl(f"{get_host()}/scene_get/scenes/null"))
         request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.network_manager.get(request)
 

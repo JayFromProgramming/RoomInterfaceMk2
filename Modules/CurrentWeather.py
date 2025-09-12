@@ -80,7 +80,7 @@ class CurrentWeather(QLabel):
     def make_request(self):
         """Makes a request to the given URL"""
         # logging.info("Making request to get current weather")
-        request = QNetworkRequest(QUrl(f"http://{get_host()}/weather/now"))
+        request = QNetworkRequest(QUrl(f"{get_host()}/weather/now"))
         request.setTransferTimeout(5000)  # 5 seconds
         self.weather_manager.get(request)
 

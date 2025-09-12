@@ -67,7 +67,7 @@ class DeviceGroupHost(QLabel):
         self.name_manager.finished.connect(self.handle_name_response)
 
     def make_name_request(self, device):
-        request = QNetworkRequest(QUrl(f"http://{get_host()}/name/{device}"))
+        request = QNetworkRequest(QUrl(f"{get_host()}/name/{device}"))
         request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.name_manager.get(request)
 
@@ -162,7 +162,7 @@ class DeviceGroupHost(QLabel):
             response.deleteLater()
 
     def add_device(self, device: str, priority: int = 0, refresh: bool = False):
-        request = QNetworkRequest(QUrl(f"http://{get_host()}/get_type/{device}"))
+        request = QNetworkRequest(QUrl(f"{get_host()}/get_type/{device}"))
         request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         request.setRawHeader(b"Priority", bytes(str(priority), 'utf-8'))
         if not refresh:  # Prevents getting stuck in an infinite loop if we are rebuilding widgets
