@@ -10,7 +10,7 @@ from loguru import logger as logging
 
 from Modules.Forecast.ForecastEntry import ForecastEntry
 from Modules.Forecast.ForecastFocus import ForecastFocus
-from Utils.UtilMethods import get_host
+from Utils.UtilMethods import get_host, network_error_to_string, has_internet, clean_error_type
 
 
 class IconManager(QNetworkAccessManager):
@@ -320,20 +320,10 @@ class ForecastHost(QLabel):
 
     def handle_forecast_error(self, reply):
         logging.error(f"Error: {reply.error()}")
-        base_text = "Error fetching forecast\n"
-        match reply.error():
-            case QNetworkReply.NetworkError.ConnectionRefusedError:
-                self.error_label.setText(f"{base_text}The server refused the connection")
-            case QNetworkReply.NetworkError.HostNotFoundError:
-                self.error_label.setText(f"{base_text}The server could not be found")
-            case QNetworkReply.NetworkError.RemoteHostClosedError:
-                self.error_label.setText(f"{base_text}The server aborted the connection")
-            case QNetworkReply.NetworkError.UnknownNetworkError:
-                self.error_label.setText(f"{base_text}A network timeout occurred")
-            case QNetworkReply.NetworkError.ServiceUnavailableError:
-                self.error_label.setText(f"{base_text}Forecast data is currently unavailable")
-            case _:
-                self.error_label.setText(f"{base_text}An unexpected error occurred")
+        has_net = has_internet()
+        base_text = (f"Error fetching forecast\n{network_error_to_string(reply, has_net)}\n"
+                     f"{clean_error_type(reply.error())}")
+        self.error_label.setText(base_text)
         self.error_label.show()
         # Hide all the forecast widgets
         self.hide_all_widgets()

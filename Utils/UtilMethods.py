@@ -1,4 +1,5 @@
 from PyQt6.QtCore import QUrl
+import PyQt6.QtNetwork as QN
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
 import time
@@ -7,6 +8,7 @@ network_check_timeout = 0
 internet_connected = False
 use_dev_server = False
 network_check_manager = QNetworkAccessManager()
+
 
 
 with open("Config/auth.json", "r") as f:
@@ -22,6 +24,12 @@ def is_using_dev_server():
 def toggle_dev_server():
     global use_dev_server
     use_dev_server = not use_dev_server
+    ssl_config = QN.QSslConfiguration.defaultConfiguration()
+    if use_dev_server:
+        ssl_config.setPeerVerifyMode(QN.QSslSocket.PeerVerifyMode.VerifyNone)
+    else:
+        ssl_config.setPeerVerifyMode(QN.QSslSocket.PeerVerifyMode.VerifyPeer)
+    QN.QSslConfiguration.setDefaultConfiguration(ssl_config)
 
 
 def get_auth():
@@ -36,15 +44,6 @@ def get_host():
     if use_dev_server:
         return auth["dev_host"]
     return auth["host"]
-
-
-def format_net_error(message):
-    message = str(str(message).split('.')[1])
-    # Add a space before each capital letter
-    message = ''.join([char if char.islower() else f' {char}' for char in message])[1:]
-    message = f"Cause: {message}"
-    return message
-
 
 def network_error_to_string(response, has_network):
     if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
@@ -65,6 +64,26 @@ def network_error_to_string(response, has_network):
         return f"NET FAILURE"
     elif response.error() == QNetworkReply.NetworkError.TimeoutError and has_network:
         return f"SERVER TIMEOUT"
+    elif response.error() == QNetworkReply.NetworkError.ServiceUnavailableError:
+        return f"ENDPOINT UNAVAILABLE"
+    elif response.error() == QNetworkReply.NetworkError.SslHandshakeFailedError:
+        return f"ENCRYPTION FAILURE"
+    elif response.error() == QNetworkReply.NetworkError.ContentNotFoundError:
+        return f"NOT FOUND"
+    elif response.error() == QNetworkReply.NetworkError.ContentAccessDenied:
+        return f"ACCESS DENIED"
+    elif response.error() == QNetworkReply.NetworkError.NoError:
+        return f"NO ERROR?"
+    elif response.error() == QNetworkReply.NetworkError.ProxyConnectionRefusedError:
+        return f"PROXY REFUSED"
+    elif response.error() == QNetworkReply.NetworkError.ProxyConnectionClosedError:
+        return f"PROXY CLOSED"
+    elif response.error() == QNetworkReply.NetworkError.ProxyNotFoundError:
+        return f"PROXY NOT FOUND"
+    elif response.error() == QNetworkReply.NetworkError.ProxyTimeoutError:
+        return f"PROXY TIMEOUT"
+    elif response.error() == QNetworkReply.NetworkError.ContentReSendError:
+        return f"CONTENT RESEND?"
     else:
         return f"UNKNOWN ERROR"
 

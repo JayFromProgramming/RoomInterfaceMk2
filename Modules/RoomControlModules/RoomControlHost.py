@@ -3,14 +3,14 @@ import os
 import time
 
 from PyQt6.QtCore import QUrl, QTimer, Qt
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
+from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from PyQt6.QtWidgets import QLabel
 
 from Modules.RoomControlModules.DeviceGroupHost import DeviceGroupHost
 from loguru import logger as logging
 
 from Utils.ScrollableMenu import ScrollableMenu
-from Utils.UtilMethods import get_host, get_auth
+from Utils.UtilMethods import get_host, get_auth, clean_error_type
 
 
 class RoomControlHost(ScrollableMenu):
@@ -86,10 +86,11 @@ class RoomControlHost(ScrollableMenu):
     def handle_network_response(self, reply):  # Schema response handler
         try:
             data = reply.readAll()
-            if str(reply.error()) != "NetworkError.NoError":
+            if reply.error() != QNetworkReply.NetworkError.NoError:
                 logging.error(f"Error: {reply.error()}")
                 self.loading_label.setText(
-                    f"Error Loading Room Control Schema\n{reply.error()}\nAttempting to acquire schema again...")
+                    f"Error Loading Room Control Schema\n{clean_error_type(reply.error())}\n"
+                    f"Attempting to acquire schema again...")
                 return
             try:
                 data = json.loads(str(data, 'utf-8'))

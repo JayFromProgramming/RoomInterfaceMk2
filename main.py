@@ -24,13 +24,6 @@ from Modules.RoomSceneModules.RoomSceneHost import RoomSceneHost
 from Modules.SystemControlModules.SystemControlHost import SystemControlHost
 from Utils.UtilMethods import toggle_dev_server, is_using_dev_server
 
-import PyQt6.QtNetwork as QN
-
-# Allow for self-signed certificates
-ssl_config = QN.QSslConfiguration.defaultConfiguration()
-ssl_config.setPeerVerifyMode(QN.QSslSocket.PeerVerifyMode.VerifyNone)
-QN.QSslConfiguration.setDefaultConfiguration(ssl_config)
-
 class RoomInterface(QApplication):
     t = QElapsedTimer()
 

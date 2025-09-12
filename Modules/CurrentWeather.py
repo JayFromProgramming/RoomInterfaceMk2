@@ -9,7 +9,8 @@ from loguru import logger as logging
 
 import json
 
-from Utils.UtilMethods import load_no_image, format_net_error, has_internet, get_host
+from Utils.UtilMethods import load_no_image, has_internet, get_host, network_error_to_string, \
+    clean_error_type
 from Utils.WeatherHelpers import wind_direction_arrow, kelvin_to_fahrenheit, visibility_to_text, mps_to_mph
 
 
@@ -104,25 +105,10 @@ class CurrentWeather(QLabel):
 
     def handle_failure(self, response):
         has_net = has_internet()
-        self.weather_row_1.setText(format_net_error(response.error()))
+        self.weather_row_1.setText(f"Cause: {clean_error_type(response.error())}")
         self.weather_row_2.setText("Weather data unavailable")
         logging.error(f"Error: {response.error()}")
-        if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
-            self.weather_header.setText("Server Unavailable")
-        elif response.error() == QNetworkReply.NetworkError.InternalServerError:
-            self.weather_header.setText("Server Error")
-        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and has_net:
-            self.weather_header.setText("Server Offline")
-        elif response.error() == QNetworkReply.NetworkError.OperationCanceledError and not has_net:
-            self.weather_header.setText("No Network Connection")
-        elif response.error() == QNetworkReply.NetworkError.UnknownNetworkError and not has_net:
-            self.weather_header.setText("No Network Connection")
-        elif response.error() == QNetworkReply.NetworkError.HostNotFoundError:
-            self.weather_header.setText("Server Not Found")
-        elif response.error() == QNetworkReply.NetworkError.ServiceUnavailableError:
-            self.weather_header.setText("Weather Relay Down")
-        else:
-            self.weather_header.setText("Unexpected Error")
+        self.weather_header.setText(network_error_to_string(response, has_net))
 
     def handle_icon_response(self, reply):
         try:
