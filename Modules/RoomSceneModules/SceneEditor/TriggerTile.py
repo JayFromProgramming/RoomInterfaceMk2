@@ -11,8 +11,6 @@ class TriggerTile(QLabel):
     def __init__(self, parent, trigger_type, data=None):
         super().__init__(parent)
         self.parent = parent
-        self.auth = parent.auth
-        self.host = parent.host
         self.font = parent.font
         self.trigger_type = trigger_type
 

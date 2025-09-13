@@ -5,6 +5,7 @@ from loguru import logger as logging
 
 from Modules.RoomSceneModules.SceneEditor.DeviceTile import DeviceTile
 from Utils.ScrollableMenu import ScrollableMenu
+from Utils.UtilMethods import get_host, get_auth
 
 
 class DeviceColumn(ScrollableMenu):
@@ -23,8 +24,6 @@ class DeviceColumn(ScrollableMenu):
         super().__init__(parent, parent.font)
         self.parent = parent
         self.name = column_name
-        self.host = parent.host
-        self.auth = parent.auth
         self.font = self.parent.font
         self.setFixedSize(290, self.parent.height() - 40)
         self.focused = True
@@ -63,8 +62,8 @@ class DeviceColumn(ScrollableMenu):
         self.layout_widgets()
 
     def make_name_request(self, device):
-        request = QNetworkRequest(QUrl(f"{self.host}/name/{device}"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        request = QNetworkRequest(QUrl(f"{get_host()}/name/{device}"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.name_manager.get(request)
 
     def handle_name_response(self, reply):

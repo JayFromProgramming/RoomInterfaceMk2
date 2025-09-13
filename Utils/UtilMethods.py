@@ -12,7 +12,6 @@ use_dev_server = False
 network_check_manager = QNetworkAccessManager()
 
 
-
 with open("Config/auth.json", "r") as f:
     import json
     auth = json.load(f)
@@ -22,19 +21,23 @@ def is_using_dev_server():
     global use_dev_server
     return use_dev_server
 
+
 def allow_unverified_ssl(allow: bool):
     ssl_config = QN.QSslConfiguration.defaultConfiguration()
     ssl_config.setPeerVerifyMode(QN.QSslSocket.PeerVerifyMode.VerifyNone if allow else QN.QSslSocket.PeerVerifyMode.VerifyPeer)
     QN.QSslConfiguration.setDefaultConfiguration(ssl_config)
 
+
 def allowing_unverified_ssl() -> bool:
     ssl_config = QN.QSslConfiguration.defaultConfiguration()
     return ssl_config.peerVerifyMode() == QN.QSslSocket.PeerVerifyMode.VerifyNone
+
 
 def toggle_dev_server():
     global use_dev_server
     use_dev_server = not use_dev_server
     allow_unverified_ssl(use_dev_server)
+
 
 def get_auth():
     global use_dev_server
@@ -53,6 +56,7 @@ def get_host():
         logging.info("Using local IP address, allowing unverified SSL")
         allow_unverified_ssl(True)
     return auth["host"]
+
 
 def network_error_to_string(response, has_network):
     if response.error() == QNetworkReply.NetworkError.ConnectionRefusedError:
@@ -98,6 +102,8 @@ def network_error_to_string(response, has_network):
 
 
 def clean_error_type(error):
+    if error is QNetworkReply.NetworkError.UnknownNetworkError:
+        return "UNKNOWN NETWORK ERROR"
     error_str = str(error).split('.')[-1]
     # Split the string at each capital letter and join with a space
     error_str = ''.join([char if char.islower() else f' {char}' for char in error_str])[1:].upper()

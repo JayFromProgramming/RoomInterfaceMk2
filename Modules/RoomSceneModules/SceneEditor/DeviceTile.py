@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QLabel, QInputDialog
 from loguru import logger as logging
 
 from Modules.RoomSceneModules.SceneEditor.SceneActionEditor import SceneActionEditor
+from Utils.UtilMethods import get_host, get_auth
 
 
 class DeviceTile(QLabel):
@@ -28,8 +29,6 @@ class DeviceTile(QLabel):
     def __init__(self, parent, device, action_data=None):
         super().__init__(parent)
         self.parent = parent
-        self.auth = parent.auth
-        self.host = parent.host
         self.device = device
 
         self.human_name = None
@@ -171,8 +170,8 @@ class DeviceTile(QLabel):
             reply.deleteLater()
 
     def get_data(self):
-        request = QNetworkRequest(QUrl(f"{self.host}/get/{self.device}"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        request = QNetworkRequest(QUrl(f"{get_host()}/get/{self.device}"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.info_getter.get(request)
 
     def update_human_name(self, name):

@@ -8,14 +8,13 @@ from loguru import logger as logging
 from Modules.RoomSceneModules.SceneEditor.DeviceActionEditor import DeviceActionEditor
 from Modules.RoomSceneModules.SceneEditor.DeviceColumn import DeviceColumn
 from Modules.RoomSceneModules.SceneEditor.TriggerColumn import TriggerColumn
+from Utils.UtilMethods import get_host, get_auth
 
 
 class SceneEditorFlyout(QDialog):
     def __init__(self, parent=None, scene_id=None, data=None):
         super().__init__()
         self.parent = parent
-        self.host = parent.host
-        self.auth = parent.auth
         self.scene_id = scene_id
         self.starting_data = data
         self.font = self.parent.font
@@ -171,8 +170,8 @@ class SceneEditorFlyout(QDialog):
 
     def get_schema(self):
         try:
-            request = QNetworkRequest(QUrl(f"{self.host}/get_schema"))
-            request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+            request = QNetworkRequest(QUrl(f"{get_host()}/get_schema"))
+            request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.schema_getter.get(request)
         except Exception as e:
             logging.error(f"Error getting schema: {e}")
@@ -249,8 +248,8 @@ class SceneEditorFlyout(QDialog):
 
     def send_save_request(self, action, new_action_data, new_trigger_data, description=None, scene_parent=None):
         request = QNetworkRequest(
-            QUrl(f"{self.host}/scene_action/{action}/{self.scene_id}"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+            QUrl(f"{get_host()}/scene_action/{action}/{self.scene_id}"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         payload = {"scene_data": new_action_data, "triggers": new_trigger_data,
                    "scene_name": self.starting_data['name'], "scene_description": description,
                    "scene_parent": scene_parent}
@@ -299,8 +298,8 @@ class SceneEditorFlyout(QDialog):
         try:
             if self.confirm_delete():
                 request = QNetworkRequest(
-                    QUrl(f"{self.host}/scene_action/delete_scene/{self.scene_id}"))
-                request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+                    QUrl(f"{get_host()}/scene_action/delete_scene/{self.scene_id}"))
+                request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
                 self.scene_request.post(request, bytes(json.dumps({}), 'utf-8'))
         except Exception as e:
             exception_window = QDialog(self)

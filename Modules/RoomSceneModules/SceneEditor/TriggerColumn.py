@@ -8,6 +8,7 @@ from loguru import logger as logging
 
 from Modules.RoomSceneModules.SceneEditor.TriggerTile import TriggerTile
 from Utils.ScrollableMenu import ScrollableMenu
+from Utils.UtilMethods import get_host, get_auth
 
 
 class TriggerColumn(ScrollableMenu):
@@ -15,8 +16,6 @@ class TriggerColumn(ScrollableMenu):
     def __init__(self, parent, name):
         super().__init__(parent, parent.font)
         self.parent = parent
-        self.auth = parent.auth
-        self.host = parent.host
         self.font = parent.font
 
         # self.setFixedSize(400, 375)
@@ -47,8 +46,8 @@ class TriggerColumn(ScrollableMenu):
         self.layout_widgets()
 
     def load_default_triggers(self):
-        request = QNetworkRequest(QUrl(f"http://{self.host}/scene_get/default_triggers/null"))
-        request.setRawHeader(b"Cookie", bytes("auth=" + self.auth, 'utf-8'))
+        request = QNetworkRequest(QUrl(f"{get_host()}/scene_get/default_triggers/null"))
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.default_trigger_network_manager.get(request)
 
     def handle_default_trigger_response(self, reply):
