@@ -84,7 +84,7 @@ class ForecastHost(QLabel):
         self.forecast_timestamps = []
         self.forecasts = []
         self.lines = []
-        self.layout_widgets()
+
 
         # Put the forecast focus on top of the forecast widgets and hide it
         self.forecast_focus.move(20, 20)
@@ -113,6 +113,8 @@ class ForecastHost(QLabel):
         self.error_label.move((self.width() - self.error_label.width()) // 2,
                               (self.height() - self.error_label.height()) // 2)
         self.error_label.hide()
+
+        self.layout_widgets()
 
     def reset_scroll(self):
         if time.time() - self.last_scroll > 10 and self.forecast_focus.isHidden():
@@ -178,6 +180,11 @@ class ForecastHost(QLabel):
         Lays out the forecast widgets
         :return:
         """
+        if len(self.forecasts) == 0:
+            self.error_label.setText("No forecast data was available")
+            self.error_label.show()
+            self.hide_all_widgets()
+            return
         self.build_visible_widgets()
         for widget in self.forecast_widgets:
             widget.hide()

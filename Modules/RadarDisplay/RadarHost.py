@@ -23,13 +23,14 @@ class RadarHost(QLabel):
         self.parent = parent
         self.setFixedSize(parent.width(), parent.height() - self.y())
         self.maptile_surface = QLabel(self)
+
         # Look into the MapTiles folder and determine the range of available map tiles
         self.min_x, self.max_x, self.min_y, self.max_y = self.determine_map_size()
         self.range_x = self.max_x - self.min_x + 1
         self.range_y = self.max_y - self.min_y + 1
         logging.info(f"Map Tile Range: {self.min_x}-{self.max_x}, {self.min_y}-{self.max_y} : {self.range_x}x{self.range_y}")
-        self.maptile_surface.setFixedSize(256 * self.range_x, 256 * self.range_y)
         self.map_tiles = []
+        self.maptile_surface.setFixedSize(256 * self.range_x, 256 * self.range_y)
 
         self.focused = False
         self.playing = False
