@@ -104,6 +104,8 @@ def network_error_to_string(response, has_network):
 def clean_error_type(error):
     if error is QNetworkReply.NetworkError.UnknownNetworkError:
         return "UNKNOWN NETWORK ERROR"
+    if error is QNetworkReply.NetworkError.InternalServerError:
+        return "INTERNAL SERVER ERROR"
     error_str = str(error).split('.')[-1]
     # Split the string at each capital letter and join with a space
     error_str = ''.join([char if char.islower() else f' {char}' for char in error_str])[1:].upper()

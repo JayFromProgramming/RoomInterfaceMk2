@@ -139,7 +139,7 @@ class RoomDevice(QLabel):
     def check_device_type(self, data):
         try:
             if "type" in data:
-                if self.device_type is False:  # If the device type is not set (false instead of None because None is a valid type)
+                if not self.device_type:  # If the device type is not set (false instead of None because None is a valid type)
                     self.device_type = data["type"]
                 else:
                     if self.device_type != data["type"]:

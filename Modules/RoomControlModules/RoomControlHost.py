@@ -67,6 +67,8 @@ class RoomControlHost(ScrollableMenu):
     def process_schema_response(self, data):
         for device_name, values in data.items():
             priority = values.get("priority", 0)
+            if priority is None:
+                priority = 0
             # Check if the device is in a group
             if values["starred"] is True:
                 self.starred_device_host.add_device(device_name, priority)
@@ -100,9 +102,9 @@ class RoomControlHost(ScrollableMenu):
                 self.loading_label.setText(f"Error Loading Room Control Schema, Retrying...\n{e}")
                 return
             self.process_schema_response(data)
-            self.layout_widgets()
             self.loading_label.hide()
             self.retry_timer.stop()  # Stop retrying if we got a response
+            self.layout_widgets()
         except Exception as e:
             logging.error(f"Error handling network response: {e}")
             self.loading_label.setText(f"Error Loading Room Control Schema, Retrying...\n{e}")
@@ -126,7 +128,6 @@ class RoomControlHost(ScrollableMenu):
             else:
                 self.move(0, self.parent.forecast.height() + self.parent.forecast.y() + 10)
                 self.setFixedSize(self.parent.width(), self.parent.height() - self.y() - 30)
-            # self.layout_widgets()
         except Exception as e:
             logging.error(f"Error setting focus: {e}")
             logging.exception(e)
