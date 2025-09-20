@@ -17,6 +17,8 @@ class NotInitializedDevice(RoomDevice):
     def __init__(self, parent=None, device=None, priority=0):
         super().__init__(parent, device, False, priority)
 
+        self.device = device
+
         # self.device_label.setFont(parent.font)
         # self.device_label.setFixedSize(135, 20)
         # self.device_label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop)

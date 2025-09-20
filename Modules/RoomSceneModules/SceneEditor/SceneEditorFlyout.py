@@ -170,7 +170,7 @@ class SceneEditorFlyout(QDialog):
 
     def get_schema(self):
         try:
-            request = QNetworkRequest(QUrl(f"{get_host()}/get_schema"))
+            request = QNetworkRequest(QUrl(f"{get_host()}/get_schema?interface_name=testing"))
             request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.schema_getter.get(request)
         except Exception as e:

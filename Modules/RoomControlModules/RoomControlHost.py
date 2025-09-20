@@ -159,15 +159,16 @@ class RoomControlHost(ScrollableMenu):
             y += widget.height() + 10
         self.ungrouped_device_host.move(20, y)
 
-    def layout_widgets(self):
+    def layout_widgets(self, no_resize=False):
         width = self.width() - 40
-        self.starred_device_host.setFixedSize(width, 0)
-        self.starred_device_host.layout_widgets()
-        self.ungrouped_device_host.setFixedSize(width, 0)
-        self.ungrouped_device_host.layout_widgets()
-        for widget in self.device_group_hosts:
-            widget.setFixedSize(width, 0)
-            widget.layout_widgets()
+        if not no_resize:
+            self.starred_device_host.setFixedSize(width, 0)
+            self.ungrouped_device_host.setFixedSize(width, 0)
+            self.ungrouped_device_host.layout_widgets()
+            self.starred_device_host.layout_widgets()
+            for widget in self.device_group_hosts:
+                widget.setFixedSize(width, 0)
+                widget.layout_widgets()
         # If we are not focused only show the starred device host
         if not self.focused:
             self.starred_device_host.center = True
@@ -185,7 +186,7 @@ class RoomControlHost(ScrollableMenu):
             y = 5
             self.starred_device_host.center = False
             self.allow_scroll = True
-            self.starred_device_host.layout_widgets()
+            # self.starred_device_host.layout_widgets()
             self.starred_device_host.hide()
             # self.starred_device_host.move(20, y)
             # y += self.starred_device_host.height() + 10

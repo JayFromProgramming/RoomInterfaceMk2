@@ -47,7 +47,7 @@ class DeviceGroupHost(QLabel):
 
         self.no_devices_label = QLabel(self)
         self.no_devices_label.setFont(self.font)
-        self.no_devices_label.setFixedSize(300, 20)
+        self.no_devices_label.setFixedSize(self.width(), 30)
         self.no_devices_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter)
         self.no_devices_label.setStyleSheet(
             "color: white; font-size: 15px; font-weight: bold; border: none; background-color: transparent")
@@ -177,6 +177,7 @@ class DeviceGroupHost(QLabel):
         # Lay widgets out left to right wrapping around when they reach the right edge
         if len(self.device_widgets) == 0:
             self.no_devices_label.show()
+            self.setFixedSize(self.width(), 100)
             return
         else:
             self.no_devices_label.hide()

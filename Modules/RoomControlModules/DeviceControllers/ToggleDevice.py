@@ -84,6 +84,7 @@ class ToggleDevice(RoomDevice):
                                                  " background-color: blue;")
         except Exception as e:
             logging.error(f"Error parsing toggle device data for {self.device}: {e}")
+            logging.exception(e)
             self.device_text.setText("<pre>DATA ERROR</pre>")
             self.toggle_button.setText("Turn ???")
             self.toggle_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")

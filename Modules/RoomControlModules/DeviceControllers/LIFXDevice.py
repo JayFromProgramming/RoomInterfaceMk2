@@ -114,7 +114,13 @@ class LIFXDevice(RoomDevice):
                 self.device_text.setText(f"<pre>Brightness:  OFF</pre>")
 
     def parse_data(self, data):
+        if 'state' not in data:
+            logging.warning(f"LIFXDevice {self.device} missing 'state' in data: {data}")
+            return
         if not self.toggling:
+            if 'on' not in data['state']:
+                logging.warning(f"LIFXDevice {self.device} missing 'on' state in data: {data}")
+                return
             self.toggle_button.setText(f"Turn {['On', 'Off'][self.state['on']]}")
             button_color = "#4080FF" if self.state["on"] else "grey"
             self.toggle_button.setStyleSheet(
