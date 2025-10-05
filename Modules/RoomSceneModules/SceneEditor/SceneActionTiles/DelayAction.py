@@ -14,7 +14,7 @@ class DelayAction(BaseAction):
         delay_label.setText("in")
         delay_label.setFixedSize(20, 20)
         self.delay_spinbox = QSpinBox(self.action_input_object)
-        self.delay_spinbox.setRange(0, 1000)
+        self.delay_spinbox.setRange(0, 10000)
         self.delay_spinbox.setSingleStep(5)
         self.delay_spinbox.setValue(self.payload['time'])
         self.delay_spinbox.setFixedSize(50, 20)

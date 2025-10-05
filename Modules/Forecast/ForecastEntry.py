@@ -123,6 +123,7 @@ class ForecastEntry(QLabel):
 
     def make_request(self, reference_time):
         request = QNetworkRequest(QUrl(f"{get_host()}/weather/forecast/{reference_time}"))
+        # request.setRawHeader("User-Agent", "RoomController/1.0 (+https:moldy.mug.loafclan.org, contact: ajsweene@mtu.edu)")
         self.network_manager.get(request)
 
     def handle_icon_response(self, pixmap):

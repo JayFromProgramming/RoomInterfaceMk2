@@ -82,6 +82,7 @@ class ForecastHost(QLabel):
 
         self.forecast_widgets = [ForecastEntry(self, i, True) for i in range(12)]
         self.forecast_timestamps = []
+        self.loaded_forecasts = False
         self.forecasts = []
         self.lines = []
 
@@ -150,8 +151,9 @@ class ForecastHost(QLabel):
             self.forecast_widgets.clear()
             self.forecasts = [forecast for forecast in forecasts
                               if datetime.datetime.fromisoformat(forecast) > datetime.datetime.utcnow()]
-            reply.deleteLater()
             self.layout_widgets()
+            self.loaded_forecasts = True
+
         except Exception as e:
             logging.error(f"Error handling icon response: {e}")
             logging.exception(e)
@@ -180,7 +182,7 @@ class ForecastHost(QLabel):
         Lays out the forecast widgets
         :return:
         """
-        if len(self.forecasts) == 0:
+        if len(self.forecasts) == 0 and self.loaded_forecasts:
             self.error_label.setText("No forecast data was available")
             self.error_label.show()
             self.hide_all_widgets()
@@ -327,6 +329,7 @@ class ForecastHost(QLabel):
 
     def handle_forecast_error(self, reply):
         logging.error(f"Error: {reply.error()}")
+        loaded_forecasts = False
         has_net = has_internet()
         base_text = (f"Error fetching forecast\n{network_error_to_string(reply, has_net)}\n"
                      f"{clean_error_type(reply.error())}")

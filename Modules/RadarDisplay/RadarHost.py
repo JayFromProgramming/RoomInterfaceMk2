@@ -173,7 +173,7 @@ class RadarHost(QLabel):
         self.map_tiles.clear()
 
     def wheelEvent(self, a0) -> None:
-        return
+        # return
         current_x, current_y = self.maptile_surface.x(), self.maptile_surface.y()
         if a0.angleDelta().y() > 0 and self.zoom_level < 2:
             self.zoom_level += 1
