@@ -1,28 +1,27 @@
 import gc
 import os
 import sys
-
 import psutil
+
+from loguru import logger as logging
+
 from PyQt6.QtCore import QTimer, QElapsedTimer
 from PyQt6.QtWidgets import QMainWindow, QApplication
 from PyQt6.QtGui import QFont, QFontDatabase
 
-from Modules.CameraPlayback.WebcamLayout import WebcamLayout
-
 # Replace this with auto-import later
+from Modules.CameraPlayback.WebcamLayout import WebcamLayout
 from Modules.DisplayClock import DisplayClock
 from Modules.CurrentWeather import CurrentWeather
 from Modules.Forecast.ForecastHost import ForecastHost
 from Modules.MenuBar import MenuBar
 from Modules.RadarDisplay.RadarHost import RadarHost
-
 from Modules.RoomControlModules.RoomControlHost import RoomControlHost
-
-from loguru import logger as logging
 
 from Modules.RoomSceneModules.RoomSceneHost import RoomSceneHost
 from Modules.SystemControlModules.SystemControlHost import SystemControlHost
 from Utils.UtilMethods import toggle_dev_server, is_using_dev_server
+
 
 class RoomInterface(QApplication):
     t = QElapsedTimer()
@@ -33,10 +32,14 @@ class RoomInterface(QApplication):
             logging.add("Logs/RoomInterface.log", rotation="1 week")
         except Exception as e:
             print(f"Failed to setup logging: {e}")
-        logging.info("RoomInterface started")
-        self.window = MainWindow()
-        self.window.show()
-        self.exec()
+        try:
+            logging.info("RoomInterface started")
+            self.window = MainWindow()
+            self.window.show()
+            self.exec()
+        except Exception as e:
+            logging.exception(e)
+            sys.exit()
 
 
 class MainWindow(QMainWindow):
