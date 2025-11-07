@@ -1,5 +1,6 @@
 import datetime
 import json
+import sys
 
 from PyQt6.QtCore import Qt, QUrl, QTimer, QIODevice
 from PyQt6.QtGui import QColor
@@ -54,7 +55,6 @@ class UPSDevice(RoomDevice):
     def parse_data(self, data):
         if not data['health']['online']:
             self.info_text.setText(f"<pre>SERVER REPORTS\nUPS OFFLINE\n{data['health']['reason']}</pre>")
-            self.silence_button.setText("Turn ???")
             self.silence_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red;")
             # self.color_picker_button.setStyleSheet("color: black; font-size: 14px; "
             #                                        "font-weight: bold; background-color: red")
@@ -86,7 +86,9 @@ class UPSDevice(RoomDevice):
         elif "Discharging" in status:
             grid_tie = "X->"
             if beeper_status == "enabled":
-                self.silence_button.show()
+                self.silence_button.setText("Silence")
+                if sys.platform != "win32":
+                    self.silence_button.show()
             elif beeper_status == "muted":
                 self.silence_button.hide()
         else:

@@ -141,6 +141,7 @@ class ForecastHost(QLabel):
             if str(reply.error()) != "NetworkError.NoError":
                 self.handle_forecast_error(reply)
                 return
+            logging.info("Forecast data received")
             self.error_label.hide()
             data = reply.readAll()
             data = data.data().decode("utf-8")
