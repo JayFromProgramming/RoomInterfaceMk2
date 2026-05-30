@@ -8,7 +8,7 @@ from Modules.RoomControlModules.DeviceGroupHost import DeviceGroupHost
 from loguru import logger as logging
 
 from Utils.ScrollableMenu import ScrollableMenu
-from Utils.UtilMethods import get_host, get_auth, clean_error_type
+from Utils.UtilMethods import get_auth, clean_error_type, get_schema_url
 
 
 class RoomControlHost(ScrollableMenu):
@@ -58,7 +58,7 @@ class RoomControlHost(ScrollableMenu):
         self.make_request()
 
     def make_request(self):
-        request = QNetworkRequest(QUrl(f"{get_host()}/get_schema?interface_name=testing"))
+        request = QNetworkRequest(QUrl(get_schema_url("testing")))
         request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
         self.network_manager.get(request)
 
@@ -195,3 +195,4 @@ class RoomControlHost(ScrollableMenu):
                 y += widget.height() + 10
             self.ungrouped_device_host.show()
             self.ungrouped_device_host.move(20, y)
+

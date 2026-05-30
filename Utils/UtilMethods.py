@@ -9,6 +9,7 @@ from loguru import logger as logging
 network_check_timeout = 0
 internet_connected = False
 use_dev_server = False
+use_add_all_schema = False
 network_check_manager = QNetworkAccessManager()
 
 
@@ -20,6 +21,11 @@ with open("Config/auth.json", "r") as f:
 def is_using_dev_server():
     global use_dev_server
     return use_dev_server
+
+
+def is_using_add_all_schema():
+    global use_add_all_schema
+    return use_add_all_schema
 
 
 def allow_unverified_ssl(allow: bool):
@@ -39,6 +45,11 @@ def toggle_dev_server():
     allow_unverified_ssl(use_dev_server)
 
 
+def toggle_add_all_schema():
+    global use_add_all_schema
+    use_add_all_schema = not use_add_all_schema
+
+
 def get_auth():
     global use_dev_server
     if use_dev_server:
@@ -56,6 +67,13 @@ def get_host():
         logging.info("Using local IP address, allowing unverified SSL")
         allow_unverified_ssl(True)
     return auth["host"]
+
+
+def get_schema_url(interface_name: str = "testing"):
+    base_url = f"{get_host()}/get_schema?interface_name={interface_name}"
+    if is_using_add_all_schema():
+        return f"{base_url}&add_all=true"
+    return base_url
 
 
 def network_error_to_string(response, has_network):
@@ -145,6 +163,3 @@ def has_internet() -> bool:
 
 
 network_check_manager.finished.connect(handle_network_check_response)
-
-
-

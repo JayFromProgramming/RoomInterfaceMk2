@@ -26,7 +26,7 @@ class RoomDevice(QLabel):
         self.priority = priority
         self.device_type = False
         if tall:
-            self.setFixedSize(295, 155)
+            self.setFixedSize(295, 160)
         elif large:
             self.setFixedSize(295, 75)
         else:

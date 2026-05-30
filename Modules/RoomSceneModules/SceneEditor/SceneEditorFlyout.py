@@ -8,7 +8,7 @@ from loguru import logger as logging
 from Modules.RoomSceneModules.SceneEditor.DeviceActionEditor import DeviceActionEditor
 from Modules.RoomSceneModules.SceneEditor.DeviceColumn import DeviceColumn
 from Modules.RoomSceneModules.SceneEditor.TriggerColumn import TriggerColumn
-from Utils.UtilMethods import get_host, get_auth
+from Utils.UtilMethods import get_auth, get_schema_url
 
 
 class SceneEditorFlyout(QDialog):
@@ -170,7 +170,7 @@ class SceneEditorFlyout(QDialog):
 
     def get_schema(self):
         try:
-            request = QNetworkRequest(QUrl(f"{get_host()}/get_schema?interface_name=testing"))
+            request = QNetworkRequest(QUrl(get_schema_url("testing")))
             request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
             self.schema_getter.get(request)
         except Exception as e:
