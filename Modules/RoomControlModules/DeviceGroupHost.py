@@ -173,48 +173,80 @@ class DeviceGroupHost(QLabel):
         self.device_widgets.sort(key=lambda x: (x.width(), x.priority, x.__class__.__name__, x.device), reverse=True)
 
     def layout_widgets(self):
-        # Lay widgets out left to right wrapping around when they reach the right edge
         if len(self.device_widgets) == 0:
             self.no_devices_label.show()
             self.setFixedSize(self.width(), 100)
             return
         else:
             self.no_devices_label.hide()
-        y_offset = 20
-        x_offset = 10
-        center_offset = []
-        row_num = 0
-        # Sort the device widgets dict by size (largest to smallest)
+
+        H_GAP = 5
+        V_GAP = 10
+        LEFT_PAD = 10
+        TOP_PAD = 20
+        container_w = self.width()
+
         self.sort_widgets()
+
+        placed = []  # (x, y, w, h) per widget, indexed parallel to self.device_widgets
+
+        def can_place(x, y, w, h):
+            """Check position validity against all placed rects with gap constraints."""
+            if x + w > container_w:
+                return False
+            for px, py, pw, ph in placed:
+                sep_x = (x >= px + pw + H_GAP) or (x + w + H_GAP <= px)
+                sep_y = (y >= py + ph + V_GAP) or (y + h + V_GAP <= py)
+                if not (sep_x or sep_y):
+                    return False
+            return True
+
+        def find_position(w, h):
+            """Topmost-then-leftmost valid position from candidate edges."""
+            y_cands = sorted(set(
+                [TOP_PAD] + [py + ph + V_GAP for _, py, _, ph in placed]
+            ))
+            x_cands = sorted(set(
+                [LEFT_PAD] + [px + pw + H_GAP for px, _, pw, _ in placed]
+            ))
+            for y in y_cands:
+                for x in x_cands:
+                    if can_place(x, y, w, h):
+                        return x, y
+            # Fallback: below everything
+            max_y = max((py + ph + V_GAP for _, py, _, ph in placed), default=TOP_PAD)
+            return LEFT_PAD, max_y
+
         for widget in self.device_widgets:
-            widget.move(x_offset, y_offset)
+            x, y = find_position(widget.width(), widget.height())
+            widget.move(x, y)
             widget.show()
-            x_offset += widget.width() + 5
-            widget.row_num = row_num
-            # If this is the last widget don't make a new row
-            if x_offset + widget.width() > self.width() and widget != self.device_widgets[-1]:
-                if self.center:
-                    # If centering is enabled, calculate the remaining space of the first row from the boarder
-                    center_offset.append(round((self.width() - x_offset - 5) / 2))
-                    row_num += 1
-                x_offset = 10
-                y_offset += widget.height() + 10
+            placed.append((x, y, widget.width(), widget.height()))
+
+        # Derive row numbers from distinct y positions
+        y_positions = sorted(set(y for _, y, _, _ in placed))
+        y_to_row = {y: i for i, y in enumerate(y_positions)}
+        for i, widget in enumerate(self.device_widgets):
+            widget.row_num = y_to_row[placed[i][1]]
 
         if self.center:
-            # If centering is enabled, calculate the remaining space of the first row from the boarder
-            center_offset.append(round((self.width() - x_offset - 5) / 2))
-            row_num += 1
+            # Group widget indices by row, compute per-row centering offset
+            rows = {}
+            for i, widget in enumerate(self.device_widgets):
+                rows.setdefault(widget.row_num, []).append(i)
 
-        # If centering is enabled, move all widgets to the right by the remaining space of the first row
-        if self.center:
-            for widget in self.device_widgets:
-                widget.move(widget.x() + center_offset[widget.row_num], widget.y())
+            for row_indices in rows.values():
+                left = min(placed[i][0] for i in row_indices)
+                right = max(placed[i][0] + placed[i][2] for i in row_indices)
+                offset = round((container_w - (right - left)) / 2) - left
+                for i in row_indices:
+                    w = self.device_widgets[i]
+                    w.move(w.x() + offset, w.y())
 
-        self.group_label.setFixedSize(self.width() - 10, 20)
-        self.group_label.move(round((self.width() - self.group_label.width()) / 2), 0)
+        self.group_label.setFixedSize(container_w - 10, 20)
+        self.group_label.move(round((container_w - self.group_label.width()) / 2), 0)
 
-        if len(self.device_widgets) > 0:
-            self.setFixedSize(self.width(),
-                              y_offset + self.device_widgets[0].height() + 5)
-            # self.parent.layout_widgets()
+        if placed:
+            max_bottom = max(y + h for _, y, _, h in placed)
+            self.setFixedSize(container_w, max_bottom + 5)
             self.parent.update()

@@ -59,6 +59,9 @@ class UPSDevice(RoomDevice):
             # self.color_picker_button.setStyleSheet("color: black; font-size: 14px; "
             #                                        "font-weight: bold; background-color: red")
             return
+        if "status" not in data["state"]:
+            self.info_text.setText(f"<pre>SERVER REPORTS\nNO UPS DATA\n{data['health']['reason']}</pre>")
+            return
         status = data["state"]["status"]
         output_watts = round(data["state"]["output_watts"])
         runtime_remaining = data["state"]["runtime_remaining"]

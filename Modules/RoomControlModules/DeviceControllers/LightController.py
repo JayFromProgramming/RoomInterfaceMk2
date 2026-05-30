@@ -66,7 +66,7 @@ class LightController(RoomDevice):
         self.info_text.setText(f"<pre>Color: {color}\nLevel: {brightness:03}%\nMode:  {self.state['control_type']}</pre>")
         self.toggle_button.setText("Turn Off" if self.state["on"] else "Turn On")
         button_color = "#4080FF" if self.state["on"] else "grey"
-        self.toggle_button.setStyleSheet(f"background: {button_color}; font-size: 14px; font-weight: bold;")
+        self.toggle_button.setStyleSheet(f"background: {button_color}; font-size: 14px; font-weight: bold; color: black;")
 
     def handle_failure(self, response):
         # I do want to generalize this to a global method but right now each device has a different way of handling failures

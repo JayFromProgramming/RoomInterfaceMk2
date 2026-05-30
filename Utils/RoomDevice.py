@@ -18,13 +18,15 @@ class RoomDevice(QLabel):
     def supports_type(cls, device_type):
         return device_type in cls.supported_types
 
-    def __init__(self, parent=None, device=None, large=False, priority=0):
+    def __init__(self, parent=None, device=None, large=False, priority=0, tall=False):
         super().__init__(parent)
         self.parent = parent
         self.device = device
         self.priority = priority
         self.device_type = False
-        if large:
+        if tall:
+            self.setFixedSize(295, 155)
+        elif large:
             self.setFixedSize(295, 75)
         else:
             self.setFixedSize(145, 75)
@@ -161,6 +163,10 @@ class RoomDevice(QLabel):
             if data == b'Device not found':
                 self.not_found = True
                 self.parse_data(None)
+                return
+            elif 'WOPR Login' in str(data):
+                logging.error("Authentication error: WOPR Login found in response")
+                self.handle_failure(response)
                 return
             data = json.loads(str(data, 'utf-8'))
             self.data = data

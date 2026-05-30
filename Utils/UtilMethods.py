@@ -145,3 +145,6 @@ def has_internet() -> bool:
 
 
 network_check_manager.finished.connect(handle_network_check_response)
+
+
+

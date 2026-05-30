@@ -98,8 +98,8 @@ class MainWindow(QMainWindow):
         self.process = psutil.Process(os.getpid())
 
         self.show()
-        # If running on a linux system, use this to make the window full screen
-        if os.name == "posix":  # If you want to run this windowed on linux, pound sand
+        # Determine if system is running raspbian, and if so, start in full screen mode. Otherwise, start the windowed version with the debug title updates
+        if "raspbian" in sys.platform:
             self.showFullScreen()
         else:
             self.window_title_update_timer.start(500)
