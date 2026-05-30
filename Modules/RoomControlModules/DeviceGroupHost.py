@@ -1,6 +1,7 @@
-from PyQt6.QtCore import QUrl, Qt
+import json
+from PyQt6.QtCore import QUrl, Qt, QTimer
 from PyQt6.QtNetwork import QNetworkRequest, QNetworkAccessManager, QNetworkReply
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QLabel, QMenu, QDialog, QLineEdit, QDialogButtonBox, QFormLayout
 
 from loguru import logger as logging
 
@@ -33,6 +34,10 @@ class DeviceGroupHost(QLabel):
         self.device_widgets = []
         self.lines = []
         self.font = self.parent.font
+        self.pending_parent_layout = False
+
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.show_group_menu)
 
         self.group_label = QLabel(self)
         self.group_label.setFont(self.font)
@@ -41,6 +46,9 @@ class DeviceGroupHost(QLabel):
         self.group_label.setStyleSheet("color: white; font-size: 15px; font-weight: bold; border: none; "
                                        "background-color: transparent")
         self.group_label.setText(f"{group_name}")
+        self.group_label.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.group_label.customContextMenuRequested.connect(self.show_group_menu)
+
         # Move the group label to the middle of the top
         self.group_label.move(round((self.width() - self.group_label.width()) / 2), 0)
 
@@ -64,6 +72,9 @@ class DeviceGroupHost(QLabel):
 
         self.name_manager = QNetworkAccessManager()
         self.name_manager.finished.connect(self.handle_name_response)
+
+        self.group_schema_manager = QNetworkAccessManager()
+        self.group_schema_manager.finished.connect(self.handle_group_schema_response)
 
     def make_name_request(self, device):
         request = QNetworkRequest(QUrl(f"{get_host()}/name/{device}"))
@@ -176,6 +187,7 @@ class DeviceGroupHost(QLabel):
         if len(self.device_widgets) == 0:
             self.no_devices_label.show()
             self.setFixedSize(self.width(), 100)
+            self._request_parent_layout()
             return
         else:
             self.no_devices_label.hide()
@@ -250,3 +262,171 @@ class DeviceGroupHost(QLabel):
             max_bottom = max(y + h for _, y, _, h in placed)
             self.setFixedSize(container_w, max_bottom + 5)
             self.parent.update()
+            self._request_parent_layout()
+
+    def _is_special_group(self):
+        return self.group_name in ("Starred Devices", "Ungrouped Devices")
+
+    def _get_room_control_host(self):
+        widget = self
+        while widget is not None:
+            if hasattr(widget, "reload_schema"):
+                return widget
+            parent_attr = getattr(widget, "parent", None)
+            if callable(parent_attr):
+                widget = parent_attr()
+            else:
+                widget = parent_attr
+        return None
+
+    def _trigger_reload(self):
+        room_control = self._get_room_control_host()
+        if room_control is not None and hasattr(room_control, "reload_schema"):
+            QTimer.singleShot(500, room_control.reload_schema)
+        else:
+            logging.error("Unable to trigger schema reload: RoomControlHost not found or missing reload_schema method")
+
+    def _dialog_style(self):
+        return (
+            "QDialog { background-color: #000; color: #ffcd00; }"
+            "QLabel { color: #ffcd00; }"
+            "QLineEdit { background-color: #111; color: #ffcd00; border: 1px solid #ffcd00; }"
+            "QDialogButtonBox QPushButton { background-color: #111; color: #ffcd00; border: 1px solid #ffcd00; padding: 4px 10px; }"
+            "QDialogButtonBox QPushButton:pressed { background-color: #222; }"
+        )
+
+    def _text_dialog(self, title, label_text, value_text=""):
+        dialog = QDialog(self.window())
+        dialog.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
+        dialog.setWindowModality(Qt.WindowModality.WindowModal)
+        dialog.setWindowTitle(title)
+        dialog.setStyleSheet(self._dialog_style())
+        target_width = max(400, round(self.window().width() * 0.5))
+        dialog.resize(target_width, dialog.sizeHint().height())
+
+        layout = QFormLayout(dialog)
+        input_box = QLineEdit(dialog)
+        input_box.setText(value_text)
+        layout.addRow(label_text, input_box)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.setCenterButtons(True)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addRow(buttons)
+
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return None
+        return input_box.text().strip()
+
+    def _confirm_dialog(self, title, message):
+        dialog = QDialog(self.window())
+        dialog.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
+        dialog.setWindowModality(Qt.WindowModality.WindowModal)
+        dialog.setWindowTitle(title)
+        dialog.setStyleSheet(self._dialog_style())
+        target_width = max(400, round(self.window().width() * 0.5))
+        dialog.resize(target_width, dialog.sizeHint().height())
+
+        layout = QFormLayout(dialog)
+        layout.addRow(QLabel(message, dialog))
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.setCenterButtons(True)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addRow(buttons)
+
+        return dialog.exec() == QDialog.DialogCode.Accepted
+
+    def show_group_menu(self, pos):
+        if self._is_special_group():
+            return
+        menu = QMenu(self)
+        menu.setStyleSheet(
+            "QMenu { background-color: #222; color: #f0f0f0; }"
+            "QMenu::item { padding: 6px 16px; }"
+            "QMenu::item:selected { background-color: #3a3a3a; }"
+        )
+        menu.addAction("Rename Group").triggered.connect(self.rename_group)
+        menu.addAction("Change Priority").triggered.connect(self.change_group_priority)
+        menu.addAction("Delete Group").triggered.connect(self.delete_group)
+        if self.sender() is self.group_label:
+            global_pos = self.group_label.mapToGlobal(pos)
+        else:
+            global_pos = self.mapToGlobal(pos)
+        menu.exec(global_pos)
+
+    def rename_group(self):
+        new_name = self._text_dialog("Rename Group", "New group name:", self.group_name or "")
+        if new_name is None or new_name == "" or new_name == self.group_name:
+            return
+        room_control = self._get_room_control_host()
+        schema_data = getattr(room_control, "schema_data", {}) if room_control is not None else {}
+        group_priority = None
+        for device in (widget.device for widget in self.device_widgets):
+            group_priority = schema_data.get(device, {}).get("group_priority", group_priority)
+        payload = {
+            "group_name": self.group_name,
+            "new_group_name": new_name,
+            "group_priority": group_priority
+        }
+        request = QNetworkRequest(QUrl(f"{get_host()}/update_group_schema?interface_name=testing"))
+        request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
+        self.group_schema_manager.post(request, json.dumps(payload).encode("utf-8"))
+        self._trigger_reload()
+
+    def change_group_priority(self):
+        new_priority_text = self._text_dialog("Group Priority", "New priority:")
+        if new_priority_text is None or new_priority_text == "":
+            return
+        try:
+            new_priority = int(new_priority_text)
+        except ValueError:
+            logging.error("Invalid group priority value entered")
+            return
+        payload = {
+            "group_name": self.group_name,
+            "group_priority": new_priority
+        }
+        request = QNetworkRequest(QUrl(f"{get_host()}/update_group_schema?interface_name=testing"))
+        request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
+        self.group_schema_manager.post(request, json.dumps(payload).encode("utf-8"))
+        self._trigger_reload()
+
+    def delete_group(self):
+        if not self._confirm_dialog("Delete Group", f"Delete group '{self.group_name}'?"):
+            return
+        payload = {"group_name": self.group_name}
+        request = QNetworkRequest(QUrl(f"{get_host()}/delete_group_schema?interface_name=testing"))
+        request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
+        request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
+        self.group_schema_manager.sendCustomRequest(request, b"DELETE", json.dumps(payload).encode("utf-8"))
+        self._trigger_reload()
+
+    def handle_group_schema_response(self, reply):
+        try:
+            if reply.error() != QNetworkReply.NetworkError.NoError:
+                logging.error(f"Group schema error: {reply.errorString()}")
+                return
+            room_control = self._get_room_control_host()
+            if room_control is not None and hasattr(room_control, "reload_schema"):
+                QTimer.singleShot(500, room_control.reload_schema)
+        except Exception as e:
+            logging.error(f"Error handling group schema response: {e}")
+            logging.exception(e)
+        finally:
+            reply.deleteLater()
+
+    def _request_parent_layout(self):
+        if self.pending_parent_layout:
+            return
+        self.pending_parent_layout = True
+
+        def _run():
+            self.pending_parent_layout = False
+            room_control = self._get_room_control_host()
+            if room_control is not None and hasattr(room_control, "layout_widgets"):
+                room_control.layout_widgets(no_resize=True)
+        QTimer.singleShot(0, _run)

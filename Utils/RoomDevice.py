@@ -3,8 +3,9 @@ import random
 import time
 
 from PyQt6.QtCore import QUrl, QTimer, Qt
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt6.QtWidgets import QLabel, QMenu, QInputDialog
+from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
+from PyQt6.QtWidgets import QLabel, QMenu, QInputDialog, QDialog
+from PyQt6.QtWidgets import QLineEdit, QComboBox, QDialogButtonBox, QFormLayout
 from loguru import logger as logging
 
 from Utils.UtilMethods import has_internet, get_auth, get_host
@@ -44,6 +45,8 @@ class RoomDevice(QLabel):
         self.network_manager.finished.connect(self.handle_response)
         self.command_manager = QNetworkAccessManager()
         self.command_manager.finished.connect(self.handle_command)
+        self.schema_manager = QNetworkAccessManager()
+        self.schema_manager.finished.connect(self.handle_schema_update)
 
         self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self.get_data)
@@ -55,7 +58,12 @@ class RoomDevice(QLabel):
 
         self.context_menu = QMenu(self)
         self.context_menu.addAction("Rename").triggered.connect(self.rename_device)
-        self.context_menu.setStyleSheet("color: white; background-color: black")
+        self.context_menu.addAction("Edit Schema").triggered.connect(self.edit_schema)
+        self.context_menu.setStyleSheet(
+            "QMenu { background-color: #222; color: #f0f0f0; }"
+            "QMenu::item { padding: 6px 16px; }"
+            "QMenu::item:selected { background-color: #3a3a3a; }"
+        )
 
         self.state = None
         self.data = None
@@ -102,6 +110,112 @@ class RoomDevice(QLabel):
         payload = json.dumps(command)
         self.command_manager.post(request, payload.encode("utf-8"))
         self.refresh_timer.start(500)
+
+    def _get_room_control_host(self):
+        if self.parent is None:
+            return None
+        return getattr(self.parent, "parent", None)
+
+    def _get_device_schema(self):
+        room_control = self._get_room_control_host()
+        if room_control is None:
+            return {}
+        schema_data = getattr(room_control, "schema_data", {})
+        return schema_data.get(self.device, {})
+
+    def _schema_group_starred_dialog(self):
+        dialog = QDialog(self.window())
+        dialog.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
+        dialog.setWindowModality(Qt.WindowModality.WindowModal)
+        dialog.setWindowTitle("Schema")
+        dialog.setStyleSheet(
+            "QDialog { background-color: #000; color: #ffcd00; }"
+            "QLabel { color: #ffcd00; }"
+            "QLineEdit, QComboBox { background-color: #111; color: #ffcd00; border: 1px solid #ffcd00; }"
+            "QDialogButtonBox QPushButton { background-color: #111; color: #ffcd00; border: 1px solid #ffcd00; padding: 4px 10px; }"
+            "QDialogButtonBox QPushButton:pressed { background-color: #222; }"
+        )
+        target_width = max(400, round(self.window().width() * 0.5))
+        dialog.resize(target_width, dialog.sizeHint().height())
+        layout = QFormLayout(dialog)
+
+        schema_info = self._get_device_schema()
+        group_input = QLineEdit(dialog)
+        group_input.setPlaceholderText("Blank for none")
+        group_input.setText(schema_info.get("group", "") or "")
+
+        starred_input = QComboBox(dialog)
+        starred_input.addItems(["False", "True"])
+        default_starred = bool(schema_info.get("starred", False))
+        starred_input.setCurrentIndex(1 if default_starred else 0)
+
+        priority_input = QLineEdit(dialog)
+        priority_input.setPlaceholderText("Blank for none")
+        priority_value = schema_info.get("priority", self.priority)
+        priority_input.setText("" if priority_value is None else str(priority_value))
+
+        layout.addRow("Group name:", group_input)
+        layout.addRow("Starred:", starred_input)
+        layout.addRow("Priority:", priority_input)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.setCenterButtons(True)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addRow(buttons)
+
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return None, None, None
+        group_name = group_input.text().strip()
+        if group_name == "":
+            group_name = None
+        starred = starred_input.currentText() == "True"
+        priority_text = priority_input.text().strip()
+        if priority_text == "":
+            priority = None
+        else:
+            priority = int(priority_text)
+        return group_name, starred, priority
+
+    def _edit_schema_flow(self):
+        try:
+            group_name, starred, priority = self._schema_group_starred_dialog()
+            if group_name is None and starred is None and priority is None:
+                return
+
+            payload = {
+                self.device: {
+                    "group": group_name,
+                    "starred": starred,
+                    "priority": priority
+                }
+            }
+            request = QNetworkRequest(QUrl(f"{get_host()}/update_device_schema?interface_name=testing"))
+            request.setHeader(QNetworkRequest.KnownHeaders.ContentTypeHeader, "application/json")
+            request.setRawHeader(b"Cookie", bytes("auth=" + get_auth(), 'utf-8'))
+            self.schema_manager.post(request, json.dumps(payload).encode("utf-8"))
+        except ValueError:
+            logging.error("Invalid priority value entered")
+        except Exception as e:
+            logging.error(f"Error editing schema: {e}")
+            logging.exception(e)
+
+    def edit_schema(self):
+        QTimer.singleShot(0, self._edit_schema_flow)
+
+    def handle_schema_update(self, reply):
+        try:
+            if reply.error() != QNetworkReply.NetworkError.NoError:
+                logging.error(f"Schema update error: {reply.errorString()}")
+                return
+            room_control = self._get_room_control_host()
+            if room_control is not None and hasattr(room_control, "reload_schema"):
+                QTimer.singleShot(500, room_control.reload_schema)
+        except Exception as e:
+            logging.error(f"Error handling schema update response: {e}")
+            logging.exception(e)
+        finally:
+            reply.deleteLater()
 
     def rename_device(self):
         try:

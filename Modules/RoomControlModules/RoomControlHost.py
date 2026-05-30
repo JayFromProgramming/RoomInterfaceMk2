@@ -63,6 +63,7 @@ class RoomControlHost(ScrollableMenu):
         self.network_manager.get(request)
 
     def process_schema_response(self, data):
+        self.schema_data = data
         for device_name, values in data.items():
             priority = values.get("priority", 0)
             if priority is None:
