@@ -34,7 +34,13 @@ class RoomInterface(QApplication):
             print(f"Failed to setup logging: {e}")
         try:
             logging.info("RoomInterface started")
-            self.window = MainWindow()
+            screen_size = self.primaryScreen().size()
+            logging.info(f"Screen size: {screen_size.width()}x{screen_size.height()}")
+            launch_fullscreen = False
+            if screen_size.width() < 1024 or screen_size.height() < 600:
+                launch_fullscreen = True
+                logging.warning("Screen size is smaller than 1024x600, launching in fullscreen mode")
+            self.window = MainWindow(launch_fullscreen)
             self.window.show()
             self.exec()
         except Exception as e:
@@ -44,13 +50,13 @@ class RoomInterface(QApplication):
 
 class MainWindow(QMainWindow):
 
-    def __init__(self):
+    def __init__(self, launch_fullscreen=False):
         super().__init__()
 
         self.cached_fonts = {}
 
         self.setWindowTitle("RoomInterfaceMk2")
-        self.setGeometry(100, 100, 1024, 600)
+        self.setGeometry(0, 0, 1024, 600)
         # Set the background color to black
         self.setStyleSheet("background-color: black;")
 
@@ -98,8 +104,8 @@ class MainWindow(QMainWindow):
         self.process = psutil.Process(os.getpid())
 
         self.show()
-        # Determine if system is running raspbian, and if so, start in full screen mode. Otherwise, start the windowed version with the debug title updates
-        if "raspbian" in sys.platform:
+        # Check the screen size, if it's bigger than 1024x600 launch windowed, otherwise launch fullscreen
+        if launch_fullscreen:
             self.showFullScreen()
         else:
             self.window_title_update_timer.start(500)
