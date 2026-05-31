@@ -186,8 +186,10 @@ class DeviceGroupHost(QLabel):
     def layout_widgets(self):
         if len(self.device_widgets) == 0:
             self.no_devices_label.show()
+            height_changed = self.height() != 100
             self.setFixedSize(self.width(), 100)
-            self._request_parent_layout()
+            if height_changed:
+                self._request_parent_layout()
             return
         else:
             self.no_devices_label.hide()
@@ -260,9 +262,12 @@ class DeviceGroupHost(QLabel):
 
         if placed:
             max_bottom = max(y + h for _, y, _, h in placed)
-            self.setFixedSize(container_w, max_bottom + 5)
+            new_height = max_bottom + 5
+            height_changed = self.height() != new_height
+            self.setFixedSize(container_w, new_height)
             self.parent.update()
-            self._request_parent_layout()
+            if height_changed:
+                self._request_parent_layout()
 
     def _is_special_group(self):
         return self.group_name in ("Starred Devices", "Ungrouped Devices")

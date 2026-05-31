@@ -87,6 +87,8 @@ class MideaDevice(RoomDevice):
 
         self.toggle_button.setStyleSheet(
             f"color: black; font-size: 14px; font-weight: bold; background-color: {button_color};")
+        fan_text = "AUTO" if self.state["fan_auto"] else f"{self.state['fan_speed']}%"
+        turbo_suffix = "-TURBO" if self.state["turbo_fan"] else ""
         self.info_text.setText(
             f"<pre>"
             f"Target : {self.float_format(round(self.state['target_temperature']))}{self.unit}\n"
@@ -94,8 +96,7 @@ class MideaDevice(RoomDevice):
             f"Outdoor: {self.float_format(self.state['outdoor_temperature'])}{self.unit}\n"
             "\n"
             f"Mode   : {self.state['mode']}\n"
-            f"Fan    : {'AUTO' if self.state['fan_auto'] else f'{self.state['fan_speed']}%'}"
-                f"{'-TURBO' if self.state['turbo_fan'] else ''}\n"
+            f"Fan    : {fan_text}{turbo_suffix}\n"
             f"{self.update_state()}</pre>")
         self.toggle_button.setText(f"{['Enable', 'Disable'][self.state['on']]}")
 
@@ -235,3 +236,4 @@ class MideaDevice(RoomDevice):
         self.swing_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red")
         self.mode_button.setStyleSheet("color: black; font-size: 14px; font-weight: bold; background-color: red")
         self.info_text.show()
+
