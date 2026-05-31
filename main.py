@@ -37,7 +37,7 @@ class RoomInterface(QApplication):
             screen_size = self.primaryScreen().size()
             logging.info(f"Screen size: {screen_size.width()}x{screen_size.height()}")
             launch_fullscreen = False
-            if screen_size.width() < 1024 or screen_size.height() < 600:
+            if screen_size.width() == 1024 and screen_size.height() == 600:
                 launch_fullscreen = True
                 logging.warning("Screen size is smaller than 1024x600, launching in fullscreen mode")
             self.window = MainWindow(launch_fullscreen)
