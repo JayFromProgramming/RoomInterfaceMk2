@@ -249,13 +249,62 @@ class DeviceGroupHost(QLabel):
             for i, widget in enumerate(self.device_widgets):
                 rows.setdefault(widget.row_num, []).append(i)
 
-            for row_indices in rows.values():
-                left = min(placed[i][0] for i in row_indices)
-                right = max(placed[i][0] + placed[i][2] for i in row_indices)
-                offset = round((container_w - (right - left)) / 2) - left
+            # Build row bands so tall widgets influence rows they overlap.
+            y_positions = sorted(set(y for _, y, _, _ in placed))
+            max_bottom = max(y + h for _, y, _, h in placed)
+            row_bands = []
+            for i, y in enumerate(y_positions):
+                bottom = y_positions[i + 1] if i + 1 < len(y_positions) else max_bottom + V_GAP
+                row_bands.append((y, bottom))
+
+            for row_num, row_indices in rows.items():
+                # Use all widgets overlapping the row band to compute the row's visual bounds.
+                row_top, row_bottom = row_bands[row_num]
+                overlap_indices = [
+                    i for i, (_, y, _, h) in enumerate(placed)
+                    if y < row_bottom and (y + h) > row_top
+                ]
+                if not overlap_indices:
+                    continue
+                row_left = min(placed[i][0] for i in row_indices)
+                row_right = max(placed[i][0] + placed[i][2] for i in row_indices)
+
+                # Center within the padded content area, clamping to avoid crossing padding.
+                target_left = LEFT_PAD
+                target_right = container_w - LEFT_PAD
+                content_w = target_right - target_left
+                row_w = row_right - row_left
+                if row_w >= content_w:
+                    offset = target_left - row_left
+                else:
+                    # Clamp further to avoid overlapping widgets from other rows that share this band.
+                    row_center = (row_left + row_right) / 2
+                    min_left = target_left
+                    max_right = target_right
+                    for i in overlap_indices:
+                        if i in row_indices:
+                            continue
+                        b_left = placed[i][0]
+                        b_right = placed[i][0] + placed[i][2]
+                        blocker_center = (b_left + b_right) / 2
+                        if row_center >= blocker_center:
+                            min_left = max(min_left, b_right + H_GAP)
+                        else:
+                            max_right = min(max_right, b_left - H_GAP)
+
+                    desired_offset = round((target_left + target_right - (row_left + row_right)) / 2)
+                    new_left = row_left + desired_offset
+                    new_right = row_right + desired_offset
+                    if new_left < min_left:
+                        desired_offset += min_left - new_left
+                    if new_right > max_right:
+                        desired_offset -= new_right - max_right
+                    offset = desired_offset
                 for i in row_indices:
                     w = self.device_widgets[i]
                     w.move(w.x() + offset, w.y())
+                    px, py, pw, ph = placed[i]
+                    placed[i] = (px + offset, py, pw, ph)
 
         self.group_label.setFixedSize(container_w - 10, 20)
         self.group_label.move(round((container_w - self.group_label.width()) / 2), 0)
